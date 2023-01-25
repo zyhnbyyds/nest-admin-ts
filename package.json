@@ -4,7 +4,7 @@
   "description": "基于nestjs的基本后台管理系统。采用jwt身份认证。包含登录、用户、角色等。参考nest官网的最佳实践",
   "author": "zhang",
   "private": true,
-  "license": "UNLICENSED",
+  "license": "MIT",
   "scripts": {
     "prebuild": "rimraf dist",
     "build": "nest build",
