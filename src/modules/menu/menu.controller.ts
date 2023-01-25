@@ -6,7 +6,6 @@ import {
   Patch,
   Param,
   Delete,
-  Query,
 } from '@nestjs/common';
 import { MenuService } from './menu.service';
 import { CreateMenuDto } from './dto/create-menu.dto';
@@ -22,8 +21,8 @@ export class MenuController {
   }
 
   @Get('/list')
-  findAll(@Query() roleId: number) {
-    return this.menuService.findAll(roleId);
+  findAll() {
+    return this.menuService.findAll();
   }
 
   @Get(':id')
