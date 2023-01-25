@@ -1,8 +1,8 @@
 {
   "name": "nest-admin-ts",
   "version": "0.0.1",
-  "description": "",
-  "author": "",
+  "description": "基于nestjs的基本后台管理系统。采用jwt身份认证。包含登录、用户、角色等。参考nest官网的最佳实践",
+  "author": "zhang",
   "private": true,
   "license": "UNLICENSED",
   "scripts": {
