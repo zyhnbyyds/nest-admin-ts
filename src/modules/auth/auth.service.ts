@@ -3,6 +3,10 @@ import { UserService } from './../user/user.service';
 import { Injectable } from '@nestjs/common';
 import { LoginFormParams } from './dto/login-auth.dto';
 import { JwtService } from '@nestjs/jwt';
+import * as log4js from 'log4js';
+
+const logger = log4js.getLogger();
+logger.level = 'all';
 
 @Injectable()
 export class AuthService {
@@ -14,11 +18,12 @@ export class AuthService {
     const user = await this.userService.findOneByUserName(loginParams.userName);
     if (user && user.password === loginParams.password) {
       const payload = { userName: user.userName, userId: user.id };
+      logger.info(`${user.userName} 上线了~`);
       return {
-        refreshToken: `Bearer ${this.jwtService.sign(payload, {
+        refreshToken: this.jwtService.sign(payload, {
           expiresIn: '2h',
-        })}`,
-        token: `Bearer ${this.jwtService.sign(payload)}`,
+        }),
+        token: this.jwtService.sign(payload),
       };
     }
     return null;

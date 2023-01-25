@@ -8,6 +8,7 @@ import {
   Delete,
   Query,
   UseGuards,
+  Req,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto, AddUserRoleDto } from './dto/create-user.dto';
@@ -38,6 +39,11 @@ export class UserController {
   @Get('/login')
   findOneByUserName(@Query('userName') userName: string) {
     return this.userService.findOneByUserName(userName);
+  }
+
+  @Get('/info')
+  getUserInfo(@Req() req: any) {
+    return this.userService.getUserInfo(req.user.userName);
   }
 
   @Get('/role/list/:id')
