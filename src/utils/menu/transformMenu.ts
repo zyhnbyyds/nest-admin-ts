@@ -10,6 +10,7 @@ export class MenusList {
   title: string;
   icon: string;
   order: number;
+  parentId?: number;
 }
 
 export function transformMenu(menu: MenusList[]) {

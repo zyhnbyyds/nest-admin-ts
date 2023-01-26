@@ -6,18 +6,22 @@ import {
   Patch,
   Param,
   Delete,
+  Req,
+  UseGuards,
 } from '@nestjs/common';
 import { MenuService } from './menu.service';
 import { CreateMenuDto } from './dto/create-menu.dto';
 import { UpdateMenuDto } from './dto/update-menu.dto';
+import { AuthGuard } from '@nestjs/passport';
 
 @Controller('menu')
+@UseGuards(AuthGuard('jwt'))
 export class MenuController {
   constructor(private readonly menuService: MenuService) {}
 
   @Post()
-  create(@Body() createMenuDto: CreateMenuDto) {
-    return this.menuService.create(createMenuDto);
+  create(@Body() createMenuDto: CreateMenuDto, @Req() req: any) {
+    return this.menuService.create(createMenuDto, req.user.userName);
   }
 
   @Get('/list')

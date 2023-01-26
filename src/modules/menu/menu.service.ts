@@ -1,5 +1,5 @@
 import { Menu } from './entities/menu.entity';
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CreateMenuDto } from './dto/create-menu.dto';
 import { UpdateMenuDto } from './dto/update-menu.dto';
@@ -13,18 +13,32 @@ export class MenuService {
     private menuRepository: TreeRepository<Menu>,
   ) {}
   /** 创建menu菜单 */
-  create(createMenuDto: CreateMenuDto) {
-    return this.menuRepository
+  async create(createMenuDto: CreateMenuDto, userName: string) {
+    let menuParent: Menu;
+    if (createMenuDto.parentId != 0) {
+      menuParent = await this.findOne(createMenuDto.parentId);
+    }
+    const res = await this.menuRepository
       .createQueryBuilder()
       .insert()
       .into(Menu)
-      .values(createMenuDto)
+      .values({
+        ...createMenuDto,
+        createBy: userName,
+        parent: menuParent,
+      })
       .execute();
+    if (createMenuDto.parentId != 0) {
+      await this.menuRepository.query(
+        'INSERT INTO `menu_closure` (`ancestor_id`, `descendant_id`) VALUES ' +
+          `(${menuParent.id},${res.raw.insertId} )`,
+      );
+    }
+    return null;
   }
 
   async findAll() {
     const res = await this.menuRepository.findTrees();
-    console.log(res);
     if (res) {
       const result = transformMenu(res);
       return result;
@@ -32,8 +46,12 @@ export class MenuService {
     return null;
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} menu`;
+  async findOne(id: number) {
+    const res = await this.menuRepository.findOneBy({ id });
+    if (!res) {
+      throw new NotFoundException('未找到指定菜单~');
+    }
+    return res;
   }
 
   update(id: number, updateMenuDto: UpdateMenuDto) {
