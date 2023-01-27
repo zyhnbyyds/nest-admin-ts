@@ -23,6 +23,9 @@ export class Menu {
   component: 'basic' | 'blank' | 'multi' | 'self';
 
   @Column()
+  name: string;
+
+  @Column()
   path: string;
 
   @Column()
@@ -54,6 +57,21 @@ export class Menu {
 
   @Column()
   createBy: string;
+
+  @Column({ nullable: true, type: 'boolean' })
+  affix: boolean;
+
+  @Column({ nullable: true, type: 'boolean' })
+  multiTab: boolean;
+
+  @Column({ nullable: true })
+  localIcon: string;
+
+  @Column({ nullable: true })
+  singleLayout: 'basic' | 'blank';
+
+  @Column({ nullable: true })
+  redirect: string;
 
   @CreateDateColumn({ name: 'create_time', nullable: true })
   createTime: Date;
