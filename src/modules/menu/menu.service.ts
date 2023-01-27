@@ -5,6 +5,7 @@ import { CreateMenuDto } from './dto/create-menu.dto';
 import { UpdateMenuDto } from './dto/update-menu.dto';
 import { TreeRepository } from 'typeorm';
 import { transformMenu } from 'src/utils/menu/transformMenu';
+import { buildUpMenuObj } from 'src/utils/menu/buildUpMenuObj';
 
 @Injectable()
 export class MenuService {
@@ -18,27 +19,23 @@ export class MenuService {
     if (createMenuDto.parentId != 0) {
       menuParent = await this.findOne(createMenuDto.parentId);
     }
-    const res = await this.menuRepository
-      .createQueryBuilder()
-      .insert()
-      .into(Menu)
-      .values({
-        ...createMenuDto,
-        createBy: userName,
-        parent: menuParent,
-      })
-      .execute();
-    if (createMenuDto.parentId != 0) {
-      await this.menuRepository.query(
-        'INSERT INTO `menu_closure` (`ancestor_id`, `descendant_id`) VALUES ' +
-          `(${menuParent.id},${res.raw.insertId} )`,
-      );
+    const menuChildren = new Menu();
+
+    const newObj = Object.assign(createMenuDto, { createBy: userName });
+
+    buildUpMenuObj(menuChildren, newObj);
+
+    if (menuParent) {
+      menuChildren.parent = menuParent;
     }
+
+    await this.menuRepository.save(menuChildren);
+
     return null;
   }
 
   async findAll() {
-    const res = await this.menuRepository.findTrees();
+    const res = await this.menuRepository.findTrees({ depth: 3 });
     if (res) {
       const result = transformMenu(res);
       return result;
