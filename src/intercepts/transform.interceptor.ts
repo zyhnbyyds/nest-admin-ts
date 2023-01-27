@@ -14,7 +14,7 @@ import { inspect } from 'util';
 interface ReturnData {
   data: any;
   code: number;
-  msg: string | null;
+  message: string | null;
 }
 
 const logger = log4js.getLogger();
@@ -38,7 +38,7 @@ export class TransformInterceptor implements NestInterceptor {
               res.statusCode
             } ${Date.now() - startTime}ms`,
           );
-          return { data, code: 201, msg: '创建成功' };
+          return { data, code: 201, message: '创建成功' };
         }),
       );
     } else if (req.method === 'PATCH') {
@@ -49,7 +49,7 @@ export class TransformInterceptor implements NestInterceptor {
               req.body,
             )} spend="${Date.now() - startTime}ms"`,
           );
-          return { data, code: 200, msg: '修改成功' };
+          return { data, code: 200, message: '修改成功' };
         }),
       );
     } else if (req.method === 'DELETE') {
@@ -58,7 +58,7 @@ export class TransformInterceptor implements NestInterceptor {
           logger.info(
             `${req.method} ${req.url} ==> ${Date.now() - startTime}ms`,
           );
-          return { data, code: 203, msg: '删除成功' };
+          return { data, code: 203, message: '删除成功' };
         }),
       );
     }
@@ -70,7 +70,7 @@ export class TransformInterceptor implements NestInterceptor {
             Date.now() - startTime
           }ms`,
         );
-        return { data, code: 200, msg: '获取成功' };
+        return { data, code: 200, message: '获取成功' };
       }),
     );
   }

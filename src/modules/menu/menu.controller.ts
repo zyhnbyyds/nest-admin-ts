@@ -8,6 +8,7 @@ import {
   Delete,
   Req,
   UseGuards,
+  HttpCode,
 } from '@nestjs/common';
 import { MenuService } from './menu.service';
 import { CreateMenuDto } from './dto/create-menu.dto';
@@ -24,7 +25,8 @@ export class MenuController {
     return this.menuService.create(createMenuDto, req.user.userName);
   }
 
-  @Get('/list')
+  @Post('/list')
+  @HttpCode(200)
   findAll() {
     return this.menuService.findAll();
   }

@@ -35,10 +35,10 @@ export class MenuService {
   }
 
   async findAll() {
-    const res = await this.menuRepository.findTrees({ depth: 3 });
+    const res = await this.menuRepository.findTrees();
     if (res) {
       const result = transformMenu(res);
-      return result;
+      return { routes: result, home: '/test' };
     }
     return null;
   }
