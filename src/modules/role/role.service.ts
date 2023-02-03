@@ -30,9 +30,10 @@ export class RoleService {
   }
 
   async findAll(searchQuery: SearchQuery) {
+    const { pageNum, pageSize } = searchQuery;
     const [list, count] = await this.roleRepository.findAndCount({
-      skip: (searchQuery.pageNum - 1) * searchQuery.pageSize + 1,
-      take: searchQuery.pageSize,
+      skip: pageNum ? (pageNum - 1) * pageSize + 1 : undefined,
+      take: pageSize ? pageSize : undefined,
     });
     return { list, count };
   }
@@ -46,20 +47,27 @@ export class RoleService {
     return res;
   }
 
-  update(id: number, updateRoleDto: UpdateRoleDto) {
+  update(updateRoleDto: UpdateRoleDto) {
     return this.roleRepository
       .createQueryBuilder('role')
       .update(Role)
       .set(updateRoleDto)
-      .where('id=:id', { id })
+      .where('id=:id', { id: updateRoleDto.id })
       .execute();
   }
 
-  remove(id: number) {
+  async remove(id: number) {
+    await this.findOne(id);
     return this.roleRepository
       .createQueryBuilder('role')
       .delete()
       .where('id=:id', { id })
       .execute();
+  }
+
+  /** 删除多个 */
+  async removeMany(ids: number[]) {
+    this.roleRepository.createQueryBuilder().delete().whereInIds(ids).execute();
+    console.log(ids);
   }
 }

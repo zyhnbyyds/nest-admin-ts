@@ -16,6 +16,7 @@ export class MenusList {
   singleLayout: 'basic' | 'blank';
   parentId?: number;
   redirect?: string;
+  parent: MenusList | null;
 }
 
 export function transformMenu(menu: MenusList[]) {
@@ -46,6 +47,7 @@ export function transformMenu(menu: MenusList[]) {
       href,
       affix,
     };
+    item.parentId = item.parent ? item.parent.id : 0;
     [
       'title',
       'icon',
@@ -58,12 +60,12 @@ export function transformMenu(menu: MenusList[]) {
       'multiTab',
       'localIcon',
       'singleLayout',
+      'parent',
     ].forEach((toRm) => {
       Reflect.deleteProperty(item, toRm);
     });
-    if (item.children) {
-      item.children = transformMenu(item.children);
-    }
+    item.children =
+      item.children.length !== 0 ? transformMenu(item.children) : undefined;
     return { ...item, meta };
   });
 }

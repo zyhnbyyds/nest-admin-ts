@@ -15,6 +15,7 @@ export class MenuService {
   ) {}
   /** 创建menu菜单 */
   async create(createMenuDto: CreateMenuDto, userName: string) {
+    // console.log(createMenuDto);
     let menuParent: Menu;
     if (createMenuDto.parentId != 0) {
       menuParent = await this.findOne(createMenuDto.parentId);
@@ -29,16 +30,22 @@ export class MenuService {
       menuChildren.parent = menuParent;
     }
 
-    await this.menuRepository.save(menuChildren);
+    try {
+      await this.menuRepository.save(menuChildren);
+    } catch (error) {
+      console.log(error);
+    }
 
     return null;
   }
 
   async findAll() {
-    const res = await this.menuRepository.findTrees();
+    const res = await this.menuRepository.findTrees({
+      relations: ['parent', 'children'],
+    });
     if (res) {
       const result = transformMenu(res);
-      return { routes: result, home: '/test' };
+      return { routes: result, home: 'dashboard_analysis' };
     }
     return null;
   }
@@ -51,11 +58,28 @@ export class MenuService {
     return res;
   }
 
-  update(id: number, updateMenuDto: UpdateMenuDto) {
-    return `This action updates a #${id} menu${updateMenuDto}`;
+  /**
+   * 修改菜单，先删除后添加，保证菜单的父子关系。
+   * @param updateMenuDto
+   * @param userName
+   * @returns
+   */
+  async update(updateMenuDto: UpdateMenuDto, userName: string) {
+    ['children', 'meta', 'createTime', 'updateTime', 'deleteTime'].forEach(
+      (item) => {
+        Reflect.deleteProperty(updateMenuDto, item);
+      },
+    );
+
+    await this.create(updateMenuDto as CreateMenuDto, userName);
+    return null;
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} menu`;
+  async remove(id: number) {
+    return await this.menuRepository
+      .createQueryBuilder()
+      .delete()
+      .where('id=:id', { id })
+      .execute();
   }
 }

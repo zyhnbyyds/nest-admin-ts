@@ -21,7 +21,7 @@ export class AuthService {
       logger.info(`${user.userName} 上线了~`);
       return {
         refreshToken: this.jwtService.sign(payload, {
-          expiresIn: '2h',
+          expiresIn: '8d',
         }),
         token: this.jwtService.sign(payload),
       };

@@ -4,8 +4,7 @@ import {
   CreateDateColumn,
   DeleteDateColumn,
   Entity,
-  JoinTable,
-  ManyToMany,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
@@ -27,9 +26,8 @@ export class Role {
   @Column({ nullable: true })
   nickName: string;
 
-  @ManyToMany(() => User, (user) => user.roleIds)
-  @JoinTable({ name: 'user_role' })
-  userIds: User[];
+  @OneToMany(() => User, (user) => user.role)
+  users: User[];
 
   @CreateDateColumn({ name: 'create_time', nullable: true })
   createTime: Date;

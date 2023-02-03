@@ -3,12 +3,13 @@ import {
   Get,
   Post,
   Body,
-  Patch,
   Param,
   Delete,
   Req,
   UseGuards,
   HttpCode,
+  Put,
+  Query,
 } from '@nestjs/common';
 import { MenuService } from './menu.service';
 import { CreateMenuDto } from './dto/create-menu.dto';
@@ -20,7 +21,8 @@ import { AuthGuard } from '@nestjs/passport';
 export class MenuController {
   constructor(private readonly menuService: MenuService) {}
 
-  @Post()
+  @Post('/add')
+  @HttpCode(200)
   create(@Body() createMenuDto: CreateMenuDto, @Req() req: any) {
     return this.menuService.create(createMenuDto, req.user.userName);
   }
@@ -36,13 +38,15 @@ export class MenuController {
     return this.menuService.findOne(+id);
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateMenuDto: UpdateMenuDto) {
-    return this.menuService.update(+id, updateMenuDto);
+  @Put('/edit')
+  update(@Body() updateMenuDto: UpdateMenuDto, @Req() req: any) {
+    console.log(updateMenuDto);
+    return this.menuService.update(updateMenuDto, req.user.userName);
   }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.menuService.remove(+id);
+  @Delete('/delete')
+  @HttpCode(200)
+  remove(@Query('id') id: number) {
+    return this.menuService.remove(id);
   }
 }

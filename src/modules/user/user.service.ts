@@ -22,6 +22,10 @@ export class UserService {
    * @returns null
    */
   async create(createUserDto: CreateUserDto) {
+    const roleId = createUserDto.roleId;
+    Reflect.deleteProperty(createUserDto, 'role');
+    Reflect.deleteProperty(createUserDto, 'roleId');
+    Reflect.deleteProperty(createUserDto, 'id');
     const res = await this.userRepository.findOneBy({
       userName: createUserDto.userName,
     });
@@ -30,18 +34,22 @@ export class UserService {
     }
 
     // 插入用户
-    const data = await this.userRepository
+    await this.userRepository
       .createQueryBuilder('user')
       .insert()
       .into(User)
       .values(createUserDto)
       .execute();
 
+    const userInfo = await this.userRepository.findOneBy({
+      userName: createUserDto.userName,
+    });
+
     // 添加角色信息
-    if (data && data.raw.insertId) {
-      this.userAddRole({
-        userId: data.raw.insertId,
-        roleIds: createUserDto.rolesList,
+    if (userInfo && roleId) {
+      await this.userAddRole({
+        userId: userInfo.id,
+        roleId: roleId,
       });
     }
     return null;
@@ -56,49 +64,42 @@ export class UserService {
     // 验证传入的用户名是否合法
     await this.findOneById(userAddRole.userId);
     // 为用户添加角色，先删除后添加
-    const roleIds = userAddRole.roleIds.split(',');
+    const { roleId } = userAddRole;
     // 发生错误抛出
-    try {
-      await this.userRepository
-        .createQueryBuilder()
-        .relation(User, 'roleIds')
-        .of(userAddRole.userId)
-        .remove(roleIds);
+    await this.userRepository
+      .createQueryBuilder()
+      .relation(User, 'role')
+      .of(userAddRole.userId)
+      .set(roleId);
 
-      await this.userRepository
-        .createQueryBuilder()
-        .relation(User, 'roleIds')
-        .of(userAddRole.userId)
-        .add(roleIds);
-      return null;
-    } catch (error) {
-      throw new NotFoundException('传入的角色Id集合出错，查找不到对应信息~');
-    }
-  }
-
-  /**
-   * 获取用户下面的角色集合
-   * @param id 用户id
-   */
-  async userRolesList(id: number) {
-    const res = await this.userRepository.find({
-      relations: ['roleIds'],
-      where: { id },
-    });
-    return res;
+    return null;
   }
 
   async findAll(searchQuery: SearchQuery) {
     const [list, count] = await this.userRepository.findAndCount({
       skip: (searchQuery.pageNum - 1) * searchQuery.pageSize + 1,
       take: searchQuery.pageSize,
+      relations: ['role'],
+    });
+    const listAddRoleId = list.map((item) => {
+      let roleId: number;
+      item.role ? (roleId = item.role.id) : (roleId = 0);
+      return {
+        ...item,
+        roleId: roleId,
+      };
     });
     return {
-      list,
+      list: listAddRoleId,
       count,
     };
   }
 
+  /**
+   * 获取用户信息
+   * @param userName 用户名
+   * @returns 用户查询信息
+   */
   async getUserInfo(userName: string) {
     return await this.findOneByUserName(userName);
   }
@@ -122,14 +123,31 @@ export class UserService {
     return res;
   }
 
-  async update(id: number, updateUserDto: UpdateUserDto) {
-    await this.findOneById(id);
-    return await this.userRepository
-      .createQueryBuilder()
-      .update(User)
-      .set(updateUserDto)
-      .where('id= :id', { id })
-      .execute();
+  async update(updateUserDto: UpdateUserDto) {
+    Reflect.deleteProperty(updateUserDto, 'role');
+    const res = await this.userRepository.findOne({
+      relations: ['role'],
+      where: { id: updateUserDto.id },
+    });
+    // 如果角色id不相同，重新设定角色
+    if (res.role.id !== updateUserDto.roleId) {
+      await this.userAddRole({
+        userId: res.id,
+        roleId: updateUserDto.roleId,
+      });
+    }
+    if (res) {
+      Reflect.deleteProperty(updateUserDto, 'roleId');
+      // 更改用户角色信息
+      await this.userRepository
+        .createQueryBuilder()
+        .update(User)
+        .set(updateUserDto)
+        .where('id= :id', { id: updateUserDto.id })
+        .execute();
+    }
+
+    return null;
   }
 
   async remove(id: number) {

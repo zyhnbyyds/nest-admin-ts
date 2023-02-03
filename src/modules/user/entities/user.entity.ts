@@ -5,8 +5,7 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   DeleteDateColumn,
-  ManyToMany,
-  JoinTable,
+  ManyToOne,
 } from 'typeorm';
 import { Length } from 'class-validator';
 import { Role } from 'src/modules/role/entities/role.entity';
@@ -25,20 +24,22 @@ export class User {
   password: string;
 
   @Column({ nullable: true })
-  roleName: string;
-
-  @Column({ nullable: true })
   nickName: string;
 
-  @ManyToMany(() => Role, (role) => role.userIds)
-  @JoinTable({ name: 'user_role' })
-  roleIds: Role[];
+  @ManyToOne(() => Role, (role) => role.users)
+  role: Role;
 
   @Column({ nullable: true })
   avatar: string;
 
   @Column()
   status: 0 | 1;
+
+  @Column({ nullable: true })
+  email: string;
+
+  @Column({ nullable: true })
+  phone: string;
 
   @CreateDateColumn({ name: 'create_time', nullable: true })
   createTime: Date;

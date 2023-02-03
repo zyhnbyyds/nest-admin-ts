@@ -3,12 +3,13 @@ import {
   Get,
   Post,
   Body,
-  Patch,
   Param,
   Delete,
   Query,
   UseGuards,
   Req,
+  Put,
+  HttpCode,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto, AddUserRoleDto } from './dto/create-user.dto';
@@ -21,7 +22,8 @@ import { AuthGuard } from '@nestjs/passport';
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
-  @Post()
+  @Post('/add')
+  @HttpCode(200)
   create(@Body() createUserDto: CreateUserDto) {
     return this.userService.create(createUserDto);
   }
@@ -46,23 +48,18 @@ export class UserController {
     return this.userService.getUserInfo(req.user.userName);
   }
 
-  @Get('/role/list/:id')
-  userRolesList(@Param('id') id: number) {
-    return this.userService.userRolesList(+id);
-  }
-
   @Get(':id')
   findOneById(@Param('id') id: number) {
     return this.userService.findOneById(+id);
   }
 
-  @Patch(':id')
-  update(@Param('id') id: number, @Body() updateUserDto: UpdateUserDto) {
-    return this.userService.update(+id, updateUserDto);
+  @Put('/edit')
+  update(@Body() updateUserDto: UpdateUserDto) {
+    return this.userService.update(updateUserDto);
   }
 
-  @Delete(':id')
-  remove(@Param('id') id: number) {
-    return this.userService.remove(+id);
+  @Delete('/del')
+  remove(@Query() query: { id: number }) {
+    return this.userService.remove(query.id);
   }
 }

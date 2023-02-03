@@ -4,12 +4,12 @@ import {
   Get,
   Post,
   Body,
-  Patch,
   Param,
   Delete,
   Query,
   Req,
   UseGuards,
+  Put,
 } from '@nestjs/common';
 import { RoleService } from './role.service';
 import { CreateRoleDto } from './dto/create-role.dto';
@@ -36,13 +36,13 @@ export class RoleController {
     return this.roleService.findOne(+id);
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateRoleDto: UpdateRoleDto) {
-    return this.roleService.update(+id, updateRoleDto);
+  @Put('/edit')
+  update(@Body() updateRoleDto: UpdateRoleDto) {
+    return this.roleService.update(updateRoleDto);
   }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.roleService.remove(+id);
+  @Delete('/del')
+  remove(@Query() delQuery: { id: number }) {
+    return this.roleService.remove(delQuery.id);
   }
 }

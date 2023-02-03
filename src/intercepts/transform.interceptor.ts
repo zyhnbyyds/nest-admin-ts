@@ -38,7 +38,7 @@ export class TransformInterceptor implements NestInterceptor {
               res.statusCode
             } ${Date.now() - startTime}ms`,
           );
-          return { data, code: 201, message: '创建成功' };
+          return { data, code: 200, message: '创建成功' };
         }),
       );
     } else if (req.method === 'PATCH') {
@@ -58,7 +58,7 @@ export class TransformInterceptor implements NestInterceptor {
           logger.info(
             `${req.method} ${req.url} ==> ${Date.now() - startTime}ms`,
           );
-          return { data, code: 203, message: '删除成功' };
+          return { data, code: 200, message: '删除成功' };
         }),
       );
     }
