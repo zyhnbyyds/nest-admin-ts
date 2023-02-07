@@ -12,6 +12,9 @@ pnpm install
 pnpm start:dev
 ```
 
+## 对接的前端界面地址
+<https://github.com/zhang771/soybean-admin>
+
 ## TODO
 
     1、对接开源项目soybeanAdmin以及api的提供(前台);

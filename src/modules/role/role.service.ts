@@ -64,10 +64,4 @@ export class RoleService {
       .where('id=:id', { id })
       .execute();
   }
-
-  /** 删除多个 */
-  async removeMany(ids: number[]) {
-    this.roleRepository.createQueryBuilder().delete().whereInIds(ids).execute();
-    console.log(ids);
-  }
 }

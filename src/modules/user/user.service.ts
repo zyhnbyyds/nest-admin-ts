@@ -158,4 +158,13 @@ export class UserService {
       .where('id= :id', { id })
       .execute();
   }
+  /** 删除多个 */
+  async removeMany(ids: number[]) {
+    await this.userRepository
+      .createQueryBuilder()
+      .delete()
+      .whereInIds(ids)
+      .execute();
+    return null;
+  }
 }

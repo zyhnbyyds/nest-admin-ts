@@ -62,4 +62,9 @@ export class UserController {
   remove(@Query() query: { id: number }) {
     return this.userService.remove(query.id);
   }
+
+  @Delete('/del/delMany')
+  removeMany(@Query() query: { ids: number[] }) {
+    return this.userService.removeMany(query.ids);
+  }
 }
