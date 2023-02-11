@@ -22,9 +22,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
     const logger = log4js.getLogger();
     logger.debug(
       `error==>${request.method} ${request.url} reason==>${
-        exception instanceof HttpException
-          ? exception.message
-          : '服务器发生异常~'
+        exception instanceof HttpException ? exception.message : exception
       }`,
     );
     response.status(status).json({

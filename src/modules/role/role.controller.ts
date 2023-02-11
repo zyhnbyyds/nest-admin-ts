@@ -21,7 +21,7 @@ import { AuthGuard } from '@nestjs/passport';
 export class RoleController {
   constructor(private readonly roleService: RoleService) {}
 
-  @Post()
+  @Post('/add')
   create(@Body() createRoleDto: CreateRoleDto, @Req() req: any) {
     return this.roleService.create(createRoleDto, req);
   }
@@ -44,5 +44,10 @@ export class RoleController {
   @Delete('/del')
   remove(@Query() delQuery: { id: number }) {
     return this.roleService.remove(delQuery.id);
+  }
+
+  @Get('/auth/list')
+  getAuthList() {
+    return this.roleService.getAuthList();
   }
 }

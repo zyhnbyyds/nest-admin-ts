@@ -7,9 +7,11 @@ import { AppModule } from './app.module';
 async function loadApp() {
   // 创建app实例
   const app = await NestFactory.create(AppModule, {
-    logger: ['debug'],
+    logger: ['log'],
   });
   const port = parseInt(process.env.SERVER_PORT, 10);
+
+  app.setGlobalPrefix('/api');
 
   // 全局拦截器的使用
   app.useGlobalInterceptors(new TransformInterceptor());

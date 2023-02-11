@@ -1,8 +1,11 @@
+import { Role } from 'src/modules/role/entities/role.entity';
 import {
   Column,
   CreateDateColumn,
   DeleteDateColumn,
   Entity,
+  JoinTable,
+  ManyToMany,
   PrimaryGeneratedColumn,
   Tree,
   TreeChildren,
@@ -51,6 +54,10 @@ export class Menu {
 
   @TreeParent()
   parent: Menu;
+
+  @ManyToMany(() => Role, (role) => role.menus)
+  @JoinTable({ name: 'menu_role' })
+  roles: Role[];
 
   @TreeChildren()
   children: Menu[];

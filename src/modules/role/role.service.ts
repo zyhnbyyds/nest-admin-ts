@@ -1,3 +1,4 @@
+import { MenuService } from './../menu/menu.service';
 import { SearchQuery } from 'src/common/common.dto';
 import { Role } from './entities/role.entity';
 import {
@@ -13,9 +14,12 @@ import { Repository } from 'typeorm';
 @Injectable()
 export class RoleService {
   constructor(
-    @InjectRepository(Role) private roleRepository: Repository<Role>,
+    @InjectRepository(Role)
+    private readonly roleRepository: Repository<Role>,
+    private readonly menuService: MenuService,
   ) {}
   async create(createRoleDto: CreateRoleDto, req: any) {
+    Reflect.deleteProperty(createRoleDto, 'id');
     const res = await this.roleRepository.findOneBy({
       roleName: createRoleDto.roleName,
     });
@@ -57,11 +61,21 @@ export class RoleService {
   }
 
   async remove(id: number) {
-    await this.findOne(id);
-    return this.roleRepository
-      .createQueryBuilder('role')
-      .delete()
-      .where('id=:id', { id })
-      .execute();
+    try {
+      await this.findOne(id);
+      await this.roleRepository
+        .createQueryBuilder('role')
+        .delete()
+        .where('id=:id', { id })
+        .execute();
+    } catch (error) {
+      throw new ForbiddenException(
+        '角色下有用户，删除可能会导致系统异常，请先清理角色下挂的用户，再尝试删除',
+      );
+    }
+  }
+
+  getAuthList() {
+    return this.menuService.findAll();
   }
 }

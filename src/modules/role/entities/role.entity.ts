@@ -1,9 +1,12 @@
+import { Menu } from 'src/modules/menu/entities/menu.entity';
 import { User } from 'src/modules/user/entities/user.entity';
 import {
   Column,
   CreateDateColumn,
   DeleteDateColumn,
   Entity,
+  JoinTable,
+  ManyToMany,
   OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
@@ -17,6 +20,9 @@ export class Role {
   @Column({ type: 'varchar', unique: true })
   roleName: string;
 
+  @Column({ unique: true })
+  roleKey: string;
+
   @Column({ type: 'varchar' })
   createdBy: string;
 
@@ -28,6 +34,10 @@ export class Role {
 
   @OneToMany(() => User, (user) => user.role)
   users: User[];
+
+  @ManyToMany(() => Menu, (menu) => menu.roles)
+  @JoinTable({ name: 'menu_role' })
+  menus: Menu[];
 
   @CreateDateColumn({ name: 'create_time', nullable: true })
   createTime: Date;
