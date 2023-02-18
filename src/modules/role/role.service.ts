@@ -75,7 +75,19 @@ export class RoleService {
     }
   }
 
-  getAuthList() {
-    return this.menuService.findAll();
+  getAuthList(roleId: number) {
+    return this.roleRepository
+      .createQueryBuilder()
+      .relation(Role, 'auths')
+      .of(roleId)
+      .loadMany();
+  }
+
+  async roleSetAuth(roleId: number, authList: number[]) {
+    return await this.roleRepository
+      .createQueryBuilder()
+      .relation(Role, 'auths')
+      .of(roleId)
+      .add(authList);
   }
 }

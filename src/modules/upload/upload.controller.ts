@@ -1,14 +1,12 @@
 import {
   Controller,
-  Get,
   Post,
-  StreamableFile,
   UploadedFile,
   UseInterceptors,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { Express } from 'express';
-import { createReadStream, writeFile } from 'fs';
+import { writeFile } from 'fs';
 
 @Controller('upload')
 export class UploadController {
@@ -24,11 +22,5 @@ export class UploadController {
       }
     });
     return `${fileName}.${type}`;
-  }
-
-  @Get('/docs/imgs')
-  getFile(): StreamableFile {
-    const file = createReadStream('./docs/imgs/1676099378667.jpg');
-    return new StreamableFile(file);
   }
 }

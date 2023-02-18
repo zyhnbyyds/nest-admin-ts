@@ -40,7 +40,6 @@ export class MenuController {
 
   @Put('/edit')
   update(@Body() updateMenuDto: UpdateMenuDto, @Req() req: any) {
-    console.log(updateMenuDto);
     return this.menuService.update(updateMenuDto, req.user.userName);
   }
 

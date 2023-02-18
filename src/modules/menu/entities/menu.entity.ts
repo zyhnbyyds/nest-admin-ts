@@ -55,7 +55,7 @@ export class Menu {
   @TreeParent()
   parent: Menu;
 
-  @ManyToMany(() => Role, (role) => role.menus)
+  @ManyToMany(() => Role, (role) => role.auths)
   @JoinTable({ name: 'menu_role' })
   roles: Role[];
 

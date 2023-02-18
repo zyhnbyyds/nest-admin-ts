@@ -37,7 +37,7 @@ export class Role {
 
   @ManyToMany(() => Menu, (menu) => menu.roles)
   @JoinTable({ name: 'menu_role' })
-  menus: Menu[];
+  auths: Menu[];
 
   @CreateDateColumn({ name: 'create_time', nullable: true })
   createTime: Date;

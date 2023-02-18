@@ -46,8 +46,16 @@ export class RoleController {
     return this.roleService.remove(delQuery.id);
   }
 
+  @Post('/addAuth')
+  roleSetAuth(@Body() roleAddAuthDto: { roleId: number; authList: number[] }) {
+    return this.roleService.roleSetAuth(
+      roleAddAuthDto.roleId,
+      roleAddAuthDto.authList,
+    );
+  }
+
   @Get('/auth/list')
-  getAuthList() {
-    return this.roleService.getAuthList();
+  getAuthList(@Query() getRoleListDto: { roleId: number }) {
+    return this.roleService.getAuthList(getRoleListDto.roleId);
   }
 }

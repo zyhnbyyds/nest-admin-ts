@@ -17,7 +17,11 @@ export class AuthService {
   async login(loginParams: LoginFormParams) {
     const user = await this.userService.findOneByUserName(loginParams.userName);
     if (user && user.password === loginParams.password) {
-      const payload = { userName: user.userName, userId: user.id };
+      const payload = {
+        userName: user.userName,
+        userId: user.id,
+        authList: ['add', 'edit'],
+      };
       logger.info(`${user.userName} 上线了~`);
       return {
         refreshToken: this.jwtService.sign(payload, {

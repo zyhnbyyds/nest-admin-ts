@@ -16,9 +16,12 @@ import { CreateUserDto, AddUserRoleDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { SearchQuery } from 'src/common/common.dto';
 import { AuthGuard } from '@nestjs/passport';
+import { Roles } from 'src/decorators/roles.decorator';
+import { RolesGuard } from 'src/guards/role.guard';
 
 @Controller('user')
 @UseGuards(AuthGuard('jwt'))
+@UseGuards(RolesGuard)
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
@@ -33,6 +36,7 @@ export class UserController {
     return await this.userService.userAddRole(addUserRole);
   }
 
+  @Roles('add')
   @Get('/list')
   findAll(@Query() searchQuery: SearchQuery) {
     return this.userService.findAll(searchQuery);

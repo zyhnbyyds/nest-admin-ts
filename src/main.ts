@@ -11,8 +11,6 @@ async function loadApp() {
   });
   const port = parseInt(process.env.SERVER_PORT, 10);
 
-  app.setGlobalPrefix('/api');
-
   // 全局拦截器的使用
   app.useGlobalInterceptors(new TransformInterceptor());
   // 全局过滤器的使用
