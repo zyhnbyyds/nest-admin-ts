@@ -1,4 +1,5 @@
-import { authSecret } from './../../../config/authTokenSecret';
+import { RoleService } from './../role/role.service';
+import { authSecret } from '../../../config';
 import { UserService } from './../user/user.service';
 import { Injectable } from '@nestjs/common';
 import { LoginFormParams } from './dto/login-auth.dto';
@@ -13,14 +14,23 @@ export class AuthService {
   constructor(
     private readonly userService: UserService,
     private readonly jwtService: JwtService,
+    private readonly roleService: RoleService,
   ) {}
   async login(loginParams: LoginFormParams) {
     const user = await this.userService.findOneByUserName(loginParams.userName);
+    const auths = await this.roleService.getAuthList(user.role.id, 'menus');
+    const authList: string[] = [];
+    auths.map((item) => {
+      if (item.apiPerms === '') return;
+      if (item.apiPerms === null) return;
+      authList.push(item.apiPerms);
+    });
     if (user && user.password === loginParams.password) {
       const payload = {
         userName: user.userName,
         userId: user.id,
-        authList: ['add', 'edit'],
+        roleId: user.role.id,
+        authList,
       };
       logger.info(`${user.userName} 上线了~`);
       return {

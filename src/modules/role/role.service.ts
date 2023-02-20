@@ -10,6 +10,7 @@ import { CreateRoleDto } from './dto/create-role.dto';
 import { UpdateRoleDto } from './dto/update-role.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { transformOriginMenu } from 'src/utils/menu/transformMenu';
 
 @Injectable()
 export class RoleService {
@@ -26,17 +27,18 @@ export class RoleService {
     if (res) {
       throw new ForbiddenException('角色名重复，请切换重试~');
     }
-    await this.roleRepository.save({
+    const rst = await this.roleRepository.save({
       ...createRoleDto,
       createdBy: req.user.userName,
     });
+    await this.roleSetAuth(rst.id, createRoleDto.checkedKeys);
     return null;
   }
 
   async findAll(searchQuery: SearchQuery) {
     const { pageNum, pageSize } = searchQuery;
     const [list, count] = await this.roleRepository.findAndCount({
-      skip: pageNum ? (pageNum - 1) * pageSize + 1 : undefined,
+      skip: pageNum ? (pageNum - 1) * searchQuery.pageSize : undefined,
       take: pageSize ? pageSize : undefined,
     });
     return { list, count };
@@ -44,7 +46,6 @@ export class RoleService {
 
   async findOne(id: number) {
     const res = await this.roleRepository.findOneBy({ id });
-
     if (!res) {
       throw new NotFoundException('未找到指定角色~');
     }
@@ -75,19 +76,46 @@ export class RoleService {
     }
   }
 
-  getAuthList(roleId: number) {
-    return this.roleRepository
+  async getAuthList(roleId: number, type?: 'menus' | 'menuIds') {
+    const res = await this.roleRepository
       .createQueryBuilder()
       .relation(Role, 'auths')
       .of(roleId)
       .loadMany();
+    return type === 'menus'
+      ? res
+      : res.map((item) => {
+          return item.id;
+        });
   }
 
   async roleSetAuth(roleId: number, authList: number[]) {
-    return await this.roleRepository
+    await this.findOne(roleId);
+    const authListIds = await this.getAuthList(roleId, 'menuIds');
+    for (let index = 0; index < authList.length; index++) {
+      await this.menuService.findOne(authList[index]);
+    }
+    // 为角色添加权限，先删除该角色下的权限，再重新添加
+    await this.roleRepository
+      .createQueryBuilder()
+      .relation(Role, 'auths')
+      .of(roleId)
+      .remove(authListIds);
+
+    await this.roleRepository
       .createQueryBuilder()
       .relation(Role, 'auths')
       .of(roleId)
       .add(authList);
+    return null;
+  }
+
+  async getMenuList(roleId: number) {
+    const res = await this.getAuthList(roleId, 'menuIds');
+    const rst = await this.menuService.findAll(1);
+    return {
+      routes: transformOriginMenu(rst.routes, res),
+      home: 'dashboard_analysis',
+    };
   }
 }

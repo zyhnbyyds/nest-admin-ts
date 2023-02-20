@@ -17,10 +17,13 @@ export class MenusList {
   parentId?: number;
   redirect?: string;
   parent: MenusList | null;
+  type: 'T' | 'M' | 'B';
+  apiPerms: string;
 }
 
 export function transformMenu(menu: MenusList[]) {
   return menu.map((item) => {
+    if (item === undefined) return undefined;
     const {
       title,
       icon,
@@ -33,6 +36,7 @@ export function transformMenu(menu: MenusList[]) {
       affix,
       multiTab,
       singleLayout,
+      type,
     } = item;
     const meta = {
       title,
@@ -46,6 +50,7 @@ export function transformMenu(menu: MenusList[]) {
       hide,
       href,
       affix,
+      type,
     };
     item.parentId = item.parent ? item.parent.id : 0;
     [
@@ -61,6 +66,7 @@ export function transformMenu(menu: MenusList[]) {
       'localIcon',
       'singleLayout',
       'parent',
+      'type',
     ].forEach((toRm) => {
       Reflect.deleteProperty(item, toRm);
     });
@@ -68,4 +74,22 @@ export function transformMenu(menu: MenusList[]) {
       item.children.length !== 0 ? transformMenu(item.children) : undefined;
     return { ...item, meta };
   });
+}
+
+export function transformOriginMenu(
+  menu: MenusList[],
+  targetMenuIds: number[],
+) {
+  menu.map((item, index) => {
+    const status = targetMenuIds.some((id) => {
+      return id === item.id;
+    });
+    if (!status) {
+      menu.splice(index, 1);
+    }
+    if (item.children && item.children.length !== 0) {
+      item.children = transformOriginMenu(item.children, targetMenuIds);
+    }
+  });
+  return menu;
 }

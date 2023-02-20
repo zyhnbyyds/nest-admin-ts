@@ -77,10 +77,11 @@ export class UserService {
 
   async findAll(searchQuery: SearchQuery) {
     const [list, count] = await this.userRepository.findAndCount({
-      skip: (searchQuery.pageNum - 1) * searchQuery.pageSize + 1,
+      skip: (searchQuery.pageNum - 1) * searchQuery.pageSize,
       take: searchQuery.pageSize,
       relations: ['role'],
     });
+
     const listAddRoleId = list.map((item) => {
       let roleId: number;
       item.role ? (roleId = item.role.id) : (roleId = 0);
@@ -105,7 +106,10 @@ export class UserService {
   }
 
   async findOneByUserName(userName: string) {
-    const res = await this.userRepository.findOneBy({ userName });
+    const res = await this.userRepository.findOne({
+      relations: ['role'],
+      where: { userName },
+    });
     if (!res) {
       throw new NotFoundException('未找到该用户信息');
     }

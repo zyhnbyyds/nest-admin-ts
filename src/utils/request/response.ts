@@ -23,7 +23,6 @@ export function TransformResponse(
     }
     return;
   }
-  console.log(ddd.toRunFnName);
 
   return ddd;
 }

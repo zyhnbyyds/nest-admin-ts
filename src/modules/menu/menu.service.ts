@@ -15,7 +15,6 @@ export class MenuService {
   ) {}
   /** 创建menu菜单 */
   async create(createMenuDto: CreateMenuDto, userName: string) {
-    // console.log(createMenuDto);
     let menuParent: Menu;
     if (createMenuDto.parentId != 0) {
       menuParent = await this.findOne(createMenuDto.parentId);
@@ -29,19 +28,14 @@ export class MenuService {
     if (menuParent) {
       menuChildren.parent = menuParent;
     }
-
-    try {
-      await this.menuRepository.save(menuChildren);
-    } catch (error) {
-      console.log(error);
-    }
-
+    await this.menuRepository.save(menuChildren);
     return null;
   }
 
-  async findAll() {
+  async findAll(depth?: number) {
     const res = await this.menuRepository.findTrees({
       relations: ['parent', 'children'],
+      depth,
     });
     if (res) {
       const result = transformMenu(res);

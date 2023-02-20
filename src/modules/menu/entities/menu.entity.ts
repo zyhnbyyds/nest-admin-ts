@@ -80,6 +80,12 @@ export class Menu {
   @Column({ nullable: true })
   redirect: string;
 
+  @Column({ nullable: true })
+  apiPerms: string;
+
+  @Column()
+  type: 'T' | 'M' | 'B';
+
   @CreateDateColumn({ name: 'create_time', nullable: true })
   createTime: Date;
 

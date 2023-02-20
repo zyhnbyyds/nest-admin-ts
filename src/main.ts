@@ -3,6 +3,7 @@ import { HttpExceptionFilter } from './filters/http-exception.filter';
 import { TransformInterceptor } from './intercepts/transform.interceptor';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
+// import { addLock, loseLock } from './utils/crypto';
 
 async function loadApp() {
   // 创建app实例
@@ -20,5 +21,7 @@ async function loadApp() {
   await app.listen(port);
 
   console.log(`启动在${port}...`);
+  // const res = await addLock('dasdasd');
+  // console.log(loseLock(res.pwd, res.key));
 }
 loadApp();

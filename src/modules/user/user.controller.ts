@@ -3,7 +3,6 @@ import {
   Get,
   Post,
   Body,
-  Param,
   Delete,
   Query,
   UseGuards,
@@ -20,13 +19,13 @@ import { Roles } from 'src/decorators/roles.decorator';
 import { RolesGuard } from 'src/guards/role.guard';
 
 @Controller('user')
-@UseGuards(AuthGuard('jwt'))
-@UseGuards(RolesGuard)
+@UseGuards(AuthGuard('jwt'), RolesGuard)
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
   @Post('/add')
   @HttpCode(200)
+  @Roles('user:add')
   create(@Body() createUserDto: CreateUserDto) {
     return this.userService.create(createUserDto);
   }
@@ -36,8 +35,8 @@ export class UserController {
     return await this.userService.userAddRole(addUserRole);
   }
 
-  @Roles('add')
   @Get('/list')
+  @Roles('user:check')
   findAll(@Query() searchQuery: SearchQuery) {
     return this.userService.findAll(searchQuery);
   }
@@ -52,21 +51,19 @@ export class UserController {
     return this.userService.getUserInfo(req.user.userName);
   }
 
-  @Get(':id')
-  findOneById(@Param('id') id: number) {
-    return this.userService.findOneById(+id);
-  }
-
+  @Roles('user:edit')
   @Put('/edit')
   update(@Body() updateUserDto: UpdateUserDto) {
     return this.userService.update(updateUserDto);
   }
 
+  @Roles('user:del')
   @Delete('/del')
   remove(@Query() query: { id: number }) {
     return this.userService.remove(query.id);
   }
 
+  @Roles('user:delMany')
   @Delete('/del/delMany')
   removeMany(@Query() query: { ids: number[] }) {
     return this.userService.removeMany(query.ids);
