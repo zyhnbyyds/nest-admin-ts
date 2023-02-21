@@ -1,6 +1,6 @@
 import { TransformInterceptor } from './intercepts/transform.interceptor';
 import { Module, UseInterceptors } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
 import { AppController } from './app.controller';
@@ -11,20 +11,37 @@ import { RoleModule } from './modules/role/role.module';
 import { MenuModule } from './modules/menu/menu.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { UploadModule } from './modules/upload/upload.module';
+import { handleEnvFilePath, handleValidationSchema } from './utils/envConfig';
+import loadEnv from '../config/configuration';
 
 @UseInterceptors(TransformInterceptor)
 @Module({
   imports: [
-    ConfigModule.forRoot({ isGlobal: true, envFilePath: ['.development.env'] }),
-    TypeOrmModule.forRoot({
-      host: process.env.DATABASE_HOST,
-      type: 'mysql',
-      username: process.env.DATABASE_USER,
-      password: process.env.DATABASE_PASSWORD,
-      port: parseInt(process.env.DATABASE_PORT, 10),
-      database: process.env.DATABASE_NAME,
-      synchronize: true,
-      autoLoadEntities: true,
+    ConfigModule.forRoot({
+      isGlobal: true,
+      ignoreEnvFile: false,
+      envFilePath: handleEnvFilePath(),
+      load: [loadEnv],
+      validationSchema: handleValidationSchema(),
+      validationOptions: {
+        allowUnknown: true,
+        abortEarly: true,
+      },
+    }),
+    TypeOrmModule.forRootAsync({
+      useFactory: (config: ConfigService) => {
+        return {
+          host: config.get<string>('database.host'),
+          type: 'mysql',
+          username: config.get<string>('database.user'),
+          password: config.get<string>('database.password'),
+          port: config.get<number>('database.port'),
+          database: config.get<string>('database.name'),
+          synchronize: true,
+          autoLoadEntities: true,
+        };
+      },
+      inject: [ConfigService],
     }),
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, '../../', 'docs'),

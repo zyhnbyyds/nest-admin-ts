@@ -3,6 +3,7 @@ import { HttpExceptionFilter } from './filters/http-exception.filter';
 import { TransformInterceptor } from './intercepts/transform.interceptor';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
+import { ConfigService } from '@nestjs/config';
 // import { addLock, loseLock } from './utils/crypto';
 
 async function loadApp() {
@@ -10,8 +11,9 @@ async function loadApp() {
   const app = await NestFactory.create(AppModule, {
     logger: ['log'],
   });
-  const port = parseInt(process.env.SERVER_PORT, 10);
 
+  const configService = app.get(ConfigService);
+  const port = configService.get<number>('server.port');
   // 全局拦截器的使用
   app.useGlobalInterceptors(new TransformInterceptor());
   // 全局过滤器的使用
@@ -21,7 +23,5 @@ async function loadApp() {
   await app.listen(port);
 
   console.log(`启动在${port}...`);
-  // const res = await addLock('dasdasd');
-  // console.log(loseLock(res.pwd, res.key));
 }
 loadApp();
