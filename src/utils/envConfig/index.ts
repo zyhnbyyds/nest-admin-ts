@@ -1,12 +1,13 @@
 import * as Joi from 'joi';
 
 export function handleEnvFilePath() {
-  const isDev = process.env.NEST_ENVIRONMENT === 'env';
+  const isDev = process.env.NEST_ENVIRONMENT === 'dev';
   const envFilePath = ['.env'];
   isDev
     ? envFilePath.unshift('.env.development')
     : envFilePath.unshift('.env.production');
   console.log(envFilePath);
+
   return envFilePath;
 }
 
