@@ -11,7 +11,8 @@ import { RoleModule } from './modules/role/role.module';
 import { MenuModule } from './modules/menu/menu.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { UploadModule } from './modules/upload/upload.module';
-import { handleEnvFilePath, handleValidationSchema } from './utils/envConfig';
+import { handleEnvFilePath, handleValidationSchema } from './utils/env';
+import { TestModule } from './modules/test/test.module';
 import loadEnv from '../config/configuration';
 
 @UseInterceptors(TransformInterceptor)
@@ -52,6 +53,7 @@ import loadEnv from '../config/configuration';
     MenuModule,
     AuthModule,
     UploadModule,
+    TestModule,
   ],
   controllers: [AppController],
   providers: [AppService],

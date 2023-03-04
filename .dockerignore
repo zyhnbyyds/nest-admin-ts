@@ -1,15 +1,10 @@
-node_modules
+/node_modules
+/dist
 .DS_Store
-dist
 .npmrc
 .cache
 
 tests/*
-
-# local env files
-.env.development
-.env.production
-.env
 
 # Log files
 npm-debug.log*

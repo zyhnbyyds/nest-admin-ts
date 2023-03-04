@@ -1,4 +1,4 @@
-import * as Joi from 'joi';
+import Joi from 'joi';
 
 export function handleEnvFilePath() {
   const isDev = process.env.NEST_ENVIRONMENT === 'dev';
@@ -6,8 +6,6 @@ export function handleEnvFilePath() {
   isDev
     ? envFilePath.unshift('.env.development')
     : envFilePath.unshift('.env.production');
-  console.log(envFilePath);
-
   return envFilePath;
 }
 

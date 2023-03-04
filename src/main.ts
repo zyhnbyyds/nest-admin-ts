@@ -21,7 +21,6 @@ async function loadApp() {
   app.useGlobalFilters(new HttpExceptionFilter());
 
   await app.listen(port);
-
   console.log(`启动在${port}...`);
 }
 loadApp();
