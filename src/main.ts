@@ -20,6 +20,8 @@ async function loadApp() {
   app.useGlobalFilters(new AllExceptionsFilter());
   app.useGlobalFilters(new HttpExceptionFilter());
 
+  app.enableCors();
+
   await app.listen(port);
   console.log(`启动在${port}...`);
 }

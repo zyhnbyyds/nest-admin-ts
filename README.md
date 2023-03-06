@@ -12,6 +12,10 @@ pnpm install
 pnpm start:dev
 ```
 
+## 演示站
+
+<http://43.142.110.17:3000>
+
 ## 对接的前端界面地址
 
 <https://github.com/zhang771/soybean-admin>
