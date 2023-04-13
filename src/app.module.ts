@@ -13,6 +13,7 @@ import { AuthModule } from './modules/auth/auth.module';
 import { UploadModule } from './modules/upload/upload.module';
 import { handleEnvFilePath, handleValidationSchema } from './utils/env';
 import { TestModule } from './modules/test/test.module';
+import { WeixinModule } from './modules/weixin/weixin.module';
 import loadEnv from '../config/configuration';
 
 @UseInterceptors(TransformInterceptor)
@@ -54,6 +55,7 @@ import loadEnv from '../config/configuration';
     AuthModule,
     UploadModule,
     TestModule,
+    WeixinModule,
   ],
   controllers: [AppController],
   providers: [AppService],
