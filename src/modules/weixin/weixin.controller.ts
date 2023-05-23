@@ -1,4 +1,12 @@
-import { Controller, Get, Query } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  HttpStatus,
+  Post,
+  Query,
+  Req,
+  Res,
+} from '@nestjs/common';
 import { WeixinService } from './weixin.service';
 
 @Controller('weixin')
@@ -15,8 +23,18 @@ export class WeixinController {
       nonce: string;
       echostr: string;
     },
+    @Res() res: any,
   ) {
-    console.log(await this.weixinService.validateWeiXin(query));
-    return await this.weixinService.validateWeiXin(query);
+    const echostr = await this.weixinService.validateWeiXin(query);
+    res
+      .status(HttpStatus.OK)
+      .setHeader('Content-Type', 'text/plain')
+      .send(echostr);
+  }
+
+  @Post('/vedilate')
+  async getMessage(@Query() query: { openid: string }, @Req() body: any) {
+    console.log(query, body);
+    return '';
   }
 }

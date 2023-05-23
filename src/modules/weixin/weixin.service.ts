@@ -16,9 +16,10 @@ export class WeixinService {
       .update([this.token, timestamp, nonce].sort().join(''))
       .digest('hex');
     if (signature === hash) {
+      console.log(Number(echostr), echostr);
       return echostr;
     } else {
-      return false;
+      return '校验失败';
     }
   }
 }

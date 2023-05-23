@@ -30,6 +30,11 @@ export class TransformInterceptor implements NestInterceptor {
     const req = host.getRequest<Request>();
     const res = host.getResponse<Response>();
     const startTime = Date.now();
+
+    if (req.url === '/weixin/vedilate') {
+      return next.handle();
+    }
+
     if (res.statusCode === HttpStatus.CREATED && req.method === 'POST') {
       return next.handle().pipe(
         map((data) => {
