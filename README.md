@@ -1,6 +1,10 @@
 ## 基于 NestJs 的后台管理系统
 
-    包含基本的用户、角色。 登录身份认证(jwt)。
+包含基本的用户、角色。 登录身份认证(jwt)。
+
+## 数据库数据
+
+[百度网盘](https://pan.baidu.com/s/1OFmt-ec6v3QjVzpj3RiX9g?pwd=6666)
 
 ## 运行方式
 
