@@ -18,7 +18,7 @@ pnpm start:dev
 
 ## 对接的前端界面地址
 
-<https://github.com/zhang771/soybean-admin>
+<https://github.com/zhang771/NestAdmin-Soybean.git>
 
 ## 接口文档地址(ApiFox)
 
