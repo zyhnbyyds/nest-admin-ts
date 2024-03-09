@@ -2,5 +2,8 @@
   "files.exclude": {
     "**/.git": false
   },
-  "eslint.format.enable": true
+  "eslint.format.enable": true,
+  "cSpell.words": [
+    "echostr"
+  ]
 }
