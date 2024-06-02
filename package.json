@@ -30,7 +30,7 @@
     "cross-env": "^7.0.3",
     "log4js": "^6.9.1",
     "mysql2": "^3.5.2",
-    "passport": "^0.6.0",
+    "passport": "^0.7.0",
     "passport-jwt": "^4.0.1",
     "passport-local": "^1.0.0",
     "reflect-metadata": "^0.1.13",
