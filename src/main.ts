@@ -4,7 +4,6 @@ import { TransformInterceptor } from './intercepts/transform.interceptor';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ConfigService } from '@nestjs/config';
-// import { addLock, loseLock } from './utils/crypto';
 
 async function loadApp() {
   // 创建app实例
