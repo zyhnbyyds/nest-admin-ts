@@ -78,7 +78,7 @@ devDependencies:
     version: 10.4.1(@nestjs/common@10.4.1)(@nestjs/core@10.4.1)(@nestjs/platform-express@10.4.1)
   '@rspack/cli':
     specifier: ^1.0.5
-    version: 1.0.5(@rspack/core@1.0.5)(@types/express@4.17.21)(webpack@5.94.0)
+    version: 1.0.7(@rspack/core@1.0.5)(@types/express@4.17.21)(webpack@5.94.0)
   '@rspack/core':
     specifier: ^1.0.5
     version: 1.0.5
@@ -1306,8 +1306,8 @@ packages:
     engines: {node: ^12.20.0 || ^14.18.0 || >=16.0.0}
     dev: true
 
-  /@polka/url@1.0.0-next.25:
-    resolution: {integrity: sha512-j7P6Rgr3mmtdkeDGTe0E/aYyWEWVtc5yFXtHCRHs28/jptDEWfaVOc5T7cblqy1XKPPfCxJc/8DwQ5YgLOZOVQ==}
+  /@polka/url@1.0.0-next.28:
+    resolution: {integrity: sha512-8LduaNlMZGwdZ6qWrKlfa+2M4gahzFkprZiAt2TF8uS0qQgBizKXpXURqvTJ4WtmupWxaLqjRb2UCTe72mu+Aw==}
     dev: true
 
   /@rspack/binding-darwin-arm64@1.0.5:
@@ -1400,8 +1400,8 @@ packages:
       '@rspack/binding-win32-x64-msvc': 1.0.5
     dev: true
 
-  /@rspack/cli@1.0.5(@rspack/core@1.0.5)(@types/express@4.17.21)(webpack@5.94.0):
-    resolution: {integrity: sha512-isueSvkwUyO2dO3MkiUfonblm5fxLP1F7YL7YUjT2cLzY1CG3Pdg3wA1dLNyDlcidmswnfG5+GS1NthwFjEL0Q==}
+  /@rspack/cli@1.0.7(@rspack/core@1.0.5)(@types/express@4.17.21)(webpack@5.94.0):
+    resolution: {integrity: sha512-FreZB+1nGO15S4yKmUznVZ/4BlQrwfau9TUi5huQ4kZaKCN3cC91VoEu4Pp7C81Oin/S17FP4Qqtc3dEWrr70A==}
     hasBin: true
     peerDependencies:
       '@rspack/core': ^1.0.0-alpha || ^1.x
@@ -5279,8 +5279,8 @@ packages:
       fs-monkey: 1.0.6
     dev: true
 
-  /memfs@4.11.1:
-    resolution: {integrity: sha512-LZcMTBAgqUUKNXZagcZxvXXfgF1bHX7Y7nQ0QyEiNbRJgE29GhgPd8Yna1VQcLlPiHt/5RFJMWYN9Uv/VPNvjQ==}
+  /memfs@4.12.0:
+    resolution: {integrity: sha512-74wDsex5tQDSClVkeK1vtxqYCAgCoXxx+K4NSHzgU/muYVYByFqa+0RnrPO9NM6naWm1+G9JmZ0p6QHhXmeYfA==}
     engines: {node: '>= 4.0.0'}
     dependencies:
       '@jsonjoy.com/json-pack': 1.1.0(tslib@2.7.0)
@@ -6400,7 +6400,7 @@ packages:
     resolution: {integrity: sha512-JuLThK3TnZG1TAKDwNIqNq6QA2afLOCcm+iE8D1Kj3GA40pSPsxQjjJl0J8X3tsR7T+CP1GavpzLwYkgVLWrZQ==}
     engines: {node: '>= 10'}
     dependencies:
-      '@polka/url': 1.0.0-next.25
+      '@polka/url': 1.0.0-next.28
       mrmime: 1.0.1
       totalist: 1.1.0
     dev: true
@@ -7194,7 +7194,7 @@ packages:
         optional: true
     dependencies:
       colorette: 2.0.19
-      memfs: 4.11.1
+      memfs: 4.12.0
       mime-types: 2.1.35
       on-finished: 2.4.1
       range-parser: 1.2.1
