@@ -19,4 +19,6 @@ export class AuthController {
     try { return await this.authService.refresh(refreshSchema.parse(body).refreshToken); }
     catch { throw new UnauthorizedException('Refresh token is invalid or expired'); }
   }
+  @Post('logout') @HttpCode(200)
+  async logout(@Body() body: unknown) { await this.authService.logout(refreshSchema.parse(body).refreshToken); return { success: true }; }
 }

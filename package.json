@@ -5,7 +5,10 @@
   "private": true,
   "license": "MIT",
   "packageManager": "bun@1.4.0",
-  "engines": { "node": ">=24", "bun": ">=1.4" },
+  "engines": {
+    "node": ">=24",
+    "bun": ">=1.4"
+  },
   "scripts": {
     "dev": "nest start --watch",
     "dev:bun": "bun --watch src/main.ts",
@@ -37,6 +40,7 @@
     "@nestjs/swagger": "^11.4.7",
     "argon2": "^0.45.1",
     "drizzle-orm": "^0.45.2",
+    "ioredis": "^6.0.0",
     "jose": "^6.2.10",
     "mysql2": "^3.24.2",
     "pino": "^10.3.1",

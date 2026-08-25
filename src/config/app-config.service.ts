@@ -15,6 +15,7 @@ export class AppConfigService {
   get port(): number { return this.values.PORT; }
   get apiPrefix(): string { return this.values.API_PREFIX; }
   get databaseUrl(): string { return this.values.DATABASE_URL; }
+  get redisUrl(): string | undefined { return this.values.REDIS_URL; }
   get corsOrigins(): string[] { return this.values.CORS_ORIGINS.split(',').map((value) => value.trim()); }
   get environment(): AppEnvironment['NODE_ENV'] { return this.values.NODE_ENV; }
   get jwt(): Pick<AppEnvironment, 'JWT_ISSUER' | 'JWT_AUDIENCE' | 'JWT_ACCESS_SECRET' | 'JWT_REFRESH_SECRET' | 'JWT_ACCESS_TTL' | 'JWT_REFRESH_TTL'> {

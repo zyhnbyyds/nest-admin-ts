@@ -6,6 +6,7 @@ import { createHash } from 'node:crypto';
 import { AppConfigService } from '../../config/app-config.service.js';
 import { DatabaseService } from '../../database/database.service.js';
 import { loginLogs, menus, refreshTokens, roleMenus, roles, userRoles, users } from '../../database/schema/index.js';
+import { OnlineService } from '../monitor/online/online.service.js';
 
 type LoginInput = { username: string; password: string };
 type LoginMeta = { ip?: string | undefined; userAgent?: string | undefined };
@@ -13,7 +14,7 @@ type Claims = { sub: string; username: string; permissions: string[]; roles: str
 
 @Injectable()
 export class AuthService {
-  constructor(private readonly database: DatabaseService, private readonly config: AppConfigService) {}
+  constructor(private readonly database: DatabaseService, private readonly config: AppConfigService, private readonly online: OnlineService) {}
 
   async login(input: LoginInput, meta: LoginMeta = {}): Promise<{ accessToken: string; refreshToken: string; tokenType: 'Bearer'; expiresIn: string }> {
     const [user] = await this.database.db.select().from(users).where(and(eq(users.username, input.username), isNull(users.deletedAt))).limit(1);
@@ -22,7 +23,24 @@ export class AuthService {
       throw new UnauthorizedException('Invalid username or password');
     }
     await this.recordLogin({ userId: user.id, username: user.username, ip: meta.ip, userAgent: meta.userAgent, status: 'success' });
-    return this.issueTokens(user.id, user.username);
+    const tokens = await this.issueTokens(user.id, user.username);
+    await this.online.track({ userId: user.id, username: user.username, ip: meta.ip ?? null, userAgent: meta.userAgent ?? null, loginAt: new Date().toISOString() }, durationSeconds(this.config.jwt.JWT_REFRESH_TTL));
+    return tokens;
+  }
+
+  async logout(rawToken: string): Promise<void> {
+    let userId: number | undefined;
+    try {
+      const secret = new TextEncoder().encode(this.config.jwt.JWT_REFRESH_SECRET);
+      const { payload } = await jwtVerify(rawToken, secret, { issuer: this.config.jwt.JWT_ISSUER, audience: this.config.jwt.JWT_AUDIENCE });
+      const candidate = Number(payload.sub);
+      if (Number.isSafeInteger(candidate)) userId = candidate;
+    } catch {
+      /* an invalid refresh token is tolerated on logout */
+    }
+    const [stored] = await this.database.db.select().from(refreshTokens).where(eq(refreshTokens.tokenHash, hashToken(rawToken))).limit(1);
+    if (stored && stored.revokedAt === null) await this.database.db.update(refreshTokens).set({ revokedAt: new Date() }).where(eq(refreshTokens.id, stored.id));
+    if (userId !== undefined) await this.online.remove(userId);
   }
 
   private async recordLogin(entry: { userId?: number | null | undefined; username: string; ip?: string | undefined; userAgent?: string | undefined; status: 'success' | 'failure'; message?: string | undefined }): Promise<void> {
@@ -68,3 +86,4 @@ export class AuthService {
 }
 function hashToken(token: string): string { return createHash('sha256').update(token).digest('hex'); }
 function durationMs(value: string): number { const match = /^(\d+)([smhd])$/.exec(value); if (!match) return 7 * 86_400_000; const amount = Number(match[1]); return amount * ({ s: 1_000, m: 60_000, h: 3_600_000, d: 86_400_000 }[match[2] as 's' | 'm' | 'h' | 'd']); }
+function durationSeconds(value: string): number { return Math.floor(durationMs(value) / 1000); }
