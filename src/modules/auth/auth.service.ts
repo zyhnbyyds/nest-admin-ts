@@ -42,9 +42,11 @@ export class AuthService {
   }
 
   private async getClaims(userId: number, username: string): Promise<Claims> {
-    const assignments = await this.database.db.select({ key: roles.key }).from(userRoles).innerJoin(roles, eq(userRoles.roleId, roles.id)).where(eq(userRoles.userId, userId));
+    const assignments = await this.database.db.select({ key: roles.key, isSystem: roles.isSystem }).from(userRoles).innerJoin(roles, eq(userRoles.roleId, roles.id)).where(eq(userRoles.userId, userId));
     const permissions = await this.database.db.select({ permission: menus.permission }).from(userRoles).innerJoin(roleMenus, eq(userRoles.roleId, roleMenus.roleId)).innerJoin(menus, eq(roleMenus.menuId, menus.id)).where(eq(userRoles.userId, userId));
-    return { sub: String(userId), username, roles: assignments.map((item) => item.key), permissions: permissions.flatMap((item) => item.permission ? [item.permission] : []) };
+    const isSuperAdmin = assignments.some((item) => item.isSystem || item.key === 'admin');
+    const resolved = isSuperAdmin ? ['*:*:*'] : permissions.flatMap((item) => item.permission ? [item.permission] : []);
+    return { sub: String(userId), username, roles: assignments.map((item) => item.key), permissions: resolved };
   }
 
   private async sign(payload: Record<string, unknown>, secret: string, expiresIn: string): Promise<string> {
