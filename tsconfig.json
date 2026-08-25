@@ -1,28 +1,12 @@
 {
   "compilerOptions": {
-    "module": "NodeNext",
-    "moduleResolution": "NodeNext",
-    "declaration": true,
-    "removeComments": true,
-    "esModuleInterop": true,
-    "emitDecoratorMetadata": true,
-    "experimentalDecorators": true,
-    "allowSyntheticDefaultImports": true,
-    "target": "ESNext",
-    "lib": ["ESNext"],
-    "sourceMap": true,
-    "outDir": "./dist",
-    "baseUrl": "./",
-    "incremental": true,
-    "skipLibCheck": true,
-    "strictNullChecks": false,
-    "noImplicitAny": false,
-    "strictBindCallApply": false,
-    "forceConsistentCasingInFileNames": false,
-    "noFallthroughCasesInSwitch": false
+    "module": "NodeNext", "moduleResolution": "NodeNext", "target": "ES2024", "lib": ["ES2024"],
+    "strict": true, "noUncheckedIndexedAccess": true, "exactOptionalPropertyTypes": true,
+    "noImplicitOverride": true, "experimentalDecorators": true, "emitDecoratorMetadata": true,
+    "esModuleInterop": true, "allowSyntheticDefaultImports": true, "declaration": true,
+    "sourceMap": true, "outDir": "./dist", "baseUrl": ".", "paths": { "@/*": ["src/*"] },
+    "skipLibCheck": true, "forceConsistentCasingInFileNames": true
   },
-  "paths": {
-    "@/*": ["src/*"]
-  },
-  "exclude": ["node_modules", "dist"]
+  "include": ["src/**/*.ts", "drizzle.config.ts"],
+  "exclude": ["node_modules", "dist", "src/app.controller.ts", "src/app.service.ts", "src/decorators/**", "src/filters/**", "src/guards/**", "src/intercepts/**", "src/modules/**", "src/utils/**"]
 }

@@ -1,60 +1,55 @@
-import { RoleService } from './../role/role.service';
-import { authSecret } from '../../../config';
-import { UserService } from './../user/user.service';
-import { Injectable } from '@nestjs/common';
-import { LoginFormParams } from './dto/login-auth.dto';
-import { JwtService } from '@nestjs/jwt';
-import * as log4js from 'log4js';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
+import * as argon2 from 'argon2';
+import { and, eq, isNull } from 'drizzle-orm';
+import { SignJWT, jwtVerify } from 'jose';
+import { createHash } from 'node:crypto';
+import { AppConfigService } from '../../config/app-config.service.js';
+import { DatabaseService } from '../../database/database.service.js';
+import { menus, refreshTokens, roleMenus, roles, userRoles, users } from '../../database/schema/index.js';
 
-const logger = log4js.getLogger();
-logger.level = 'all';
+type LoginInput = { username: string; password: string };
+type Claims = { sub: string; username: string; permissions: string[]; roles: string[] };
 
 @Injectable()
 export class AuthService {
-  constructor(
-    private readonly userService: UserService,
-    private readonly jwtService: JwtService,
-    private readonly roleService: RoleService,
-  ) {}
-  async login(loginParams: LoginFormParams) {
-    const user = await this.userService.findOneByUserName(loginParams.userName);
-    const auths = await this.roleService.getAuthList(user.role.id, 'menus');
-    const authList: string[] = [];
-    auths.map((item) => {
-      if (item.apiPerms === '') return;
-      if (item.apiPerms === null) return;
-      authList.push(item.apiPerms);
-    });
-    if (user && user.password === loginParams.password) {
-      const payload = {
-        userName: user.userName,
-        userId: user.id,
-        roleId: user.role.id,
-        authList,
-      };
-      logger.info(`${user.userName} 上线了~`);
-      return {
-        refreshToken: this.jwtService.sign(payload, {
-          expiresIn: '8d',
-        }),
-        token: this.jwtService.sign(payload),
-      };
-    }
-    return null;
+  constructor(private readonly database: DatabaseService, private readonly config: AppConfigService) {}
+
+  async login(input: LoginInput): Promise<{ accessToken: string; refreshToken: string; tokenType: 'Bearer'; expiresIn: string }> {
+    const [user] = await this.database.db.select().from(users).where(and(eq(users.username, input.username), isNull(users.deletedAt))).limit(1);
+    if (!user || user.status !== 'active' || !(await argon2.verify(user.passwordHash, input.password))) throw new UnauthorizedException('Invalid username or password');
+    return this.issueTokens(user.id, user.username);
   }
 
-  async refreshToken(refreshToken: string) {
-    const res = await this.jwtService.verify(refreshToken, {
-      secret: authSecret.secret,
-    });
+  async refresh(rawToken: string): Promise<{ accessToken: string; refreshToken: string; tokenType: 'Bearer'; expiresIn: string }> {
+    const secret = new TextEncoder().encode(this.config.jwt.JWT_REFRESH_SECRET);
+    const { payload } = await jwtVerify(rawToken, secret, { issuer: this.config.jwt.JWT_ISSUER, audience: this.config.jwt.JWT_AUDIENCE });
+    const userId = Number(payload.sub);
+    if (!Number.isSafeInteger(userId)) throw new UnauthorizedException();
+    const [stored] = await this.database.db.select().from(refreshTokens).where(and(eq(refreshTokens.tokenHash, hashToken(rawToken)), isNull(refreshTokens.revokedAt))).limit(1);
+    if (!stored || stored.expiresAt <= new Date()) throw new UnauthorizedException();
+    await this.database.db.update(refreshTokens).set({ revokedAt: new Date() }).where(eq(refreshTokens.id, stored.id));
+    const [user] = await this.database.db.select().from(users).where(and(eq(users.id, userId), isNull(users.deletedAt))).limit(1);
+    if (!user || user.status !== 'active') throw new UnauthorizedException();
+    return this.issueTokens(user.id, user.username);
+  }
 
-    if (res) {
-      const user = await this.userService.findOneByUserName(res.userName);
-      return await this.login({
-        userName: user.userName,
-        password: user.password,
-      });
-    }
-    return null;
+  private async issueTokens(userId: number, username: string): Promise<{ accessToken: string; refreshToken: string; tokenType: 'Bearer'; expiresIn: string }> {
+    const claims = await this.getClaims(userId, username);
+    const accessToken = await this.sign(claims, this.config.jwt.JWT_ACCESS_SECRET, this.config.jwt.JWT_ACCESS_TTL);
+    const refreshToken = await this.sign({ sub: claims.sub }, this.config.jwt.JWT_REFRESH_SECRET, this.config.jwt.JWT_REFRESH_TTL);
+    await this.database.db.insert(refreshTokens).values({ userId, tokenHash: hashToken(refreshToken), expiresAt: new Date(Date.now() + durationMs(this.config.jwt.JWT_REFRESH_TTL)) });
+    return { accessToken, refreshToken, tokenType: 'Bearer', expiresIn: this.config.jwt.JWT_ACCESS_TTL };
+  }
+
+  private async getClaims(userId: number, username: string): Promise<Claims> {
+    const assignments = await this.database.db.select({ key: roles.key }).from(userRoles).innerJoin(roles, eq(userRoles.roleId, roles.id)).where(eq(userRoles.userId, userId));
+    const permissions = await this.database.db.select({ permission: menus.permission }).from(userRoles).innerJoin(roleMenus, eq(userRoles.roleId, roleMenus.roleId)).innerJoin(menus, eq(roleMenus.menuId, menus.id)).where(eq(userRoles.userId, userId));
+    return { sub: String(userId), username, roles: assignments.map((item) => item.key), permissions: permissions.flatMap((item) => item.permission ? [item.permission] : []) };
+  }
+
+  private async sign(payload: Record<string, unknown>, secret: string, expiresIn: string): Promise<string> {
+    return new SignJWT(payload).setProtectedHeader({ alg: 'HS256' }).setIssuedAt().setIssuer(this.config.jwt.JWT_ISSUER).setAudience(this.config.jwt.JWT_AUDIENCE).setExpirationTime(expiresIn).sign(new TextEncoder().encode(secret));
   }
 }
+function hashToken(token: string): string { return createHash('sha256').update(token).digest('hex'); }
+function durationMs(value: string): number { const match = /^(\d+)([smhd])$/.exec(value); if (!match) return 7 * 86_400_000; const amount = Number(match[1]); return amount * ({ s: 1_000, m: 60_000, h: 3_600_000, d: 86_400_000 }[match[2] as 's' | 'm' | 'h' | 'd']); }

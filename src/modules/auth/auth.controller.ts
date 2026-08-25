@@ -1,25 +1,18 @@
-import { Controller, Post, Body, HttpCode, Get, Req } from '@nestjs/common';
-import { AuthService } from './auth.service';
-import { LoginFormParams } from './dto/login-auth.dto';
+import { Body, Controller, HttpCode, Post, UnauthorizedException } from '@nestjs/common';
+import { z } from 'zod';
+import { AuthService } from './auth.service.js';
+
+const loginSchema = z.object({ username: z.string().min(1).max(64), password: z.string().min(8).max(128) });
+const refreshSchema = z.object({ refreshToken: z.string().min(1) });
 
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
-
-  @HttpCode(200)
-  @Post('/login')
-  async login(@Body() createAuthDto: LoginFormParams) {
-    return this.authService.login(createAuthDto);
-  }
-
-  @Post('/updateToken')
-  async refreshToken(@Body() updateToken: { refreshToken: string }) {
-    return this.authService.refreshToken(updateToken.refreshToken);
-  }
-
-  @Get('list')
-  @HttpCode(200)
-  getAuthList(@Req() req: any) {
-    console.log(req.user);
+  @Post('login') @HttpCode(200)
+  async login(@Body() body: unknown) { return this.authService.login(loginSchema.parse(body)); }
+  @Post('refresh') @HttpCode(200)
+  async refresh(@Body() body: unknown) {
+    try { return await this.authService.refresh(refreshSchema.parse(body).refreshToken); }
+    catch { throw new UnauthorizedException('Refresh token is invalid or expired'); }
   }
 }

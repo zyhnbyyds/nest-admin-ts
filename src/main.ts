@@ -1,27 +1,22 @@
-import { AllExceptionsFilter } from './filters/all-exceptions.filter';
-import { HttpExceptionFilter } from './filters/http-exception.filter';
-import { TransformInterceptor } from './intercepts/transform.interceptor';
+import 'reflect-metadata';
+import { Logger } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
-import { AppModule } from './app.module';
-import { ConfigService } from '@nestjs/config';
+import { FastifyAdapter, NestFastifyApplication } from '@nestjs/platform-fastify';
+import helmet from '@fastify/helmet';
+import rateLimit from '@fastify/rate-limit';
+import { AppModule } from './app.module.js';
+import { AppConfigService } from './config/app-config.service.js';
 
-async function loadApp() {
-  // 创建app实例
-  const app = await NestFactory.create(AppModule, {
-    logger: ['log'],
-  });
-
-  const configService = app.get(ConfigService);
-  const port = configService.get<number>('server.port');
-  // 全局拦截器的使用
-  app.useGlobalInterceptors(new TransformInterceptor());
-  // 全局过滤器的使用
-  app.useGlobalFilters(new AllExceptionsFilter());
-  app.useGlobalFilters(new HttpExceptionFilter());
-
-  app.enableCors();
-
-  await app.listen(port);
-  console.log(`启动在${port}...`);
+async function bootstrap(): Promise<void> {
+  const app = await NestFactory.create<NestFastifyApplication>(AppModule, new FastifyAdapter({ logger: true }));
+  const config = app.get(AppConfigService);
+  await app.register(helmet);
+  await app.register(rateLimit, { max: 100, timeWindow: '1 minute' });
+  app.enableCors({ origin: config.corsOrigins, credentials: true });
+  app.setGlobalPrefix(config.apiPrefix);
+  app.enableShutdownHooks();
+  await app.listen({ port: config.port, host: '0.0.0.0' });
+  Logger.log(`API listening on ${config.port}`, 'Bootstrap');
 }
-loadApp();
+
+void bootstrap();

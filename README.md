@@ -1,25 +1,33 @@
-## 基于 NestJs 的后台管理系统
+# RuoYi Nest Admin
 
-包含基本的用户、角色。 登录身份认证(jwt)。
+RuoYi-inspired administration API, rebuilt with NestJS 11, Fastify, Drizzle ORM and MySQL.
 
-## 数据库数据
+## Runtime
 
-[百度网盘](https://pan.baidu.com/s/1OFmt-ec6v3QjVzpj3RiX9g?pwd=6666)
+- Node.js 24 or newer is the production baseline.
+- Bun 1.4 or newer is supported for installation, development and test execution.
+- MySQL 8 is required. Redis is required when the cache, session and job modules are enabled.
 
-## 运行方式
+## Quick start
 
+```bash
+cp .env.example .env
+bun install
+bun run db:migrate
+SEED_ADMIN_PASSWORD=change-me-now bun run db:seed
+bun run dev
 ```
-pnpm install
+
+The API health endpoint is `GET /api/v1/health`.
+
+## Database workflow
+
+Schema definitions live in `src/database/schema`. Never use automatic schema synchronization.
+
+```bash
+bun run db:generate
+bun run db:migrate
+bun run db:seed
 ```
 
-```
-pnpm start:dev
-```
-
-## 对接的前端界面地址
-
-<https://github.com/zhang771/NestAdmin-Soybean.git>
-
-## 接口文档地址(ApiFox)
-
-<https://www.apifox.cn/apidoc/shared-db747bb9-d703-4064-bfbb-e5be3d1bc9d4>
+`db:push` is intentionally absent: production schema changes must be reviewed SQL migrations.
