@@ -24,6 +24,7 @@ import { CacheModule } from './modules/monitor/cache/cache.module.js';
 import { JobsModule } from './modules/jobs/jobs.module.js';
 import { FilesModule } from './modules/files/files.module.js';
 import { GeneratorModule } from './modules/generator/generator.module.js';
+import { CompatModule } from './modules/compat/compat.module.js';
 
-@Module({ imports: [ConfigModule.forRoot({ isGlobal: true }), ScheduleModule.forRoot(), AppConfigModule, DatabaseModule, RedisModule, HealthModule, AuthModule, UsersModule, RolesModule, MenusModule, DeptsModule, PostsModule, DictTypesModule, DictDataModule, ConfigsModule, LoginLogsModule, OperationLogsModule, OnlineModule, CacheModule, JobsModule, FilesModule, GeneratorModule], providers: [{ provide: APP_GUARD, useClass: AccessTokenGuard }, { provide: APP_INTERCEPTOR, useClass: OperationLogInterceptor }] })
+@Module({ imports: [ConfigModule.forRoot({ isGlobal: true }), ScheduleModule.forRoot(), AppConfigModule, DatabaseModule, RedisModule, HealthModule, AuthModule, UsersModule, RolesModule, MenusModule, DeptsModule, PostsModule, DictTypesModule, DictDataModule, ConfigsModule, LoginLogsModule, OperationLogsModule, OnlineModule, CacheModule, JobsModule, FilesModule, GeneratorModule, CompatModule], providers: [{ provide: APP_GUARD, useClass: AccessTokenGuard }, { provide: APP_INTERCEPTOR, useClass: OperationLogInterceptor }] })
 export class AppModule {}
