@@ -7,6 +7,7 @@ import { DatabaseModule } from './database/database.module.js';
 import { AuthModule } from './modules/auth/auth.module.js';
 import { AccessTokenGuard } from './common/auth/access-token.guard.js';
 import { UsersModule } from './modules/system/users/users.module.js';
+import { RolesModule } from './modules/system/roles/roles.module.js';
 
-@Module({ imports: [ConfigModule.forRoot({ isGlobal: true }), AppConfigModule, DatabaseModule, HealthModule, AuthModule, UsersModule], providers: [{ provide: APP_GUARD, useClass: AccessTokenGuard }] })
+@Module({ imports: [ConfigModule.forRoot({ isGlobal: true }), AppConfigModule, DatabaseModule, HealthModule, AuthModule, UsersModule, RolesModule], providers: [{ provide: APP_GUARD, useClass: AccessTokenGuard }] })
 export class AppModule {}
