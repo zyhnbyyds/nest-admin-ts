@@ -16,6 +16,7 @@ export class AppConfigService {
   get apiPrefix(): string { return this.values.API_PREFIX; }
   get databaseUrl(): string { return this.values.DATABASE_URL; }
   get redisUrl(): string | undefined { return this.values.REDIS_URL; }
+  get uploadDir(): string { return this.values.UPLOAD_DIR; }
   get corsOrigins(): string[] { return this.values.CORS_ORIGINS.split(',').map((value) => value.trim()); }
   get environment(): AppEnvironment['NODE_ENV'] { return this.values.NODE_ENV; }
   get jwt(): Pick<AppEnvironment, 'JWT_ISSUER' | 'JWT_AUDIENCE' | 'JWT_ACCESS_SECRET' | 'JWT_REFRESH_SECRET' | 'JWT_ACCESS_TTL' | 'JWT_REFRESH_TTL'> {

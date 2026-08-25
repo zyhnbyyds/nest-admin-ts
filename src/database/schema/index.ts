@@ -68,6 +68,10 @@ export const jobLogs = mysqlTable('sys_job_log', {
   id: int('id', { unsigned: true }).autoincrement().primaryKey(), jobId: int('job_id', { unsigned: true }).notNull(), jobName: varchar('job_name', { length: 100 }).notNull(), handler: varchar('handler', { length: 255 }).notNull(),
   status: mysqlEnum('status', ['success', 'failure']).notNull(), message: varchar('message', { length: 2000 }), startedAt: timestamp('started_at').notNull(), finishedAt: timestamp('finished_at').notNull(), durationMs: int('duration_ms', { unsigned: true }).notNull(),
 }, (table) => [index('idx_job_log_job').on(table.jobId)]);
+export const files = mysqlTable('sys_file', {
+  id: int('id', { unsigned: true }).autoincrement().primaryKey(), name: varchar('name', { length: 255 }).notNull(), originalName: varchar('original_name', { length: 255 }).notNull(), path: varchar('path', { length: 500 }).notNull(), mime: varchar('mime', { length: 100 }).notNull(),
+  ext: varchar('ext', { length: 20 }).notNull(), size: int('size', { unsigned: true }).notNull(), createdBy: int('created_by', { unsigned: true }), createdAt: timestamp('created_at').defaultNow().notNull(),
+}, (table) => [index('idx_file_created_by').on(table.createdBy)]);
 
 export const userRelations = relations(users, ({ one, many }) => ({ department: one(departments, { fields: [users.deptId], references: [departments.id] }), assignments: many(userRoles), refreshTokens: many(refreshTokens) }));
 export const roleRelations = relations(roles, ({ many }) => ({ assignments: many(userRoles), menuAssignments: many(roleMenus) }));
