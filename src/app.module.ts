@@ -11,6 +11,9 @@ import { RolesModule } from './modules/system/roles/roles.module.js';
 import { MenusModule } from './modules/system/menus/menus.module.js';
 import { DeptsModule } from './modules/system/depts/depts.module.js';
 import { PostsModule } from './modules/system/posts/posts.module.js';
+import { DictTypesModule } from './modules/system/dict-types/dict-types.module.js';
+import { DictDataModule } from './modules/system/dict-data/dict-data.module.js';
+import { ConfigsModule } from './modules/system/configs/configs.module.js';
 
-@Module({ imports: [ConfigModule.forRoot({ isGlobal: true }), AppConfigModule, DatabaseModule, HealthModule, AuthModule, UsersModule, RolesModule, MenusModule, DeptsModule, PostsModule], providers: [{ provide: APP_GUARD, useClass: AccessTokenGuard }] })
+@Module({ imports: [ConfigModule.forRoot({ isGlobal: true }), AppConfigModule, DatabaseModule, HealthModule, AuthModule, UsersModule, RolesModule, MenusModule, DeptsModule, PostsModule, DictTypesModule, DictDataModule, ConfigsModule], providers: [{ provide: APP_GUARD, useClass: AccessTokenGuard }] })
 export class AppModule {}

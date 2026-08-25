@@ -47,6 +47,12 @@ export const refreshTokens = mysqlTable('sys_refresh_token', {
 export const dictionaries = mysqlTable('sys_dict_data', {
   id: int('id', { unsigned: true }).autoincrement().primaryKey(), type: varchar('dict_type', { length: 100 }).notNull(), label: varchar('label', { length: 100 }).notNull(), value: varchar('value', { length: 100 }).notNull(), sort: int('sort').default(0).notNull(), status: mysqlEnum('status', ['active', 'disabled']).default('active').notNull(), cssClass: varchar('css_class', { length: 100 }), listClass: varchar('list_class', { length: 100 }), ...auditColumns,
 }, (table) => [uniqueIndex('uq_dict_type_value').on(table.type, table.value)]);
+export const dictTypes = mysqlTable('sys_dict_type', {
+  id: int('id', { unsigned: true }).autoincrement().primaryKey(), name: varchar('name', { length: 100 }).notNull(), type: varchar('type', { length: 100 }).notNull(), status: mysqlEnum('status', ['active', 'disabled']).default('active').notNull(), remark: varchar('remark', { length: 500 }), ...auditColumns,
+}, (table) => [uniqueIndex('uq_dict_type').on(table.type)]);
+export const configs = mysqlTable('sys_config', {
+  id: int('id', { unsigned: true }).autoincrement().primaryKey(), name: varchar('name', { length: 100 }).notNull(), key: varchar('config_key', { length: 100 }).notNull(), value: varchar('value', { length: 500 }).notNull(), builtin: boolean('builtin').default(false).notNull(), remark: varchar('remark', { length: 500 }), ...auditColumns,
+}, (table) => [uniqueIndex('uq_config_key').on(table.key)]);
 export const operationLogs = mysqlTable('sys_operation_log', {
   id: int('id', { unsigned: true }).autoincrement().primaryKey(), userId: int('user_id', { unsigned: true }), title: varchar('title', { length: 100 }).notNull(), businessType: varchar('business_type', { length: 50 }).notNull(), method: varchar('method', { length: 255 }).notNull(), requestMethod: varchar('request_method', { length: 10 }).notNull(), url: varchar('url', { length: 500 }).notNull(), ip: varchar('ip', { length: 45 }), requestBody: json('request_body'), responseBody: json('response_body'), status: mysqlEnum('status', ['success', 'failure']).notNull(), errorMessage: varchar('error_message', { length: 2000 }), durationMs: int('duration_ms', { unsigned: true }).notNull(), createdAt: timestamp('created_at').defaultNow().notNull(),
 });
