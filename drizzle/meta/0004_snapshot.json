@@ -92,9 +92,7 @@
       "indexes": {
         "uq_config_key": {
           "name": "uq_config_key",
-          "columns": [
-            "config_key"
-          ],
+          "columns": ["config_key"],
           "isUnique": true
         }
       },
@@ -102,9 +100,7 @@
       "compositePrimaryKeys": {
         "sys_config_id": {
           "name": "sys_config_id",
-          "columns": [
-            "id"
-          ]
+          "columns": ["id"]
         }
       },
       "uniqueConstraints": {},
@@ -222,9 +218,7 @@
       "indexes": {
         "idx_dept_parent": {
           "name": "idx_dept_parent",
-          "columns": [
-            "parent_id"
-          ],
+          "columns": ["parent_id"],
           "isUnique": false
         }
       },
@@ -232,9 +226,7 @@
       "compositePrimaryKeys": {
         "sys_dept_id": {
           "name": "sys_dept_id",
-          "columns": [
-            "id"
-          ]
+          "columns": ["id"]
         }
       },
       "uniqueConstraints": {},
@@ -321,9 +313,7 @@
       "indexes": {
         "uq_dict_type": {
           "name": "uq_dict_type",
-          "columns": [
-            "type"
-          ],
+          "columns": ["type"],
           "isUnique": true
         }
       },
@@ -331,9 +321,7 @@
       "compositePrimaryKeys": {
         "sys_dict_type_id": {
           "name": "sys_dict_type_id",
-          "columns": [
-            "id"
-          ]
+          "columns": ["id"]
         }
       },
       "uniqueConstraints": {},
@@ -442,10 +430,7 @@
       "indexes": {
         "uq_dict_type_value": {
           "name": "uq_dict_type_value",
-          "columns": [
-            "dict_type",
-            "value"
-          ],
+          "columns": ["dict_type", "value"],
           "isUnique": true
         }
       },
@@ -453,9 +438,7 @@
       "compositePrimaryKeys": {
         "sys_dict_data_id": {
           "name": "sys_dict_data_id",
-          "columns": [
-            "id"
-          ]
+          "columns": ["id"]
         }
       },
       "uniqueConstraints": {},
@@ -531,9 +514,7 @@
       "indexes": {
         "idx_job_log_job": {
           "name": "idx_job_log_job",
-          "columns": [
-            "job_id"
-          ],
+          "columns": ["job_id"],
           "isUnique": false
         }
       },
@@ -541,9 +522,7 @@
       "compositePrimaryKeys": {
         "sys_job_log_id": {
           "name": "sys_job_log_id",
-          "columns": [
-            "id"
-          ]
+          "columns": ["id"]
         }
       },
       "uniqueConstraints": {},
@@ -645,9 +624,7 @@
       "indexes": {
         "uq_job_handler": {
           "name": "uq_job_handler",
-          "columns": [
-            "handler"
-          ],
+          "columns": ["handler"],
           "isUnique": true
         }
       },
@@ -655,9 +632,7 @@
       "compositePrimaryKeys": {
         "sys_job_id": {
           "name": "sys_job_id",
-          "columns": [
-            "id"
-          ]
+          "columns": ["id"]
         }
       },
       "uniqueConstraints": {},
@@ -727,16 +702,12 @@
       "indexes": {
         "idx_login_log_user": {
           "name": "idx_login_log_user",
-          "columns": [
-            "user_id"
-          ],
+          "columns": ["user_id"],
           "isUnique": false
         },
         "idx_login_log_time": {
           "name": "idx_login_log_time",
-          "columns": [
-            "created_at"
-          ],
+          "columns": ["created_at"],
           "isUnique": false
         }
       },
@@ -744,9 +715,7 @@
       "compositePrimaryKeys": {
         "sys_login_log_id": {
           "name": "sys_login_log_id",
-          "columns": [
-            "id"
-          ]
+          "columns": ["id"]
         }
       },
       "uniqueConstraints": {},
@@ -901,16 +870,12 @@
       "indexes": {
         "uq_menu_permission": {
           "name": "uq_menu_permission",
-          "columns": [
-            "permission"
-          ],
+          "columns": ["permission"],
           "isUnique": true
         },
         "idx_menu_parent": {
           "name": "idx_menu_parent",
-          "columns": [
-            "parent_id"
-          ],
+          "columns": ["parent_id"],
           "isUnique": false
         }
       },
@@ -918,9 +883,7 @@
       "compositePrimaryKeys": {
         "sys_menu_id": {
           "name": "sys_menu_id",
-          "columns": [
-            "id"
-          ]
+          "columns": ["id"]
         }
       },
       "uniqueConstraints": {},
@@ -1034,9 +997,7 @@
       "compositePrimaryKeys": {
         "sys_operation_log_id": {
           "name": "sys_operation_log_id",
-          "columns": [
-            "id"
-          ]
+          "columns": ["id"]
         }
       },
       "uniqueConstraints": {},
@@ -1131,9 +1092,7 @@
       "indexes": {
         "uq_post_key": {
           "name": "uq_post_key",
-          "columns": [
-            "post_key"
-          ],
+          "columns": ["post_key"],
           "isUnique": true
         }
       },
@@ -1141,9 +1100,7 @@
       "compositePrimaryKeys": {
         "sys_post_id": {
           "name": "sys_post_id",
-          "columns": [
-            "id"
-          ]
+          "columns": ["id"]
         }
       },
       "uniqueConstraints": {},
@@ -1213,16 +1170,12 @@
       "indexes": {
         "uq_refresh_token_hash": {
           "name": "uq_refresh_token_hash",
-          "columns": [
-            "token_hash"
-          ],
+          "columns": ["token_hash"],
           "isUnique": true
         },
         "idx_refresh_user": {
           "name": "idx_refresh_user",
-          "columns": [
-            "user_id"
-          ],
+          "columns": ["user_id"],
           "isUnique": false
         }
       },
@@ -1230,9 +1183,7 @@
       "compositePrimaryKeys": {
         "sys_refresh_token_id": {
           "name": "sys_refresh_token_id",
-          "columns": [
-            "id"
-          ]
+          "columns": ["id"]
         }
       },
       "uniqueConstraints": {},
@@ -1259,10 +1210,7 @@
       "indexes": {
         "uq_role_menu": {
           "name": "uq_role_menu",
-          "columns": [
-            "role_id",
-            "menu_id"
-          ],
+          "columns": ["role_id", "menu_id"],
           "isUnique": true
         }
       },
@@ -1376,9 +1324,7 @@
       "indexes": {
         "uq_role_key": {
           "name": "uq_role_key",
-          "columns": [
-            "role_key"
-          ],
+          "columns": ["role_key"],
           "isUnique": true
         }
       },
@@ -1386,9 +1332,7 @@
       "compositePrimaryKeys": {
         "sys_role_id": {
           "name": "sys_role_id",
-          "columns": [
-            "id"
-          ]
+          "columns": ["id"]
         }
       },
       "uniqueConstraints": {},
@@ -1415,10 +1359,7 @@
       "indexes": {
         "uq_user_post": {
           "name": "uq_user_post",
-          "columns": [
-            "user_id",
-            "post_id"
-          ],
+          "columns": ["user_id", "post_id"],
           "isUnique": true
         }
       },
@@ -1448,10 +1389,7 @@
       "indexes": {
         "uq_user_role": {
           "name": "uq_user_role",
-          "columns": [
-            "user_id",
-            "role_id"
-          ],
+          "columns": ["user_id", "role_id"],
           "isUnique": true
         }
       },
@@ -1590,16 +1528,12 @@
       "indexes": {
         "uq_user_username": {
           "name": "uq_user_username",
-          "columns": [
-            "username"
-          ],
+          "columns": ["username"],
           "isUnique": true
         },
         "idx_user_dept": {
           "name": "idx_user_dept",
-          "columns": [
-            "dept_id"
-          ],
+          "columns": ["dept_id"],
           "isUnique": false
         }
       },
@@ -1607,9 +1541,7 @@
       "compositePrimaryKeys": {
         "sys_user_id": {
           "name": "sys_user_id",
-          "columns": [
-            "id"
-          ]
+          "columns": ["id"]
         }
       },
       "uniqueConstraints": {},

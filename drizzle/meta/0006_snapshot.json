@@ -92,9 +92,7 @@
       "indexes": {
         "uq_config_key": {
           "name": "uq_config_key",
-          "columns": [
-            "config_key"
-          ],
+          "columns": ["config_key"],
           "isUnique": true
         }
       },
@@ -102,9 +100,7 @@
       "compositePrimaryKeys": {
         "sys_config_id": {
           "name": "sys_config_id",
-          "columns": [
-            "id"
-          ]
+          "columns": ["id"]
         }
       },
       "uniqueConstraints": {},
@@ -222,9 +218,7 @@
       "indexes": {
         "idx_dept_parent": {
           "name": "idx_dept_parent",
-          "columns": [
-            "parent_id"
-          ],
+          "columns": ["parent_id"],
           "isUnique": false
         }
       },
@@ -232,9 +226,7 @@
       "compositePrimaryKeys": {
         "sys_dept_id": {
           "name": "sys_dept_id",
-          "columns": [
-            "id"
-          ]
+          "columns": ["id"]
         }
       },
       "uniqueConstraints": {},
@@ -321,9 +313,7 @@
       "indexes": {
         "uq_dict_type": {
           "name": "uq_dict_type",
-          "columns": [
-            "type"
-          ],
+          "columns": ["type"],
           "isUnique": true
         }
       },
@@ -331,9 +321,7 @@
       "compositePrimaryKeys": {
         "sys_dict_type_id": {
           "name": "sys_dict_type_id",
-          "columns": [
-            "id"
-          ]
+          "columns": ["id"]
         }
       },
       "uniqueConstraints": {},
@@ -442,10 +430,7 @@
       "indexes": {
         "uq_dict_type_value": {
           "name": "uq_dict_type_value",
-          "columns": [
-            "dict_type",
-            "value"
-          ],
+          "columns": ["dict_type", "value"],
           "isUnique": true
         }
       },
@@ -453,9 +438,7 @@
       "compositePrimaryKeys": {
         "sys_dict_data_id": {
           "name": "sys_dict_data_id",
-          "columns": [
-            "id"
-          ]
+          "columns": ["id"]
         }
       },
       "uniqueConstraints": {},
@@ -532,9 +515,7 @@
       "indexes": {
         "idx_file_created_by": {
           "name": "idx_file_created_by",
-          "columns": [
-            "created_by"
-          ],
+          "columns": ["created_by"],
           "isUnique": false
         }
       },
@@ -543,12 +524,8 @@
           "name": "fk_file_created_by",
           "tableFrom": "sys_file",
           "tableTo": "sys_user",
-          "columnsFrom": [
-            "created_by"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["created_by"],
+          "columnsTo": ["id"],
           "onDelete": "set null",
           "onUpdate": "no action"
         }
@@ -556,9 +533,7 @@
       "compositePrimaryKeys": {
         "sys_file_id": {
           "name": "sys_file_id",
-          "columns": [
-            "id"
-          ]
+          "columns": ["id"]
         }
       },
       "uniqueConstraints": {},
@@ -634,9 +609,7 @@
       "indexes": {
         "idx_job_log_job": {
           "name": "idx_job_log_job",
-          "columns": [
-            "job_id"
-          ],
+          "columns": ["job_id"],
           "isUnique": false
         }
       },
@@ -645,12 +618,8 @@
           "name": "fk_job_log_job",
           "tableFrom": "sys_job_log",
           "tableTo": "sys_job",
-          "columnsFrom": [
-            "job_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["job_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -658,9 +627,7 @@
       "compositePrimaryKeys": {
         "sys_job_log_id": {
           "name": "sys_job_log_id",
-          "columns": [
-            "id"
-          ]
+          "columns": ["id"]
         }
       },
       "uniqueConstraints": {},
@@ -762,9 +729,7 @@
       "indexes": {
         "uq_job_handler": {
           "name": "uq_job_handler",
-          "columns": [
-            "handler"
-          ],
+          "columns": ["handler"],
           "isUnique": true
         }
       },
@@ -772,9 +737,7 @@
       "compositePrimaryKeys": {
         "sys_job_id": {
           "name": "sys_job_id",
-          "columns": [
-            "id"
-          ]
+          "columns": ["id"]
         }
       },
       "uniqueConstraints": {},
@@ -844,16 +807,12 @@
       "indexes": {
         "idx_login_log_user": {
           "name": "idx_login_log_user",
-          "columns": [
-            "user_id"
-          ],
+          "columns": ["user_id"],
           "isUnique": false
         },
         "idx_login_log_time": {
           "name": "idx_login_log_time",
-          "columns": [
-            "created_at"
-          ],
+          "columns": ["created_at"],
           "isUnique": false
         }
       },
@@ -862,12 +821,8 @@
           "name": "fk_login_log_user",
           "tableFrom": "sys_login_log",
           "tableTo": "sys_user",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "set null",
           "onUpdate": "no action"
         }
@@ -875,9 +830,7 @@
       "compositePrimaryKeys": {
         "sys_login_log_id": {
           "name": "sys_login_log_id",
-          "columns": [
-            "id"
-          ]
+          "columns": ["id"]
         }
       },
       "uniqueConstraints": {},
@@ -1032,16 +985,12 @@
       "indexes": {
         "uq_menu_permission": {
           "name": "uq_menu_permission",
-          "columns": [
-            "permission"
-          ],
+          "columns": ["permission"],
           "isUnique": true
         },
         "idx_menu_parent": {
           "name": "idx_menu_parent",
-          "columns": [
-            "parent_id"
-          ],
+          "columns": ["parent_id"],
           "isUnique": false
         }
       },
@@ -1049,9 +998,7 @@
       "compositePrimaryKeys": {
         "sys_menu_id": {
           "name": "sys_menu_id",
-          "columns": [
-            "id"
-          ]
+          "columns": ["id"]
         }
       },
       "uniqueConstraints": {},
@@ -1163,10 +1110,7 @@
       "indexes": {
         "idx_operation_log_user_time": {
           "name": "idx_operation_log_user_time",
-          "columns": [
-            "user_id",
-            "created_at"
-          ],
+          "columns": ["user_id", "created_at"],
           "isUnique": false
         }
       },
@@ -1175,12 +1119,8 @@
           "name": "fk_operation_log_user",
           "tableFrom": "sys_operation_log",
           "tableTo": "sys_user",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "set null",
           "onUpdate": "no action"
         }
@@ -1188,9 +1128,7 @@
       "compositePrimaryKeys": {
         "sys_operation_log_id": {
           "name": "sys_operation_log_id",
-          "columns": [
-            "id"
-          ]
+          "columns": ["id"]
         }
       },
       "uniqueConstraints": {},
@@ -1285,9 +1223,7 @@
       "indexes": {
         "uq_post_key": {
           "name": "uq_post_key",
-          "columns": [
-            "post_key"
-          ],
+          "columns": ["post_key"],
           "isUnique": true
         }
       },
@@ -1295,9 +1231,7 @@
       "compositePrimaryKeys": {
         "sys_post_id": {
           "name": "sys_post_id",
-          "columns": [
-            "id"
-          ]
+          "columns": ["id"]
         }
       },
       "uniqueConstraints": {},
@@ -1367,16 +1301,12 @@
       "indexes": {
         "uq_refresh_token_hash": {
           "name": "uq_refresh_token_hash",
-          "columns": [
-            "token_hash"
-          ],
+          "columns": ["token_hash"],
           "isUnique": true
         },
         "idx_refresh_user": {
           "name": "idx_refresh_user",
-          "columns": [
-            "user_id"
-          ],
+          "columns": ["user_id"],
           "isUnique": false
         }
       },
@@ -1385,12 +1315,8 @@
           "name": "fk_refresh_token_user",
           "tableFrom": "sys_refresh_token",
           "tableTo": "sys_user",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -1398,9 +1324,7 @@
       "compositePrimaryKeys": {
         "sys_refresh_token_id": {
           "name": "sys_refresh_token_id",
-          "columns": [
-            "id"
-          ]
+          "columns": ["id"]
         }
       },
       "uniqueConstraints": {},
@@ -1427,17 +1351,12 @@
       "indexes": {
         "uq_role_menu": {
           "name": "uq_role_menu",
-          "columns": [
-            "role_id",
-            "menu_id"
-          ],
+          "columns": ["role_id", "menu_id"],
           "isUnique": true
         },
         "idx_role_menu_menu": {
           "name": "idx_role_menu_menu",
-          "columns": [
-            "menu_id"
-          ],
+          "columns": ["menu_id"],
           "isUnique": false
         }
       },
@@ -1446,12 +1365,8 @@
           "name": "fk_role_menu_role",
           "tableFrom": "sys_role_menu",
           "tableTo": "sys_role",
-          "columnsFrom": [
-            "role_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["role_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -1459,12 +1374,8 @@
           "name": "fk_role_menu_menu",
           "tableFrom": "sys_role_menu",
           "tableTo": "sys_menu",
-          "columnsFrom": [
-            "menu_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["menu_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -1578,9 +1489,7 @@
       "indexes": {
         "uq_role_key": {
           "name": "uq_role_key",
-          "columns": [
-            "role_key"
-          ],
+          "columns": ["role_key"],
           "isUnique": true
         }
       },
@@ -1588,9 +1497,7 @@
       "compositePrimaryKeys": {
         "sys_role_id": {
           "name": "sys_role_id",
-          "columns": [
-            "id"
-          ]
+          "columns": ["id"]
         }
       },
       "uniqueConstraints": {},
@@ -1617,17 +1524,12 @@
       "indexes": {
         "uq_user_post": {
           "name": "uq_user_post",
-          "columns": [
-            "user_id",
-            "post_id"
-          ],
+          "columns": ["user_id", "post_id"],
           "isUnique": true
         },
         "idx_user_post_post": {
           "name": "idx_user_post_post",
-          "columns": [
-            "post_id"
-          ],
+          "columns": ["post_id"],
           "isUnique": false
         }
       },
@@ -1636,12 +1538,8 @@
           "name": "fk_user_post_user",
           "tableFrom": "sys_user_post",
           "tableTo": "sys_user",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -1649,12 +1547,8 @@
           "name": "fk_user_post_post",
           "tableFrom": "sys_user_post",
           "tableTo": "sys_post",
-          "columnsFrom": [
-            "post_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["post_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -1684,17 +1578,12 @@
       "indexes": {
         "uq_user_role": {
           "name": "uq_user_role",
-          "columns": [
-            "user_id",
-            "role_id"
-          ],
+          "columns": ["user_id", "role_id"],
           "isUnique": true
         },
         "idx_user_role_role": {
           "name": "idx_user_role_role",
-          "columns": [
-            "role_id"
-          ],
+          "columns": ["role_id"],
           "isUnique": false
         }
       },
@@ -1703,12 +1592,8 @@
           "name": "fk_user_role_user",
           "tableFrom": "sys_user_role",
           "tableTo": "sys_user",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -1716,12 +1601,8 @@
           "name": "fk_user_role_role",
           "tableFrom": "sys_user_role",
           "tableTo": "sys_role",
-          "columnsFrom": [
-            "role_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["role_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -1860,16 +1741,12 @@
       "indexes": {
         "uq_user_username": {
           "name": "uq_user_username",
-          "columns": [
-            "username"
-          ],
+          "columns": ["username"],
           "isUnique": true
         },
         "idx_user_dept": {
           "name": "idx_user_dept",
-          "columns": [
-            "dept_id"
-          ],
+          "columns": ["dept_id"],
           "isUnique": false
         }
       },
@@ -1878,12 +1755,8 @@
           "name": "fk_user_dept",
           "tableFrom": "sys_user",
           "tableTo": "sys_dept",
-          "columnsFrom": [
-            "dept_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["dept_id"],
+          "columnsTo": ["id"],
           "onDelete": "set null",
           "onUpdate": "no action"
         }
@@ -1891,9 +1764,7 @@
       "compositePrimaryKeys": {
         "sys_user_id": {
           "name": "sys_user_id",
-          "columns": [
-            "id"
-          ]
+          "columns": ["id"]
         }
       },
       "uniqueConstraints": {},

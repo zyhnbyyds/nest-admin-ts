@@ -1,18 +1,34 @@
 import { Injectable } from '@nestjs/common';
 import { and, eq, isNull } from 'drizzle-orm';
-import { ONLINE_SESSION_PREFIX, onlineSessionKey } from '../../../common/cache/cache-keys.js';
+import {
+  ONLINE_SESSION_PREFIX,
+  onlineSessionKey,
+} from '../../../common/cache/cache-keys.js';
 import { RedisService } from '../../../common/cache/redis.service.js';
 import { DatabaseService } from '../../../database/database.service.js';
 import { refreshTokens } from '../../../database/schema/index.js';
 
-export type OnlineSession = { userId: number; username: string; ip: string | null; userAgent: string | null; loginAt: string };
+export type OnlineSession = {
+  userId: number;
+  username: string;
+  ip: string | null;
+  userAgent: string | null;
+  loginAt: string;
+};
 
 @Injectable()
 export class OnlineService {
-  constructor(private readonly redis: RedisService, private readonly database: DatabaseService) {}
+  constructor(
+    private readonly redis: RedisService,
+    private readonly database: DatabaseService,
+  ) {}
 
   async track(session: OnlineSession, ttlSeconds: number): Promise<void> {
-    await this.redis.setJson(onlineSessionKey(session.userId), session, ttlSeconds);
+    await this.redis.setJson(
+      onlineSessionKey(session.userId),
+      session,
+      ttlSeconds,
+    );
   }
 
   async list(): Promise<OnlineSession[]> {
@@ -31,6 +47,11 @@ export class OnlineService {
 
   async forceLogout(userId: number): Promise<void> {
     await this.remove(userId);
-    await this.database.db.update(refreshTokens).set({ revokedAt: new Date() }).where(and(eq(refreshTokens.userId, userId), isNull(refreshTokens.revokedAt)));
+    await this.database.db
+      .update(refreshTokens)
+      .set({ revokedAt: new Date() })
+      .where(
+        and(eq(refreshTokens.userId, userId), isNull(refreshTokens.revokedAt)),
+      );
   }
 }

@@ -1,9 +1,20 @@
-import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from '@nestjs/common';
+import {
+  CallHandler,
+  ExecutionContext,
+  Injectable,
+  NestInterceptor,
+} from '@nestjs/common';
 import { Observable, tap } from 'rxjs';
 import { DatabaseService } from '../../database/database.service.js';
 import { operationLogs } from '../../database/schema/index.js';
 
-type LogRequest = { method?: string; url?: string; ip?: string; body?: unknown; user?: { id?: number } };
+type LogRequest = {
+  method?: string;
+  url?: string;
+  ip?: string;
+  body?: unknown;
+  user?: { id?: number };
+};
 type LogEntry = {
   userId: number | undefined;
   controller: string;
@@ -47,10 +58,19 @@ export class OperationLogInterceptor implements NestInterceptor {
     return next.handle().pipe(
       tap({
         next: (responseBody: unknown) => {
-          void this.write({ ...entry, responseBody, durationMs: Date.now() - startedAt });
+          void this.write({
+            ...entry,
+            responseBody,
+            durationMs: Date.now() - startedAt,
+          });
         },
         error: (error: unknown) => {
-          void this.write({ ...entry, status: 'failure', errorMessage: messageOf(error), durationMs: Date.now() - startedAt });
+          void this.write({
+            ...entry,
+            status: 'failure',
+            errorMessage: messageOf(error),
+            durationMs: Date.now() - startedAt,
+          });
         },
       }),
     );
@@ -94,7 +114,8 @@ function sanitize(value: unknown): unknown {
   if (Array.isArray(value)) return value.map(sanitize);
   if (value && typeof value === 'object') {
     const result: Record<string, unknown> = {};
-    for (const [key, field] of Object.entries(value as Record<string, unknown>)) result[key] = SENSITIVE.test(key) ? '***' : sanitize(field);
+    for (const [key, field] of Object.entries(value as Record<string, unknown>))
+      result[key] = SENSITIVE.test(key) ? '***' : sanitize(field);
     return result;
   }
   return value;

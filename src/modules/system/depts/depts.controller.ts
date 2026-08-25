@@ -1,4 +1,14 @@
-import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post, Req } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  ParseIntPipe,
+  Patch,
+  Post,
+  Req,
+} from '@nestjs/common';
 import { z } from 'zod';
 import { RequirePermissions } from '../../../common/auth/permissions.decorator.js';
 import { DeptsService } from './depts.service.js';
@@ -22,9 +32,31 @@ type AuthRequest = { user: { id: number } };
 @Controller('system/depts')
 export class DeptsController {
   constructor(private readonly depts: DeptsService) {}
-  @Get() @RequirePermissions('system:dept:list') list() { return this.depts.list(); }
-  @Get(':id') @RequirePermissions('system:dept:list') findOne(@Param('id', ParseIntPipe) id: number) { return this.depts.findOne(id); }
-  @Post() @RequirePermissions('system:dept:create') create(@Body() body: unknown, @Req() request: AuthRequest) { return this.depts.create(createSchema.parse(body), request.user.id); }
-  @Patch(':id') @RequirePermissions('system:dept:update') update(@Param('id', ParseIntPipe) id: number, @Body() body: unknown, @Req() request: AuthRequest) { return this.depts.update(id, updateSchema.parse(body), request.user.id); }
-  @Delete(':id') @RequirePermissions('system:dept:delete') remove(@Param('id', ParseIntPipe) id: number, @Req() request: AuthRequest) { return this.depts.remove(id, request.user.id); }
+  @Get() @RequirePermissions('system:dept:list') list() {
+    return this.depts.list();
+  }
+  @Get(':id') @RequirePermissions('system:dept:list') findOne(
+    @Param('id', ParseIntPipe) id: number,
+  ) {
+    return this.depts.findOne(id);
+  }
+  @Post() @RequirePermissions('system:dept:create') create(
+    @Body() body: unknown,
+    @Req() request: AuthRequest,
+  ) {
+    return this.depts.create(createSchema.parse(body), request.user.id);
+  }
+  @Patch(':id') @RequirePermissions('system:dept:update') update(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() body: unknown,
+    @Req() request: AuthRequest,
+  ) {
+    return this.depts.update(id, updateSchema.parse(body), request.user.id);
+  }
+  @Delete(':id') @RequirePermissions('system:dept:delete') remove(
+    @Param('id', ParseIntPipe) id: number,
+    @Req() request: AuthRequest,
+  ) {
+    return this.depts.remove(id, request.user.id);
+  }
 }

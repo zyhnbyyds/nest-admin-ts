@@ -3,8 +3,16 @@ import { legacy, mapMenuType, mapStatus, slugify } from './legacy.js';
 
 describe('legacy compatibility helpers', () => {
   it('wraps data in the legacy envelope', () => {
-    expect(legacy({ id: 1 })).toEqual({ code: 200, data: { id: 1 }, message: 'success' });
-    expect(legacy(null, '创建成功')).toEqual({ code: 200, data: null, message: '创建成功' });
+    expect(legacy({ id: 1 })).toEqual({
+      code: 200,
+      data: { id: 1 },
+      message: 'success',
+    });
+    expect(legacy(null, '创建成功')).toEqual({
+      code: 200,
+      data: null,
+      message: '创建成功',
+    });
   });
 
   it('maps legacy numeric status to the new enum', () => {

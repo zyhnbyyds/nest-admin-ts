@@ -8,6 +8,11 @@ import * as schema from './schema/index.js';
 export class DatabaseService implements OnApplicationShutdown {
   readonly pool;
   readonly db: MySql2Database<typeof schema>;
-  constructor(config: AppConfigService) { this.pool = mysql.createPool(config.databaseUrl); this.db = drizzle(this.pool, { schema, mode: 'default' }); }
-  async onApplicationShutdown(): Promise<void> { await this.pool.end(); }
+  constructor(config: AppConfigService) {
+    this.pool = mysql.createPool(config.databaseUrl);
+    this.db = drizzle(this.pool, { schema, mode: 'default' });
+  }
+  async onApplicationShutdown(): Promise<void> {
+    await this.pool.end();
+  }
 }

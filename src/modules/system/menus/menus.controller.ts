@@ -1,4 +1,14 @@
-import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post, Req } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  ParseIntPipe,
+  Patch,
+  Post,
+  Req,
+} from '@nestjs/common';
 import { z } from 'zod';
 import { RequirePermissions } from '../../../common/auth/permissions.decorator.js';
 import { MenusService } from './menus.service.js';
@@ -29,10 +39,34 @@ type AuthRequest = { user: { id: number } };
 @Controller('system/menus')
 export class MenusController {
   constructor(private readonly menus: MenusService) {}
-  @Get() @RequirePermissions('system:menu:list') list() { return this.menus.list(); }
-  @Get('routes') routes(@Req() request: AuthRequest) { return this.menus.routes(request.user.id); }
-  @Get(':id') @RequirePermissions('system:menu:list') findOne(@Param('id', ParseIntPipe) id: number) { return this.menus.findOne(id); }
-  @Post() @RequirePermissions('system:menu:create') create(@Body() body: unknown, @Req() request: AuthRequest) { return this.menus.create(createSchema.parse(body), request.user.id); }
-  @Patch(':id') @RequirePermissions('system:menu:update') update(@Param('id', ParseIntPipe) id: number, @Body() body: unknown, @Req() request: AuthRequest) { return this.menus.update(id, updateSchema.parse(body), request.user.id); }
-  @Delete(':id') @RequirePermissions('system:menu:delete') remove(@Param('id', ParseIntPipe) id: number, @Req() request: AuthRequest) { return this.menus.remove(id, request.user.id); }
+  @Get() @RequirePermissions('system:menu:list') list() {
+    return this.menus.list();
+  }
+  @Get('routes') routes(@Req() request: AuthRequest) {
+    return this.menus.routes(request.user.id);
+  }
+  @Get(':id') @RequirePermissions('system:menu:list') findOne(
+    @Param('id', ParseIntPipe) id: number,
+  ) {
+    return this.menus.findOne(id);
+  }
+  @Post() @RequirePermissions('system:menu:create') create(
+    @Body() body: unknown,
+    @Req() request: AuthRequest,
+  ) {
+    return this.menus.create(createSchema.parse(body), request.user.id);
+  }
+  @Patch(':id') @RequirePermissions('system:menu:update') update(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() body: unknown,
+    @Req() request: AuthRequest,
+  ) {
+    return this.menus.update(id, updateSchema.parse(body), request.user.id);
+  }
+  @Delete(':id') @RequirePermissions('system:menu:delete') remove(
+    @Param('id', ParseIntPipe) id: number,
+    @Req() request: AuthRequest,
+  ) {
+    return this.menus.remove(id, request.user.id);
+  }
 }

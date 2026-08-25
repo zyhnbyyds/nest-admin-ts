@@ -1,4 +1,15 @@
-import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post, Query, Req } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  ParseIntPipe,
+  Patch,
+  Post,
+  Query,
+  Req,
+} from '@nestjs/common';
 import { z } from 'zod';
 import { RequirePermissions } from '../../common/auth/permissions.decorator.js';
 import { JobsService } from './jobs.service.js';
@@ -11,20 +22,65 @@ const createSchema = z.object({
   concurrent: z.boolean().optional(),
   remark: z.string().max(500).optional(),
 });
-const updateSchema = createSchema.partial().extend({ remark: z.string().max(500).nullable().optional() });
+const updateSchema = createSchema
+  .partial()
+  .extend({ remark: z.string().max(500).nullable().optional() });
 type AuthRequest = { user: { id: number } };
 
 @Controller('system/jobs')
 export class JobsController {
   constructor(private readonly jobs: JobsService) {}
-  @Get() @RequirePermissions('system:job:list')
-  list(@Query('page') rawPage?: string, @Query('pageSize') rawPageSize?: string) { const page = Math.max(Number(rawPage) || 1, 1); const pageSize = Math.min(Math.max(Number(rawPageSize) || 20, 1), 100); return this.jobs.list(page, pageSize); }
-  @Get(':id/logs') @RequirePermissions('system:job:list')
-  logs(@Param('id', ParseIntPipe) id: number, @Query('page') rawPage?: string, @Query('pageSize') rawPageSize?: string) { const page = Math.max(Number(rawPage) || 1, 1); const pageSize = Math.min(Math.max(Number(rawPageSize) || 20, 1), 100); return this.jobs.listLogs(id, page, pageSize); }
-  @Get(':id') @RequirePermissions('system:job:list') findOne(@Param('id', ParseIntPipe) id: number) { return this.jobs.findOne(id); }
-  @Post() @RequirePermissions('system:job:create') create(@Body() body: unknown, @Req() request: AuthRequest) { return this.jobs.create(createSchema.parse(body), request.user.id); }
-  @Post(':id/run') @RequirePermissions('system:job:run') run(@Param('id', ParseIntPipe) id: number) { return this.jobs.runNow(id); }
-  @Patch(':id') @RequirePermissions('system:job:update') update(@Param('id', ParseIntPipe) id: number, @Body() body: unknown, @Req() request: AuthRequest) { return this.jobs.update(id, updateSchema.parse(body), request.user.id); }
-  @Delete('logs') @RequirePermissions('system:job:delete') clearLogs() { return this.jobs.clearLogs(); }
-  @Delete(':id') @RequirePermissions('system:job:delete') remove(@Param('id', ParseIntPipe) id: number, @Req() request: AuthRequest) { return this.jobs.remove(id, request.user.id); }
+  @Get()
+  @RequirePermissions('system:job:list')
+  list(
+    @Query('page') rawPage?: string,
+    @Query('pageSize') rawPageSize?: string,
+  ) {
+    const page = Math.max(Number(rawPage) || 1, 1);
+    const pageSize = Math.min(Math.max(Number(rawPageSize) || 20, 1), 100);
+    return this.jobs.list(page, pageSize);
+  }
+  @Get(':id/logs')
+  @RequirePermissions('system:job:list')
+  logs(
+    @Param('id', ParseIntPipe) id: number,
+    @Query('page') rawPage?: string,
+    @Query('pageSize') rawPageSize?: string,
+  ) {
+    const page = Math.max(Number(rawPage) || 1, 1);
+    const pageSize = Math.min(Math.max(Number(rawPageSize) || 20, 1), 100);
+    return this.jobs.listLogs(id, page, pageSize);
+  }
+  @Get(':id') @RequirePermissions('system:job:list') findOne(
+    @Param('id', ParseIntPipe) id: number,
+  ) {
+    return this.jobs.findOne(id);
+  }
+  @Post() @RequirePermissions('system:job:create') create(
+    @Body() body: unknown,
+    @Req() request: AuthRequest,
+  ) {
+    return this.jobs.create(createSchema.parse(body), request.user.id);
+  }
+  @Post(':id/run') @RequirePermissions('system:job:run') run(
+    @Param('id', ParseIntPipe) id: number,
+  ) {
+    return this.jobs.runNow(id);
+  }
+  @Patch(':id') @RequirePermissions('system:job:update') update(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() body: unknown,
+    @Req() request: AuthRequest,
+  ) {
+    return this.jobs.update(id, updateSchema.parse(body), request.user.id);
+  }
+  @Delete('logs') @RequirePermissions('system:job:delete') clearLogs() {
+    return this.jobs.clearLogs();
+  }
+  @Delete(':id') @RequirePermissions('system:job:delete') remove(
+    @Param('id', ParseIntPipe) id: number,
+    @Req() request: AuthRequest,
+  ) {
+    return this.jobs.remove(id, request.user.id);
+  }
 }

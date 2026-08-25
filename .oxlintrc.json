@@ -1,0 +1,29 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "plugins": ["typescript", "unicorn", "oxc"],
+  "categories": {
+    "correctness": "error"
+  },
+  "rules": {},
+  "env": {
+    "builtin": true
+  },
+  "ignorePatterns": [
+    "dist/**",
+    "coverage/**",
+    "src/app.controller.ts",
+    "src/app.service.ts",
+    "src/decorators/**",
+    "src/filters/**",
+    "src/guards/**",
+    "src/intercepts/**",
+    "src/utils/**",
+    "src/modules/auth/entities/**",
+    "src/modules/menu/**",
+    "src/modules/role/**",
+    "src/modules/test/**",
+    "src/modules/upload/**",
+    "src/modules/user/**",
+    "src/modules/weixin/**"
+  ]
+}
