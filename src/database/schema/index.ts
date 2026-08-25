@@ -36,6 +36,11 @@ export const menus = mysqlTable('sys_menu', {
 
 export const userRoles = mysqlTable('sys_user_role', { userId: int('user_id', { unsigned: true }).notNull(), roleId: int('role_id', { unsigned: true }).notNull() }, (table) => [uniqueIndex('uq_user_role').on(table.userId, table.roleId)]);
 export const roleMenus = mysqlTable('sys_role_menu', { roleId: int('role_id', { unsigned: true }).notNull(), menuId: int('menu_id', { unsigned: true }).notNull() }, (table) => [uniqueIndex('uq_role_menu').on(table.roleId, table.menuId)]);
+export const posts = mysqlTable('sys_post', {
+  id: int('id', { unsigned: true }).autoincrement().primaryKey(), name: varchar('name', { length: 50 }).notNull(), key: varchar('post_key', { length: 100 }).notNull(), sort: int('sort').default(0).notNull(),
+  status: mysqlEnum('status', ['active', 'disabled']).default('active').notNull(), remark: varchar('remark', { length: 500 }), ...auditColumns,
+}, (table) => [uniqueIndex('uq_post_key').on(table.key)]);
+export const userPosts = mysqlTable('sys_user_post', { userId: int('user_id', { unsigned: true }).notNull(), postId: int('post_id', { unsigned: true }).notNull() }, (table) => [uniqueIndex('uq_user_post').on(table.userId, table.postId)]);
 export const refreshTokens = mysqlTable('sys_refresh_token', {
   id: int('id', { unsigned: true }).autoincrement().primaryKey(), userId: int('user_id', { unsigned: true }).notNull(), tokenHash: varchar('token_hash', { length: 255 }).notNull(), expiresAt: datetime('expires_at').notNull(), revokedAt: datetime('revoked_at'), device: varchar('device', { length: 255 }), ip: varchar('ip', { length: 45 }), createdAt: timestamp('created_at').defaultNow().notNull(),
 }, (table) => [uniqueIndex('uq_refresh_token_hash').on(table.tokenHash), index('idx_refresh_user').on(table.userId)]);
@@ -50,3 +55,5 @@ export const userRelations = relations(users, ({ one, many }) => ({ department: 
 export const roleRelations = relations(roles, ({ many }) => ({ assignments: many(userRoles), menuAssignments: many(roleMenus) }));
 export const userRoleRelations = relations(userRoles, ({ one }) => ({ user: one(users, { fields: [userRoles.userId], references: [users.id] }), role: one(roles, { fields: [userRoles.roleId], references: [roles.id] }) }));
 export const roleMenuRelations = relations(roleMenus, ({ one }) => ({ role: one(roles, { fields: [roleMenus.roleId], references: [roles.id] }), menu: one(menus, { fields: [roleMenus.menuId], references: [menus.id] }) }));
+export const postRelations = relations(posts, ({ many }) => ({ assignments: many(userPosts) }));
+export const userPostRelations = relations(userPosts, ({ one }) => ({ user: one(users, { fields: [userPosts.userId], references: [users.id] }), post: one(posts, { fields: [userPosts.postId], references: [posts.id] }) }));
