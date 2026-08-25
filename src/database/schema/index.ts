@@ -60,6 +60,14 @@ export const loginLogs = mysqlTable('sys_login_log', {
   id: int('id', { unsigned: true }).autoincrement().primaryKey(), userId: int('user_id', { unsigned: true }), username: varchar('username', { length: 64 }).notNull(), ip: varchar('ip', { length: 45 }), userAgent: varchar('user_agent', { length: 500 }),
   status: mysqlEnum('status', ['success', 'failure']).notNull(), message: varchar('message', { length: 500 }), createdAt: timestamp('created_at').defaultNow().notNull(),
 }, (table) => [index('idx_login_log_user').on(table.userId), index('idx_login_log_time').on(table.createdAt)]);
+export const jobs = mysqlTable('sys_job', {
+  id: int('id', { unsigned: true }).autoincrement().primaryKey(), name: varchar('name', { length: 100 }).notNull(), handler: varchar('handler', { length: 255 }).notNull(), cron: varchar('cron', { length: 100 }).notNull(),
+  status: mysqlEnum('status', ['active', 'disabled']).default('active').notNull(), concurrent: boolean('concurrent').default(true).notNull(), remark: varchar('remark', { length: 500 }), ...auditColumns,
+}, (table) => [uniqueIndex('uq_job_handler').on(table.handler)]);
+export const jobLogs = mysqlTable('sys_job_log', {
+  id: int('id', { unsigned: true }).autoincrement().primaryKey(), jobId: int('job_id', { unsigned: true }).notNull(), jobName: varchar('job_name', { length: 100 }).notNull(), handler: varchar('handler', { length: 255 }).notNull(),
+  status: mysqlEnum('status', ['success', 'failure']).notNull(), message: varchar('message', { length: 2000 }), startedAt: timestamp('started_at').notNull(), finishedAt: timestamp('finished_at').notNull(), durationMs: int('duration_ms', { unsigned: true }).notNull(),
+}, (table) => [index('idx_job_log_job').on(table.jobId)]);
 
 export const userRelations = relations(users, ({ one, many }) => ({ department: one(departments, { fields: [users.deptId], references: [departments.id] }), assignments: many(userRoles), refreshTokens: many(refreshTokens) }));
 export const roleRelations = relations(roles, ({ many }) => ({ assignments: many(userRoles), menuAssignments: many(roleMenus) }));
