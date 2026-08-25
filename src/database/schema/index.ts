@@ -56,6 +56,10 @@ export const configs = mysqlTable('sys_config', {
 export const operationLogs = mysqlTable('sys_operation_log', {
   id: int('id', { unsigned: true }).autoincrement().primaryKey(), userId: int('user_id', { unsigned: true }), title: varchar('title', { length: 100 }).notNull(), businessType: varchar('business_type', { length: 50 }).notNull(), method: varchar('method', { length: 255 }).notNull(), requestMethod: varchar('request_method', { length: 10 }).notNull(), url: varchar('url', { length: 500 }).notNull(), ip: varchar('ip', { length: 45 }), requestBody: json('request_body'), responseBody: json('response_body'), status: mysqlEnum('status', ['success', 'failure']).notNull(), errorMessage: varchar('error_message', { length: 2000 }), durationMs: int('duration_ms', { unsigned: true }).notNull(), createdAt: timestamp('created_at').defaultNow().notNull(),
 });
+export const loginLogs = mysqlTable('sys_login_log', {
+  id: int('id', { unsigned: true }).autoincrement().primaryKey(), userId: int('user_id', { unsigned: true }), username: varchar('username', { length: 64 }).notNull(), ip: varchar('ip', { length: 45 }), userAgent: varchar('user_agent', { length: 500 }),
+  status: mysqlEnum('status', ['success', 'failure']).notNull(), message: varchar('message', { length: 500 }), createdAt: timestamp('created_at').defaultNow().notNull(),
+}, (table) => [index('idx_login_log_user').on(table.userId), index('idx_login_log_time').on(table.createdAt)]);
 
 export const userRelations = relations(users, ({ one, many }) => ({ department: one(departments, { fields: [users.deptId], references: [departments.id] }), assignments: many(userRoles), refreshTokens: many(refreshTokens) }));
 export const roleRelations = relations(roles, ({ many }) => ({ assignments: many(userRoles), menuAssignments: many(roleMenus) }));

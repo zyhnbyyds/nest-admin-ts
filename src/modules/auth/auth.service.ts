@@ -5,19 +5,32 @@ import { SignJWT, jwtVerify } from 'jose';
 import { createHash } from 'node:crypto';
 import { AppConfigService } from '../../config/app-config.service.js';
 import { DatabaseService } from '../../database/database.service.js';
-import { menus, refreshTokens, roleMenus, roles, userRoles, users } from '../../database/schema/index.js';
+import { loginLogs, menus, refreshTokens, roleMenus, roles, userRoles, users } from '../../database/schema/index.js';
 
 type LoginInput = { username: string; password: string };
+type LoginMeta = { ip?: string | undefined; userAgent?: string | undefined };
 type Claims = { sub: string; username: string; permissions: string[]; roles: string[] };
 
 @Injectable()
 export class AuthService {
   constructor(private readonly database: DatabaseService, private readonly config: AppConfigService) {}
 
-  async login(input: LoginInput): Promise<{ accessToken: string; refreshToken: string; tokenType: 'Bearer'; expiresIn: string }> {
+  async login(input: LoginInput, meta: LoginMeta = {}): Promise<{ accessToken: string; refreshToken: string; tokenType: 'Bearer'; expiresIn: string }> {
     const [user] = await this.database.db.select().from(users).where(and(eq(users.username, input.username), isNull(users.deletedAt))).limit(1);
-    if (!user || user.status !== 'active' || !(await argon2.verify(user.passwordHash, input.password))) throw new UnauthorizedException('Invalid username or password');
+    if (!user || user.status !== 'active' || !(await argon2.verify(user.passwordHash, input.password))) {
+      await this.recordLogin({ userId: user?.id, username: input.username, ip: meta.ip, userAgent: meta.userAgent, status: 'failure', message: 'Invalid username or password' });
+      throw new UnauthorizedException('Invalid username or password');
+    }
+    await this.recordLogin({ userId: user.id, username: user.username, ip: meta.ip, userAgent: meta.userAgent, status: 'success' });
     return this.issueTokens(user.id, user.username);
+  }
+
+  private async recordLogin(entry: { userId?: number | null | undefined; username: string; ip?: string | undefined; userAgent?: string | undefined; status: 'success' | 'failure'; message?: string | undefined }): Promise<void> {
+    try {
+      await this.database.db.insert(loginLogs).values({ userId: entry.userId ?? null, username: entry.username, ip: entry.ip ?? null, userAgent: entry.userAgent ?? null, status: entry.status, message: entry.message ?? null });
+    } catch {
+      /* best-effort audit logging */
+    }
   }
 
   async refresh(rawToken: string): Promise<{ accessToken: string; refreshToken: string; tokenType: 'Bearer'; expiresIn: string }> {
