@@ -62,7 +62,22 @@ export class DeptsController {
   @Post()
   @RequirePermissions('system:dept:create')
   @ApiOperation({ summary: '新增部门' })
-  @ApiBody({ description: '部门创建参数' })
+  @ApiBody({
+    description: '部门创建参数',
+    schema: {
+      type: 'object',
+      required: ['name'],
+      properties: {
+        parentId: { type: 'integer', description: '父部门ID', example: 0 },
+        name: { type: 'string', description: '部门名称', example: '研发部' },
+        sort: { type: 'integer', description: '排序', example: 0 },
+        leaderUserId: { type: 'integer', description: '负责人用户ID', example: 1 },
+        phone: { type: 'string', description: '联系电话', example: '13800138000' },
+        email: { type: 'string', description: '邮箱', example: 'dev@example.com' },
+        status: { type: 'string', description: '状态', enum: ['active', 'disabled'], example: 'active' },
+      },
+    },
+  })
   @ApiResponse({ status: 200, description: '成功' })
   create(
     @Body() body: unknown,
@@ -74,7 +89,21 @@ export class DeptsController {
   @RequirePermissions('system:dept:update')
   @ApiOperation({ summary: '修改部门' })
   @ApiParam({ name: 'id', description: '部门ID' })
-  @ApiBody({ description: '部门更新参数' })
+  @ApiBody({
+    description: '部门更新参数',
+    schema: {
+      type: 'object',
+      properties: {
+        parentId: { type: 'integer', description: '父部门ID', example: 0 },
+        name: { type: 'string', description: '部门名称', example: '研发部' },
+        sort: { type: 'integer', description: '排序', example: 0 },
+        leaderUserId: { type: 'integer', description: '负责人用户ID', nullable: true, example: 1 },
+        phone: { type: 'string', description: '联系电话', nullable: true, example: '13800138000' },
+        email: { type: 'string', description: '邮箱', nullable: true, example: 'dev@example.com' },
+        status: { type: 'string', description: '状态', enum: ['active', 'disabled'], example: 'active' },
+      },
+    },
+  })
   @ApiResponse({ status: 200, description: '成功' })
   update(
     @Param('id', ParseIntPipe) id: number,

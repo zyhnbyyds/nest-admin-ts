@@ -52,7 +52,30 @@ export class RolesController {
   @Post()
   @RequirePermissions('system:role:create')
   @ApiOperation({ summary: '新增角色' })
-  @ApiBody({ description: '角色创建参数' })
+  @ApiBody({
+    description: '角色创建参数',
+    schema: {
+      type: 'object',
+      required: ['name', 'key'],
+      properties: {
+        name: { type: 'string', description: '角色名称', example: '管理员' },
+        key: { type: 'string', description: '角色标识', example: 'admin' },
+        sort: { type: 'integer', description: '排序', example: 0 },
+        dataScope: {
+          type: 'string',
+          description: '数据权限范围',
+          enum: ['all', 'custom', 'dept', 'dept_and_children', 'self'],
+          example: 'all',
+        },
+        menuIds: {
+          type: 'array',
+          description: '菜单ID集合',
+          items: { type: 'integer' },
+          example: [1, 2, 3],
+        },
+      },
+    },
+  })
   @ApiResponse({ status: 200, description: '成功' })
   create(
     @Body() body: unknown,
@@ -64,7 +87,21 @@ export class RolesController {
   @RequirePermissions('system:role:update')
   @ApiOperation({ summary: '设置角色菜单权限' })
   @ApiParam({ name: 'id', description: '角色ID' })
-  @ApiBody({ description: '菜单权限参数' })
+  @ApiBody({
+    description: '菜单权限参数',
+    schema: {
+      type: 'object',
+      required: ['menuIds'],
+      properties: {
+        menuIds: {
+          type: 'array',
+          description: '菜单ID集合',
+          items: { type: 'integer' },
+          example: [1, 2, 3],
+        },
+      },
+    },
+  })
   @ApiResponse({ status: 200, description: '成功' })
   setMenus(
     @Param('id', ParseIntPipe) id: number,

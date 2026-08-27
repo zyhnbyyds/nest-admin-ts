@@ -75,7 +75,28 @@ export class MenusController {
   @Post()
   @RequirePermissions('system:menu:create')
   @ApiOperation({ summary: '新增菜单' })
-  @ApiBody({ description: '菜单创建参数' })
+  @ApiBody({
+    description: '菜单创建参数',
+    schema: {
+      type: 'object',
+      required: ['name', 'title', 'type'],
+      properties: {
+        parentId: { type: 'integer', description: '父菜单ID', example: 0 },
+        name: { type: 'string', description: '菜单名称', example: 'system' },
+        title: { type: 'string', description: '菜单标题', example: '系统管理' },
+        type: { type: 'string', description: '菜单类型（M目录 C菜单 F按钮）', enum: ['M', 'C', 'F'], example: 'M' },
+        path: { type: 'string', description: '路由路径', example: '/system' },
+        component: { type: 'string', description: '组件路径', example: 'system/index' },
+        permission: { type: 'string', description: '权限标识', example: 'system:list' },
+        icon: { type: 'string', description: '图标', example: 'setting' },
+        sort: { type: 'integer', description: '排序', example: 0 },
+        visible: { type: 'boolean', description: '是否可见', example: true },
+        cacheable: { type: 'boolean', description: '是否缓存', example: false },
+        external: { type: 'boolean', description: '是否外链', example: false },
+        status: { type: 'string', description: '状态', enum: ['active', 'disabled'], example: 'active' },
+      },
+    },
+  })
   @ApiResponse({ status: 200, description: '成功' })
   create(
     @Body() body: unknown,
@@ -87,7 +108,27 @@ export class MenusController {
   @RequirePermissions('system:menu:update')
   @ApiOperation({ summary: '修改菜单' })
   @ApiParam({ name: 'id', description: '菜单ID' })
-  @ApiBody({ description: '菜单更新参数' })
+  @ApiBody({
+    description: '菜单更新参数',
+    schema: {
+      type: 'object',
+      properties: {
+        parentId: { type: 'integer', description: '父菜单ID', example: 0 },
+        name: { type: 'string', description: '菜单名称', example: 'system' },
+        title: { type: 'string', description: '菜单标题', example: '系统管理' },
+        type: { type: 'string', description: '菜单类型（M目录 C菜单 F按钮）', enum: ['M', 'C', 'F'], example: 'M' },
+        path: { type: 'string', description: '路由路径', nullable: true, example: '/system' },
+        component: { type: 'string', description: '组件路径', nullable: true, example: 'system/index' },
+        permission: { type: 'string', description: '权限标识', nullable: true, example: 'system:list' },
+        icon: { type: 'string', description: '图标', nullable: true, example: 'setting' },
+        sort: { type: 'integer', description: '排序', example: 0 },
+        visible: { type: 'boolean', description: '是否可见', example: true },
+        cacheable: { type: 'boolean', description: '是否缓存', example: false },
+        external: { type: 'boolean', description: '是否外链', example: false },
+        status: { type: 'string', description: '状态', enum: ['active', 'disabled'], example: 'active' },
+      },
+    },
+  })
   @ApiResponse({ status: 200, description: '成功' })
   update(
     @Param('id', ParseIntPipe) id: number,

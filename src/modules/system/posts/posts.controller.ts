@@ -71,7 +71,20 @@ export class PostsController {
   @Post()
   @RequirePermissions('system:post:create')
   @ApiOperation({ summary: '新增岗位' })
-  @ApiBody({ description: '岗位创建参数' })
+  @ApiBody({
+    description: '岗位创建参数',
+    schema: {
+      type: 'object',
+      required: ['name', 'key'],
+      properties: {
+        name: { type: 'string', description: '岗位名称', example: '高级工程师' },
+        key: { type: 'string', description: '岗位标识', example: 'senior_engineer' },
+        sort: { type: 'integer', description: '排序', example: 0 },
+        status: { type: 'string', description: '状态', enum: ['active', 'disabled'], example: 'active' },
+        remark: { type: 'string', description: '备注', example: '负责核心业务开发' },
+      },
+    },
+  })
   @ApiResponse({ status: 200, description: '成功' })
   create(
     @Body() body: unknown,
@@ -83,7 +96,19 @@ export class PostsController {
   @RequirePermissions('system:post:update')
   @ApiOperation({ summary: '修改岗位' })
   @ApiParam({ name: 'id', description: '岗位ID' })
-  @ApiBody({ description: '岗位更新参数' })
+  @ApiBody({
+    description: '岗位更新参数',
+    schema: {
+      type: 'object',
+      properties: {
+        name: { type: 'string', description: '岗位名称', example: '高级工程师' },
+        key: { type: 'string', description: '岗位标识', example: 'senior_engineer' },
+        sort: { type: 'integer', description: '排序', example: 0 },
+        status: { type: 'string', description: '状态', enum: ['active', 'disabled'], example: 'active' },
+        remark: { type: 'string', description: '备注', nullable: true, example: '负责核心业务开发' },
+      },
+    },
+  })
   @ApiResponse({ status: 200, description: '成功' })
   update(
     @Param('id', ParseIntPipe) id: number,

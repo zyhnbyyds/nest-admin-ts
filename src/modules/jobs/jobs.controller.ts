@@ -84,7 +84,21 @@ export class JobsController {
   @Post()
   @RequirePermissions('system:job:create')
   @ApiOperation({ summary: '新增任务' })
-  @ApiBody({ description: '任务信息' })
+  @ApiBody({
+    description: '任务信息',
+    schema: {
+      type: 'object',
+      required: ['name', 'handler', 'cron'],
+      properties: {
+        name: { type: 'string', description: '任务名称', example: '清理过期令牌' },
+        handler: { type: 'string', description: '任务处理器名称', example: 'cleanExpiredRefreshTokens' },
+        cron: { type: 'string', description: 'Cron表达式', example: '0 0 * * *' },
+        status: { type: 'string', description: '状态', enum: ['active', 'disabled'], example: 'active' },
+        concurrent: { type: 'boolean', description: '是否允许并发', example: true },
+        remark: { type: 'string', description: '备注', example: '每天清理过期令牌' },
+      },
+    },
+  })
   @ApiResponse({ status: 201, description: '成功' })
   @ApiBearerAuth('access-token')
   create(
@@ -106,7 +120,20 @@ export class JobsController {
   @RequirePermissions('system:job:update')
   @ApiOperation({ summary: '修改任务' })
   @ApiParam({ name: 'id', description: '任务ID' })
-  @ApiBody({ description: '任务信息' })
+  @ApiBody({
+    description: '任务信息',
+    schema: {
+      type: 'object',
+      properties: {
+        name: { type: 'string', description: '任务名称', example: '清理过期令牌' },
+        handler: { type: 'string', description: '任务处理器名称', example: 'cleanExpiredRefreshTokens' },
+        cron: { type: 'string', description: 'Cron表达式', example: '0 0 * * *' },
+        status: { type: 'string', description: '状态', enum: ['active', 'disabled'], example: 'active' },
+        concurrent: { type: 'boolean', description: '是否允许并发', example: true },
+        remark: { type: 'string', description: '备注', nullable: true, example: '每天清理过期令牌' },
+      },
+    },
+  })
   @ApiResponse({ status: 200, description: '成功' })
   @ApiBearerAuth('access-token')
   update(

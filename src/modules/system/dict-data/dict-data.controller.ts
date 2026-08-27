@@ -80,7 +80,22 @@ export class DictDataController {
   @Post()
   @RequirePermissions('system:dict:create')
   @ApiOperation({ summary: '新增字典数据' })
-  @ApiBody({ description: '字典数据信息' })
+  @ApiBody({
+    description: '字典数据信息',
+    schema: {
+      type: 'object',
+      required: ['type', 'label', 'value'],
+      properties: {
+        type: { type: 'string', description: '字典类型标识', example: 'sys_user_status' },
+        label: { type: 'string', description: '字典标签', example: '正常' },
+        value: { type: 'string', description: '字典键值', example: 'active' },
+        sort: { type: 'integer', description: '排序', example: 0 },
+        status: { type: 'string', description: '状态', enum: ['active', 'disabled'], example: 'active' },
+        cssClass: { type: 'string', description: '样式类名', example: '' },
+        listClass: { type: 'string', description: '列表样式', example: 'default' },
+      },
+    },
+  })
   @ApiResponse({ status: 201, description: '成功' })
   @ApiBearerAuth('access-token')
   create(
@@ -93,7 +108,21 @@ export class DictDataController {
   @RequirePermissions('system:dict:update')
   @ApiOperation({ summary: '修改字典数据' })
   @ApiParam({ name: 'id', description: '字典数据ID' })
-  @ApiBody({ description: '字典数据信息' })
+  @ApiBody({
+    description: '字典数据信息',
+    schema: {
+      type: 'object',
+      properties: {
+        type: { type: 'string', description: '字典类型标识', example: 'sys_user_status' },
+        label: { type: 'string', description: '字典标签', example: '正常' },
+        value: { type: 'string', description: '字典键值', example: 'active' },
+        sort: { type: 'integer', description: '排序', example: 0 },
+        status: { type: 'string', description: '状态', enum: ['active', 'disabled'], example: 'active' },
+        cssClass: { type: 'string', description: '样式类名', nullable: true, example: '' },
+        listClass: { type: 'string', description: '列表样式', nullable: true, example: 'default' },
+      },
+    },
+  })
   @ApiResponse({ status: 200, description: '成功' })
   @ApiBearerAuth('access-token')
   update(

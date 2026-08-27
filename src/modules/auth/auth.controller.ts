@@ -35,7 +35,17 @@ export class AuthController {
   @HttpCode(200)
   @Public()
   @ApiOperation({ summary: '用户登录' })
-  @ApiBody({ description: '登录参数' })
+  @ApiBody({
+    description: '登录参数',
+    schema: {
+      type: 'object',
+      required: ['username', 'password'],
+      properties: {
+        username: { type: 'string', description: '用户名', example: 'admin' },
+        password: { type: 'string', description: '密码', example: 'abc123456' },
+      },
+    },
+  })
   @ApiResponse({ status: 200, description: '成功' })
   @ApiResponse({ status: 401, description: '用户名或密码错误' })
   async login(@Body() body: unknown, @Req() request: LoginRequest) {
@@ -49,7 +59,16 @@ export class AuthController {
   @HttpCode(200)
   @Public()
   @ApiOperation({ summary: '刷新令牌' })
-  @ApiBody({ description: '刷新令牌参数' })
+  @ApiBody({
+    description: '刷新令牌参数',
+    schema: {
+      type: 'object',
+      required: ['refreshToken'],
+      properties: {
+        refreshToken: { type: 'string', description: '刷新令牌' },
+      },
+    },
+  })
   @ApiResponse({ status: 200, description: '成功' })
   @ApiResponse({ status: 401, description: '刷新令牌无效或已过期' })
   async refresh(@Body() body: unknown) {
@@ -65,7 +84,16 @@ export class AuthController {
   @HttpCode(200)
   @ApiBearerAuth('access-token')
   @ApiOperation({ summary: '退出登录' })
-  @ApiBody({ description: '刷新令牌参数' })
+  @ApiBody({
+    description: '刷新令牌参数',
+    schema: {
+      type: 'object',
+      required: ['refreshToken'],
+      properties: {
+        refreshToken: { type: 'string', description: '刷新令牌' },
+      },
+    },
+  })
   @ApiResponse({ status: 200, description: '成功' })
   async logout(@Body() body: unknown) {
     await this.authService.logout(refreshSchema.parse(body).refreshToken);

@@ -69,7 +69,19 @@ export class DictTypesController {
   @Post()
   @RequirePermissions('system:dict:create')
   @ApiOperation({ summary: '新增字典类型' })
-  @ApiBody({ description: '字典类型信息' })
+  @ApiBody({
+    description: '字典类型信息',
+    schema: {
+      type: 'object',
+      required: ['name', 'type'],
+      properties: {
+        name: { type: 'string', description: '字典类型名称', example: '用户状态' },
+        type: { type: 'string', description: '字典类型标识', example: 'sys_user_status' },
+        status: { type: 'string', description: '状态', enum: ['active', 'disabled'], example: 'active' },
+        remark: { type: 'string', description: '备注', example: '用户状态字典' },
+      },
+    },
+  })
   @ApiResponse({ status: 201, description: '成功' })
   @ApiBearerAuth('access-token')
   create(
@@ -82,7 +94,18 @@ export class DictTypesController {
   @RequirePermissions('system:dict:update')
   @ApiOperation({ summary: '修改字典类型' })
   @ApiParam({ name: 'id', description: '字典类型ID' })
-  @ApiBody({ description: '字典类型信息' })
+  @ApiBody({
+    description: '字典类型信息',
+    schema: {
+      type: 'object',
+      properties: {
+        name: { type: 'string', description: '字典类型名称', example: '用户状态' },
+        type: { type: 'string', description: '字典类型标识', example: 'sys_user_status' },
+        status: { type: 'string', description: '状态', enum: ['active', 'disabled'], example: 'active' },
+        remark: { type: 'string', description: '备注', nullable: true, example: '用户状态字典' },
+      },
+    },
+  })
   @ApiResponse({ status: 200, description: '成功' })
   @ApiBearerAuth('access-token')
   update(

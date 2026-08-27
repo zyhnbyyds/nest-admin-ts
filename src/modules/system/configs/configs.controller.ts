@@ -79,7 +79,20 @@ export class ConfigsController {
   @Post()
   @RequirePermissions('system:config:create')
   @ApiOperation({ summary: '新增参数' })
-  @ApiBody({ description: '参数信息' })
+  @ApiBody({
+    description: '参数信息',
+    schema: {
+      type: 'object',
+      required: ['name', 'key', 'value'],
+      properties: {
+        name: { type: 'string', description: '参数名称', example: '系统名称' },
+        key: { type: 'string', description: '参数键名', example: 'sys.name' },
+        value: { type: 'string', description: '参数值', example: 'nest-admin' },
+        builtin: { type: 'boolean', description: '是否内置', example: false },
+        remark: { type: 'string', description: '备注', example: '系统名称配置' },
+      },
+    },
+  })
   @ApiResponse({ status: 201, description: '成功' })
   @ApiBearerAuth('access-token')
   create(
@@ -92,7 +105,19 @@ export class ConfigsController {
   @RequirePermissions('system:config:update')
   @ApiOperation({ summary: '修改参数' })
   @ApiParam({ name: 'id', description: '参数ID' })
-  @ApiBody({ description: '参数信息' })
+  @ApiBody({
+    description: '参数信息',
+    schema: {
+      type: 'object',
+      properties: {
+        name: { type: 'string', description: '参数名称', example: '系统名称' },
+        key: { type: 'string', description: '参数键名', example: 'sys.name' },
+        value: { type: 'string', description: '参数值', example: 'nest-admin' },
+        builtin: { type: 'boolean', description: '是否内置', example: false },
+        remark: { type: 'string', description: '备注', nullable: true, example: '系统名称配置' },
+      },
+    },
+  })
   @ApiResponse({ status: 200, description: '成功' })
   @ApiBearerAuth('access-token')
   update(
