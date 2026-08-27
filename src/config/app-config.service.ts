@@ -17,6 +17,14 @@ const envSchema = z.object({
   JWT_REFRESH_TTL: z.string().default('7d'),
   CORS_ORIGINS: z.string().default('http://localhost:9527'),
   UPLOAD_DIR: z.string().default('uploads'),
+  SWAGGER_ENABLED: z
+    .enum(['true', 'false'])
+    .default('true')
+    .transform((value) => value === 'true'),
+  SWAGGER_PATH: z.string().default('docs'),
+  SWAGGER_TITLE: z.string().default('RuoYi Nest Admin API'),
+  SWAGGER_DESCRIPTION: z.string().default('RuoYi-inspired administration API'),
+  SWAGGER_VERSION: z.string().default('0.1.0'),
 });
 export type AppEnvironment = z.infer<typeof envSchema>;
 
@@ -43,6 +51,29 @@ export class AppConfigService {
   }
   get environment(): AppEnvironment['NODE_ENV'] {
     return this.values.NODE_ENV;
+  }
+  get swagger(): Pick<
+    AppEnvironment,
+    | 'SWAGGER_ENABLED'
+    | 'SWAGGER_PATH'
+    | 'SWAGGER_TITLE'
+    | 'SWAGGER_DESCRIPTION'
+    | 'SWAGGER_VERSION'
+  > {
+    const {
+      SWAGGER_ENABLED,
+      SWAGGER_PATH,
+      SWAGGER_TITLE,
+      SWAGGER_DESCRIPTION,
+      SWAGGER_VERSION,
+    } = this.values;
+    return {
+      SWAGGER_ENABLED,
+      SWAGGER_PATH,
+      SWAGGER_TITLE,
+      SWAGGER_DESCRIPTION,
+      SWAGGER_VERSION,
+    };
   }
   get jwt(): Pick<
     AppEnvironment,

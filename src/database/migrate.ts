@@ -11,7 +11,7 @@ async function run(): Promise<void> {
   const db = drizzle({ client: connection });
   try {
     console.log('[migrate] Running database migrations...');
-    await migrate(db, { migrationsFolder: './drizzle' });
+    await migrate(db, { migrationsFolder: './src/database/migrations' });
     console.log('[migrate] Database migrations completed.');
   } finally {
     await connection.end();
