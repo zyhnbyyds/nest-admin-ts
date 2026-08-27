@@ -84,7 +84,7 @@ src/
       auth.module.ts
       auth.controller.ts          # POST /auth/login、/auth/refresh、/auth/logout
       auth.service.ts             # 登录、刷新、登出、Token 签发、权限解析
-      jwt.strategy.ts             # 占位文件，实际不生效——AccessTokenGuard 直接处理 JWT
+      (认证由 AccessTokenGuard 直接处理 JWT，不需要 passport 策略)
     system/
       users/                      # 用户管理——CRUD + 分配角色
       roles/                      # 角色管理——CRUD + 设置菜单权限 + 获取菜单 ID 列表
