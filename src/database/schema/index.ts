@@ -1,4 +1,4 @@
-import { relations } from 'drizzle-orm';
+import { defineRelations } from 'drizzle-orm';
 import {
   boolean,
   datetime,
@@ -381,30 +381,80 @@ export const files = mysqlTable(
   ],
 );
 
-export const userRelations = relations(users, ({ one, many }) => ({
-  department: one(departments, {
-    fields: [users.deptId],
-    references: [departments.id],
+export const relations = defineRelations(
+  {
+    departments,
+    users,
+    roles,
+    menus,
+    userRoles,
+    roleMenus,
+    posts,
+    userPosts,
+    refreshTokens,
+    dictionaries,
+    dictTypes,
+    configs,
+    operationLogs,
+    loginLogs,
+    jobs,
+    jobLogs,
+    files,
+  },
+  ({
+    departments,
+    users,
+    roles,
+    menus,
+    userRoles,
+    roleMenus,
+    posts,
+    userPosts,
+    refreshTokens,
+    one,
+    many,
+  }) => ({
+    users: {
+      department: one.departments({
+        from: users.deptId,
+        to: departments.id,
+      }),
+      assignments: many.userRoles({
+        from: users.id,
+        to: userRoles.userId,
+      }),
+      refreshTokens: many.refreshTokens({
+        from: users.id,
+        to: refreshTokens.userId,
+      }),
+    },
+    roles: {
+      assignments: many.userRoles({
+        from: roles.id,
+        to: userRoles.roleId,
+      }),
+      menuAssignments: many.roleMenus({
+        from: roles.id,
+        to: roleMenus.roleId,
+      }),
+    },
+    userRoles: {
+      user: one.users({ from: userRoles.userId, to: users.id }),
+      role: one.roles({ from: userRoles.roleId, to: roles.id }),
+    },
+    roleMenus: {
+      role: one.roles({ from: roleMenus.roleId, to: roles.id }),
+      menu: one.menus({ from: roleMenus.menuId, to: menus.id }),
+    },
+    posts: {
+      assignments: many.userPosts({
+        from: posts.id,
+        to: userPosts.postId,
+      }),
+    },
+    userPosts: {
+      user: one.users({ from: userPosts.userId, to: users.id }),
+      post: one.posts({ from: userPosts.postId, to: posts.id }),
+    },
   }),
-  assignments: many(userRoles),
-  refreshTokens: many(refreshTokens),
-}));
-export const roleRelations = relations(roles, ({ many }) => ({
-  assignments: many(userRoles),
-  menuAssignments: many(roleMenus),
-}));
-export const userRoleRelations = relations(userRoles, ({ one }) => ({
-  user: one(users, { fields: [userRoles.userId], references: [users.id] }),
-  role: one(roles, { fields: [userRoles.roleId], references: [roles.id] }),
-}));
-export const roleMenuRelations = relations(roleMenus, ({ one }) => ({
-  role: one(roles, { fields: [roleMenus.roleId], references: [roles.id] }),
-  menu: one(menus, { fields: [roleMenus.menuId], references: [menus.id] }),
-}));
-export const postRelations = relations(posts, ({ many }) => ({
-  assignments: many(userPosts),
-}));
-export const userPostRelations = relations(userPosts, ({ one }) => ({
-  user: one(users, { fields: [userPosts.userId], references: [users.id] }),
-  post: one(posts, { fields: [userPosts.postId], references: [posts.id] }),
-}));
+);

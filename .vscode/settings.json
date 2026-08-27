@@ -3,5 +3,5 @@
     "**/.git": false
   },
   "eslint.format.enable": true,
-  "cSpell.words": ["echostr"]
+  "cSpell.words": ["echostr", "varchar"]
 }

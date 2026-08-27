@@ -6,8 +6,21 @@ import { drizzle } from 'drizzle-orm/mysql2';
 async function run(): Promise<void> {
   const url = process.env.DATABASE_URL;
   if (!url) throw new Error('DATABASE_URL is required');
+
   const connection = await mysql.createConnection(url);
-  await migrate(drizzle(connection), { migrationsFolder: 'drizzle' });
-  await connection.end();
+  const db = drizzle({ client: connection });
+  try {
+    console.log('[migrate] Running database migrations...');
+    await migrate(db, { migrationsFolder: './drizzle' });
+    console.log('[migrate] Database migrations completed.');
+  } finally {
+    await connection.end();
+  }
 }
-void run();
+
+run().catch((error: unknown) => {
+  const message =
+    error instanceof Error ? (error.stack ?? error.message) : String(error);
+  console.error(`[migrate] Failed: ${message}`);
+  process.exit(1);
+});

@@ -11,7 +11,7 @@ async function seed(): Promise<void> {
   if (!url || !password)
     throw new Error('DATABASE_URL and SEED_ADMIN_PASSWORD are required');
   const pool = mysql.createPool(url);
-  const db = drizzle(pool);
+  const db = drizzle({ client: pool });
   await db
     .insert(roles)
     .values({ name: '超级管理员', key: 'admin', isSystem: true })
