@@ -7,3 +7,4 @@ coverage/
 uploads/
 *.log
 .DS_Store
+src/modules/generated/

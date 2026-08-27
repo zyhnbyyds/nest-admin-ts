@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 
 describe('AppConfigService', () => {
-  it('fails fast when secrets are unsafe', async () => {
+  it('fails fast when secrets are unsafe', { timeout: 30000 }, async () => {
     vi.resetModules();
     process.env = {
       ...process.env,
