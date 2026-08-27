@@ -1,7 +1,7 @@
 {
-  "name": "ruoyi-nest-admin",
+  "name": "nest-admin",
   "version": "0.1.0",
-  "description": "RuoYi-inspired administration API built with NestJS, Fastify and Drizzle ORM.",
+  "description": "Administration API built with NestJS, Fastify and Drizzle ORM.",
   "private": true,
   "license": "MIT",
   "packageManager": "bun@1.4.0",

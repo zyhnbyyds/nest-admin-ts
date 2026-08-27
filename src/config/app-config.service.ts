@@ -15,15 +15,15 @@ const envSchema = z.object({
   JWT_REFRESH_SECRET: z.string().min(32),
   JWT_ACCESS_TTL: z.string().default('15m'),
   JWT_REFRESH_TTL: z.string().default('7d'),
-  CORS_ORIGINS: z.string().default('http://localhost:9527'),
+  CORS_ORIGINS: z.string().default('http://localhost:5173'),
   UPLOAD_DIR: z.string().default('uploads'),
   SWAGGER_ENABLED: z
     .enum(['true', 'false'])
     .default('true')
     .transform((value) => value === 'true'),
   SWAGGER_PATH: z.string().default('docs'),
-  SWAGGER_TITLE: z.string().default('RuoYi Nest Admin API'),
-  SWAGGER_DESCRIPTION: z.string().default('RuoYi-inspired administration API'),
+  SWAGGER_TITLE: z.string().default('Nest Admin API'),
+  SWAGGER_DESCRIPTION: z.string().default('Administration API built with NestJS, Fastify and Drizzle ORM'),
   SWAGGER_VERSION: z.string().default('0.1.0'),
 });
 export type AppEnvironment = z.infer<typeof envSchema>;

@@ -1,8 +1,8 @@
-# AGENT.md — 若依 Nest 管理后台
+# AGENT.md — Nest Admin
 
 ## 项目概述
 
-**ruoyi-nest-admin** 是一个类若依(RuoYi)的后端管理 API。技术栈为 NestJS + Fastify 作为 HTTP 层，Drizzle ORM 操作数据库，Zod 做数据校验。主要功能：JWT 双 token 认证、基于权限字符串的 RBAC 访问控制、部门/菜单/岗位/字典管理、定时任务、文件上传、操作审计日志、在线用户跟踪、代码生成器。
+**nest-admin** 是一个通用后端管理 API。技术栈为 NestJS + Fastify 作为 HTTP 层，Drizzle ORM 操作数据库，Zod 做数据校验。主要功能：JWT 双 token 认证、基于权限字符串的 RBAC 访问控制、部门/菜单/岗位/字典管理、定时任务、文件上传、操作审计日志、在线用户跟踪、代码生成器。
 
 - **包管理器**：`bun@1.4.0`（同时存在 `bun.lock` 和 `pnpm-lock.yaml`，以 `bun install` 为准）
 - **Node 版本**：`>=24`
@@ -102,7 +102,7 @@ src/
     jobs/                         # 定时任务——CRUD + runNow + 日志查询 + 清空日志
     files/                        # 文件管理——上传（multipart）/ 列表 / 详情 / 下载 / 删除
     generator/                    # 代码生成器——表列表 / 列信息 / 预览 / 生成
-    compat/                       # 旧版若依 REST 控制器（role / menu / user）——封装新版 service
+    compat/                       # 旧版 REST 控制器（role / menu / user）——封装新版 service
     health/                       # GET /health——始终公开，无需认证
   generated/                      # （已被 gitignore）代码生成器的输出目录
 ```
@@ -150,7 +150,7 @@ import { UsersService } from './users.service.js';
 ```
 
 ### Controller 编写规范
-- 路由前缀遵循若依风格：`system/users`、`system/roles`、`monitor/login-logs` 等。
+- 路由前缀采用分层风格：`system/users`、`system/roles`、`monitor/login-logs` 等。
 - 所有受保护路由必须用 `@RequirePermissions('模块:资源:操作')` 装饰。
 - 请求体用 Zod schema 校验，schema 定义在 Controller 文件中。
 - Controller 保持薄层——仅调用 Service 并返回结果。
@@ -256,7 +256,7 @@ const service = new UsersService({ db } as any);
 | `JWT_REFRESH_SECRET`  | **是** | —                     | 刷新令牌密钥（最少 32 个字符）    |
 | `JWT_ACCESS_TTL`      | 否   | `15m`                   | 访问令牌有效期，格式 `\d+(s\|m\|h\|d)` |
 | `JWT_REFRESH_TTL`     | 否   | `7d`                    | 刷新令牌有效期，格式 `\d+(s\|m\|h\|d)` |
-| `CORS_ORIGINS`        | 否   | `http://localhost:9527` | 允许的跨域来源，逗号分隔          |
+| `CORS_ORIGINS`        | 否   | `http://localhost:5173` | 允许的跨域来源，逗号分隔          |
 | `UPLOAD_DIR`          | 否   | `uploads`               | 文件上传目录                      |
 | `SWAGGER_ENABLED`     | 否   | `true`                  | 是否启用 Swagger（`true`/`false`） |
 | `SWAGGER_PATH`        | 否   | `docs`                  | Swagger 文档路径                  |
