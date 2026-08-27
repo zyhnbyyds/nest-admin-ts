@@ -38,6 +38,17 @@ async function bootstrap(): Promise<void> {
       )
       .build();
     const document = SwaggerModule.createDocument(app, swaggerConfig);
+
+    // Merge zod-to-openapi registry schemas into the NestJS-generated document
+    const { getComponentSchemas } = await import('./common/swagger/zod-schema.helper.js');
+    const zodSchemas = getComponentSchemas();
+    if (document.components) {
+      document.components.schemas = {
+        ...document.components.schemas,
+        ...zodSchemas,
+      };
+    }
+
     SwaggerModule.setup(config.swagger.SWAGGER_PATH, app, document, {
       swaggerOptions: { persistAuthorization: true },
     });

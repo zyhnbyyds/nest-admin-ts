@@ -11,6 +11,7 @@ import {
   Req,
 } from '@nestjs/common';
 import { z } from 'zod';
+import { registerComponent } from '../../../common/swagger/zod-schema.helper.js';
 import {
   ApiBearerAuth,
   ApiBody,
@@ -24,18 +25,22 @@ import { RequirePermissions } from '../../../common/auth/permissions.decorator.j
 import { DictDataService } from './dict-data.service.js';
 
 const createSchema = z.object({
-  type: z.string().min(1).max(100),
-  label: z.string().min(1).max(100),
-  value: z.string().min(1).max(100),
-  sort: z.number().int().min(0).optional(),
-  status: z.enum(['active', 'disabled']).optional(),
-  cssClass: z.string().max(100).optional(),
-  listClass: z.string().max(100).optional(),
+  type: z.string().min(1).max(100).openapi({ example: 'user_gender', description: '字典类型标识' }),
+  label: z.string().min(1).max(100).openapi({ example: '男', description: '字典标签' }),
+  value: z.string().min(1).max(100).openapi({ example: '1', description: '字典键值' }),
+  sort: z.number().int().min(0).optional().openapi({ example: 1, description: '排序' }),
+  status: z.enum(['active', 'disabled']).optional().openapi({ example: 'active', description: '状态' }),
+  cssClass: z.string().max(100).optional().openapi({ example: '', description: '样式类名' }),
+  listClass: z.string().max(100).optional().openapi({ example: '', description: '列表样式' }),
 });
 const updateSchema = createSchema.partial().extend({
-  cssClass: z.string().max(100).nullable().optional(),
-  listClass: z.string().max(100).nullable().optional(),
+  cssClass: z.string().max(100).nullable().optional().openapi({ example: '', description: '样式类名' }),
+  listClass: z.string().max(100).nullable().optional().openapi({ example: '', description: '列表样式' }),
 });
+
+registerComponent('CreateDictDataRequest', createSchema);
+registerComponent('UpdateDictDataRequest', updateSchema);
+
 type AuthRequest = { user: { id: number } };
 
 @ApiTags('字典数据管理')
@@ -80,22 +85,7 @@ export class DictDataController {
   @Post()
   @RequirePermissions('system:dict:create')
   @ApiOperation({ summary: '新增字典数据' })
-  @ApiBody({
-    description: '字典数据信息',
-    schema: {
-      type: 'object',
-      required: ['type', 'label', 'value'],
-      properties: {
-        type: { type: 'string', description: '字典类型标识', example: 'sys_user_status' },
-        label: { type: 'string', description: '字典标签', example: '正常' },
-        value: { type: 'string', description: '字典键值', example: 'active' },
-        sort: { type: 'integer', description: '排序', example: 0 },
-        status: { type: 'string', description: '状态', enum: ['active', 'disabled'], example: 'active' },
-        cssClass: { type: 'string', description: '样式类名', example: '' },
-        listClass: { type: 'string', description: '列表样式', example: 'default' },
-      },
-    },
-  })
+  @ApiBody({ schema: { $ref: '#/components/schemas/CreateDictDataRequest' } })
   @ApiResponse({ status: 201, description: '成功' })
   @ApiBearerAuth('access-token')
   create(
@@ -108,21 +98,7 @@ export class DictDataController {
   @RequirePermissions('system:dict:update')
   @ApiOperation({ summary: '修改字典数据' })
   @ApiParam({ name: 'id', description: '字典数据ID' })
-  @ApiBody({
-    description: '字典数据信息',
-    schema: {
-      type: 'object',
-      properties: {
-        type: { type: 'string', description: '字典类型标识', example: 'sys_user_status' },
-        label: { type: 'string', description: '字典标签', example: '正常' },
-        value: { type: 'string', description: '字典键值', example: 'active' },
-        sort: { type: 'integer', description: '排序', example: 0 },
-        status: { type: 'string', description: '状态', enum: ['active', 'disabled'], example: 'active' },
-        cssClass: { type: 'string', description: '样式类名', nullable: true, example: '' },
-        listClass: { type: 'string', description: '列表样式', nullable: true, example: 'default' },
-      },
-    },
-  })
+  @ApiBody({ schema: { $ref: '#/components/schemas/UpdateDictDataRequest' } })
   @ApiResponse({ status: 200, description: '成功' })
   @ApiBearerAuth('access-token')
   update(

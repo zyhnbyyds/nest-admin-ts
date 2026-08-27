@@ -11,6 +11,7 @@ import {
   Req,
 } from '@nestjs/common';
 import { z } from 'zod';
+import { registerComponent } from '../../../common/swagger/zod-schema.helper.js';
 import {
   ApiBearerAuth,
   ApiBody,
@@ -24,18 +25,23 @@ import { RequirePermissions } from '../../../common/auth/permissions.decorator.j
 import { DictTypesService } from './dict-types.service.js';
 
 const createSchema = z.object({
-  name: z.string().min(1).max(100),
+  name: z.string().min(1).max(100).openapi({ example: '用户性别', description: '字典类型名称' }),
   type: z
     .string()
     .min(1)
     .max(100)
-    .regex(/^[a-z0-9:_-]+$/),
-  status: z.enum(['active', 'disabled']).optional(),
-  remark: z.string().max(500).optional(),
+    .regex(/^[a-z0-9:_-]+$/)
+    .openapi({ example: 'user_gender', description: '字典类型标识' }),
+  status: z.enum(['active', 'disabled']).optional().openapi({ example: 'active', description: '状态' }),
+  remark: z.string().max(500).optional().openapi({ example: '用户性别字典', description: '备注' }),
 });
 const updateSchema = createSchema
   .partial()
-  .extend({ remark: z.string().max(500).nullable().optional() });
+  .extend({ remark: z.string().max(500).nullable().optional().openapi({ example: '用户性别字典', description: '备注' }) });
+
+registerComponent('CreateDictTypeRequest', createSchema);
+registerComponent('UpdateDictTypeRequest', updateSchema);
+
 type AuthRequest = { user: { id: number } };
 
 @ApiTags('字典类型管理')
@@ -69,19 +75,7 @@ export class DictTypesController {
   @Post()
   @RequirePermissions('system:dict:create')
   @ApiOperation({ summary: '新增字典类型' })
-  @ApiBody({
-    description: '字典类型信息',
-    schema: {
-      type: 'object',
-      required: ['name', 'type'],
-      properties: {
-        name: { type: 'string', description: '字典类型名称', example: '用户状态' },
-        type: { type: 'string', description: '字典类型标识', example: 'sys_user_status' },
-        status: { type: 'string', description: '状态', enum: ['active', 'disabled'], example: 'active' },
-        remark: { type: 'string', description: '备注', example: '用户状态字典' },
-      },
-    },
-  })
+  @ApiBody({ schema: { $ref: '#/components/schemas/CreateDictTypeRequest' } })
   @ApiResponse({ status: 201, description: '成功' })
   @ApiBearerAuth('access-token')
   create(
@@ -94,18 +88,7 @@ export class DictTypesController {
   @RequirePermissions('system:dict:update')
   @ApiOperation({ summary: '修改字典类型' })
   @ApiParam({ name: 'id', description: '字典类型ID' })
-  @ApiBody({
-    description: '字典类型信息',
-    schema: {
-      type: 'object',
-      properties: {
-        name: { type: 'string', description: '字典类型名称', example: '用户状态' },
-        type: { type: 'string', description: '字典类型标识', example: 'sys_user_status' },
-        status: { type: 'string', description: '状态', enum: ['active', 'disabled'], example: 'active' },
-        remark: { type: 'string', description: '备注', nullable: true, example: '用户状态字典' },
-      },
-    },
-  })
+  @ApiBody({ schema: { $ref: '#/components/schemas/UpdateDictTypeRequest' } })
   @ApiResponse({ status: 200, description: '成功' })
   @ApiBearerAuth('access-token')
   update(

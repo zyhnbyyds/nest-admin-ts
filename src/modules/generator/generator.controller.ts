@@ -1,5 +1,6 @@
 import { Body, Controller, Get, Param, Post } from '@nestjs/common';
 import { z } from 'zod';
+import { registerComponent } from '../../common/swagger/zod-schema.helper.js';
 import {
   ApiBearerAuth,
   ApiBody,
@@ -11,11 +12,16 @@ import {
 import { RequirePermissions } from '../../common/auth/permissions.decorator.js';
 import { GeneratorService } from './generator.service.js';
 
-const previewSchema = z.object({ table: z.string().min(1).max(64) });
-const generateSchema = z.object({
-  table: z.string().min(1).max(64),
-  directory: z.string().min(1).max(100),
+const previewSchema = z.object({
+  table: z.string().min(1).max(64).openapi({ example: 'sys_user', description: '表名' }),
 });
+const generateSchema = z.object({
+  table: z.string().min(1).max(64).openapi({ example: 'sys_user', description: '表名' }),
+  directory: z.string().min(1).max(100).openapi({ example: 'src/modules/system/users', description: '目录' }),
+});
+
+registerComponent('PreviewCodeRequest', previewSchema);
+registerComponent('GenerateCodeRequest', generateSchema);
 
 @ApiTags('代码生成')
 @Controller('generator')
@@ -41,7 +47,7 @@ export class GeneratorController {
   @Post('preview')
   @RequirePermissions('system:generator:list')
   @ApiOperation({ summary: '预览生成代码' })
-  @ApiBody({ description: '生成信息' })
+  @ApiBody({ schema: { $ref: '#/components/schemas/PreviewCodeRequest' } })
   @ApiResponse({ status: 201, description: '成功' })
   @ApiBearerAuth('access-token')
   preview(@Body() body: unknown) {
@@ -50,7 +56,7 @@ export class GeneratorController {
   @Post('generate')
   @RequirePermissions('system:generator:generate')
   @ApiOperation({ summary: '生成代码文件' })
-  @ApiBody({ description: '生成信息' })
+  @ApiBody({ schema: { $ref: '#/components/schemas/GenerateCodeRequest' } })
   @ApiResponse({ status: 201, description: '成功' })
   @ApiBearerAuth('access-token')
   generate(@Body() body: unknown) {

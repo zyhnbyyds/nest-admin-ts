@@ -11,6 +11,7 @@ import {
   Req,
 } from '@nestjs/common';
 import { z } from 'zod';
+import { registerComponent } from '../../../common/swagger/zod-schema.helper.js';
 import { RequirePermissions } from '../../../common/auth/permissions.decorator.js';
 import { UsersService } from './users.service.js';
 import {
@@ -24,22 +25,26 @@ import {
 } from '@nestjs/swagger';
 
 const createSchema = z.object({
-  username: z.string().min(3).max(64),
-  displayName: z.string().min(1).max(64),
-  password: z.string().min(12).max(128),
-  email: z.string().email().optional(),
-  phone: z.string().max(20).optional(),
-  deptId: z.number().int().positive().optional(),
+  username: z.string().min(3).max(64).openapi({ example: 'zhangsan', description: '用户名' }),
+  displayName: z.string().min(1).max(64).openapi({ example: '张三', description: '显示名称' }),
+  password: z.string().min(12).max(128).openapi({ example: 'password123456', description: '密码（最少12位）' }),
+  email: z.string().email().optional().openapi({ example: 'zhangsan@example.com', description: '邮箱' }),
+  phone: z.string().max(20).optional().openapi({ example: '13800138000', description: '手机号' }),
+  deptId: z.number().int().positive().optional().openapi({ example: 1, description: '部门ID' }),
 });
 const updateSchema = createSchema
   .omit({ username: true, password: true })
   .partial()
   .extend({
-    email: z.string().email().nullable().optional(),
-    phone: z.string().max(20).nullable().optional(),
-    deptId: z.number().int().positive().nullable().optional(),
-    status: z.enum(['active', 'disabled']).optional(),
+    email: z.string().email().nullable().optional().openapi({ example: 'zhangsan@example.com', description: '邮箱' }),
+    phone: z.string().max(20).nullable().optional().openapi({ example: '13800138000', description: '手机号' }),
+    deptId: z.number().int().positive().nullable().optional().openapi({ example: 1, description: '部门ID' }),
+    status: z.enum(['active', 'disabled']).optional().openapi({ example: 'active', description: '状态' }),
   });
+
+registerComponent('CreateUserRequest', createSchema);
+registerComponent('UpdateUserRequest', updateSchema);
+
 type AuthRequest = { user: { id: number } };
 
 @ApiTags('用户管理')
@@ -64,21 +69,7 @@ export class UsersController {
   @Post()
   @RequirePermissions('system:user:create')
   @ApiOperation({ summary: '新增用户' })
-  @ApiBody({
-    description: '用户创建参数',
-    schema: {
-      type: 'object',
-      required: ['username', 'displayName', 'password'],
-      properties: {
-        username: { type: 'string', description: '用户名', example: 'admin' },
-        displayName: { type: 'string', description: '显示名称', example: '管理员' },
-        password: { type: 'string', description: '密码（最少12位）', example: 'abc123456789' },
-        email: { type: 'string', description: '邮箱', example: 'admin@example.com' },
-        phone: { type: 'string', description: '手机号', example: '13800138000' },
-        deptId: { type: 'integer', description: '部门ID', example: 1 },
-      },
-    },
-  })
+  @ApiBody({ schema: { $ref: '#/components/schemas/CreateUserRequest' } })
   @ApiResponse({ status: 200, description: '成功' })
   create(@Body() body: unknown, @Req() request: AuthRequest) {
     return this.users.create(createSchema.parse(body), request.user.id);
@@ -87,19 +78,7 @@ export class UsersController {
   @RequirePermissions('system:user:update')
   @ApiOperation({ summary: '修改用户' })
   @ApiParam({ name: 'id', description: '用户ID' })
-  @ApiBody({
-    description: '用户更新参数',
-    schema: {
-      type: 'object',
-      properties: {
-        displayName: { type: 'string', description: '显示名称', example: '管理员' },
-        email: { type: 'string', description: '邮箱', nullable: true, example: 'admin@example.com' },
-        phone: { type: 'string', description: '手机号', nullable: true, example: '13800138000' },
-        deptId: { type: 'integer', description: '部门ID', nullable: true, example: 1 },
-        status: { type: 'string', description: '状态', enum: ['active', 'disabled'], example: 'active' },
-      },
-    },
-  })
+  @ApiBody({ schema: { $ref: '#/components/schemas/UpdateUserRequest' } })
   @ApiResponse({ status: 200, description: '成功' })
   update(
     @Param('id', ParseIntPipe) id: number,

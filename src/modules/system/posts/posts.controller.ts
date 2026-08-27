@@ -11,6 +11,7 @@ import {
   Req,
 } from '@nestjs/common';
 import { z } from 'zod';
+import { registerComponent } from '../../../common/swagger/zod-schema.helper.js';
 import { RequirePermissions } from '../../../common/auth/permissions.decorator.js';
 import { PostsService } from './posts.service.js';
 import {
@@ -24,19 +25,24 @@ import {
 } from '@nestjs/swagger';
 
 const createSchema = z.object({
-  name: z.string().min(1).max(50),
+  name: z.string().min(1).max(50).openapi({ example: '前端工程师', description: '岗位名称' }),
   key: z
     .string()
     .min(2)
     .max(100)
-    .regex(/^[a-z0-9:_-]+$/),
-  sort: z.number().int().min(0).optional(),
-  status: z.enum(['active', 'disabled']).optional(),
-  remark: z.string().max(500).optional(),
+    .regex(/^[a-z0-9:_-]+$/)
+    .openapi({ example: 'fe_engineer', description: '岗位标识' }),
+  sort: z.number().int().min(0).optional().openapi({ example: 1, description: '排序' }),
+  status: z.enum(['active', 'disabled']).optional().openapi({ example: 'active', description: '状态' }),
+  remark: z.string().max(500).optional().openapi({ example: '负责前端开发', description: '备注' }),
 });
 const updateSchema = createSchema
   .partial()
-  .extend({ remark: z.string().max(500).nullable().optional() });
+  .extend({ remark: z.string().max(500).nullable().optional().openapi({ example: '负责前端开发', description: '备注' }) });
+
+registerComponent('CreatePostRequest', createSchema);
+registerComponent('UpdatePostRequest', updateSchema);
+
 type AuthRequest = { user: { id: number } };
 
 @ApiTags('岗位管理')
@@ -71,20 +77,7 @@ export class PostsController {
   @Post()
   @RequirePermissions('system:post:create')
   @ApiOperation({ summary: '新增岗位' })
-  @ApiBody({
-    description: '岗位创建参数',
-    schema: {
-      type: 'object',
-      required: ['name', 'key'],
-      properties: {
-        name: { type: 'string', description: '岗位名称', example: '高级工程师' },
-        key: { type: 'string', description: '岗位标识', example: 'senior_engineer' },
-        sort: { type: 'integer', description: '排序', example: 0 },
-        status: { type: 'string', description: '状态', enum: ['active', 'disabled'], example: 'active' },
-        remark: { type: 'string', description: '备注', example: '负责核心业务开发' },
-      },
-    },
-  })
+  @ApiBody({ schema: { $ref: '#/components/schemas/CreatePostRequest' } })
   @ApiResponse({ status: 200, description: '成功' })
   create(
     @Body() body: unknown,
@@ -96,19 +89,7 @@ export class PostsController {
   @RequirePermissions('system:post:update')
   @ApiOperation({ summary: '修改岗位' })
   @ApiParam({ name: 'id', description: '岗位ID' })
-  @ApiBody({
-    description: '岗位更新参数',
-    schema: {
-      type: 'object',
-      properties: {
-        name: { type: 'string', description: '岗位名称', example: '高级工程师' },
-        key: { type: 'string', description: '岗位标识', example: 'senior_engineer' },
-        sort: { type: 'integer', description: '排序', example: 0 },
-        status: { type: 'string', description: '状态', enum: ['active', 'disabled'], example: 'active' },
-        remark: { type: 'string', description: '备注', nullable: true, example: '负责核心业务开发' },
-      },
-    },
-  })
+  @ApiBody({ schema: { $ref: '#/components/schemas/UpdatePostRequest' } })
   @ApiResponse({ status: 200, description: '成功' })
   update(
     @Param('id', ParseIntPipe) id: number,

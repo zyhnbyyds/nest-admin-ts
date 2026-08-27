@@ -8,6 +8,7 @@ import {
   Req,
 } from '@nestjs/common';
 import { z } from 'zod';
+import { registerComponent } from '../../../common/swagger/zod-schema.helper.js';
 import { RequirePermissions } from '../../../common/auth/permissions.decorator.js';
 import { RolesService } from './roles.service.js';
 import {
@@ -20,21 +21,26 @@ import {
 } from '@nestjs/swagger';
 
 const createSchema = z.object({
-  name: z.string().min(1).max(50),
+  name: z.string().min(1).max(50).openapi({ example: '管理员', description: '角色名称' }),
   key: z
     .string()
     .min(2)
     .max(100)
-    .regex(/^[a-z0-9:_-]+$/),
-  sort: z.number().int().min(0).optional(),
+    .regex(/^[a-z0-9:_-]+$/)
+    .openapi({ example: 'admin', description: '角色标识' }),
+  sort: z.number().int().min(0).optional().openapi({ example: 1, description: '排序' }),
   dataScope: z
     .enum(['all', 'custom', 'dept', 'dept_and_children', 'self'])
-    .optional(),
-  menuIds: z.array(z.number().int().positive()).max(500).optional(),
+    .optional()
+    .openapi({ example: 'all', description: '数据权限范围' }),
+  menuIds: z.array(z.number().int().positive()).max(500).optional().openapi({ example: [1, 2, 3], description: '菜单ID集合' }),
 });
 const menuSchema = z.object({
-  menuIds: z.array(z.number().int().positive()).max(500),
+  menuIds: z.array(z.number().int().positive()).max(500).openapi({ example: [1, 2, 3], description: '菜单ID集合' }),
 });
+
+registerComponent('CreateRoleRequest', createSchema);
+registerComponent('SetRoleMenusRequest', menuSchema);
 type AuthRequest = { user: { id: number } };
 
 @ApiTags('角色管理')
@@ -52,30 +58,7 @@ export class RolesController {
   @Post()
   @RequirePermissions('system:role:create')
   @ApiOperation({ summary: '新增角色' })
-  @ApiBody({
-    description: '角色创建参数',
-    schema: {
-      type: 'object',
-      required: ['name', 'key'],
-      properties: {
-        name: { type: 'string', description: '角色名称', example: '管理员' },
-        key: { type: 'string', description: '角色标识', example: 'admin' },
-        sort: { type: 'integer', description: '排序', example: 0 },
-        dataScope: {
-          type: 'string',
-          description: '数据权限范围',
-          enum: ['all', 'custom', 'dept', 'dept_and_children', 'self'],
-          example: 'all',
-        },
-        menuIds: {
-          type: 'array',
-          description: '菜单ID集合',
-          items: { type: 'integer' },
-          example: [1, 2, 3],
-        },
-      },
-    },
-  })
+  @ApiBody({ schema: { $ref: '#/components/schemas/CreateRoleRequest' } })
   @ApiResponse({ status: 200, description: '成功' })
   create(
     @Body() body: unknown,
@@ -87,21 +70,7 @@ export class RolesController {
   @RequirePermissions('system:role:update')
   @ApiOperation({ summary: '设置角色菜单权限' })
   @ApiParam({ name: 'id', description: '角色ID' })
-  @ApiBody({
-    description: '菜单权限参数',
-    schema: {
-      type: 'object',
-      required: ['menuIds'],
-      properties: {
-        menuIds: {
-          type: 'array',
-          description: '菜单ID集合',
-          items: { type: 'integer' },
-          example: [1, 2, 3],
-        },
-      },
-    },
-  })
+  @ApiBody({ schema: { $ref: '#/components/schemas/SetRoleMenusRequest' } })
   @ApiResponse({ status: 200, description: '成功' })
   setMenus(
     @Param('id', ParseIntPipe) id: number,

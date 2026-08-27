@@ -11,6 +11,7 @@ import {
   Req,
 } from '@nestjs/common';
 import { z } from 'zod';
+import { registerComponent } from '../../common/swagger/zod-schema.helper.js';
 import {
   ApiBearerAuth,
   ApiBody,
@@ -24,16 +25,20 @@ import { RequirePermissions } from '../../common/auth/permissions.decorator.js';
 import { JobsService } from './jobs.service.js';
 
 const createSchema = z.object({
-  name: z.string().min(1).max(100),
-  handler: z.string().min(1).max(255),
-  cron: z.string().min(1).max(100),
-  status: z.enum(['active', 'disabled']).optional(),
-  concurrent: z.boolean().optional(),
-  remark: z.string().max(500).optional(),
+  name: z.string().min(1).max(100).openapi({ example: '数据同步任务', description: '任务名称' }),
+  handler: z.string().min(1).max(255).openapi({ example: 'syncData', description: '任务处理器名称' }),
+  cron: z.string().min(1).max(100).openapi({ example: '0 0 * * *', description: 'Cron表达式' }),
+  status: z.enum(['active', 'disabled']).optional().openapi({ example: 'active', description: '状态' }),
+  concurrent: z.boolean().optional().openapi({ example: false, description: '是否允许并发' }),
+  remark: z.string().max(500).optional().openapi({ example: '每天零点同步数据', description: '备注' }),
 });
 const updateSchema = createSchema
   .partial()
-  .extend({ remark: z.string().max(500).nullable().optional() });
+  .extend({ remark: z.string().max(500).nullable().optional().openapi({ example: '每天零点同步数据', description: '备注' }) });
+
+registerComponent('CreateJobRequest', createSchema);
+registerComponent('UpdateJobRequest', updateSchema);
+
 type AuthRequest = { user: { id: number } };
 
 @ApiTags('定时任务管理')
@@ -84,21 +89,7 @@ export class JobsController {
   @Post()
   @RequirePermissions('system:job:create')
   @ApiOperation({ summary: '新增任务' })
-  @ApiBody({
-    description: '任务信息',
-    schema: {
-      type: 'object',
-      required: ['name', 'handler', 'cron'],
-      properties: {
-        name: { type: 'string', description: '任务名称', example: '清理过期令牌' },
-        handler: { type: 'string', description: '任务处理器名称', example: 'cleanExpiredRefreshTokens' },
-        cron: { type: 'string', description: 'Cron表达式', example: '0 0 * * *' },
-        status: { type: 'string', description: '状态', enum: ['active', 'disabled'], example: 'active' },
-        concurrent: { type: 'boolean', description: '是否允许并发', example: true },
-        remark: { type: 'string', description: '备注', example: '每天清理过期令牌' },
-      },
-    },
-  })
+  @ApiBody({ schema: { $ref: '#/components/schemas/CreateJobRequest' } })
   @ApiResponse({ status: 201, description: '成功' })
   @ApiBearerAuth('access-token')
   create(
@@ -120,20 +111,7 @@ export class JobsController {
   @RequirePermissions('system:job:update')
   @ApiOperation({ summary: '修改任务' })
   @ApiParam({ name: 'id', description: '任务ID' })
-  @ApiBody({
-    description: '任务信息',
-    schema: {
-      type: 'object',
-      properties: {
-        name: { type: 'string', description: '任务名称', example: '清理过期令牌' },
-        handler: { type: 'string', description: '任务处理器名称', example: 'cleanExpiredRefreshTokens' },
-        cron: { type: 'string', description: 'Cron表达式', example: '0 0 * * *' },
-        status: { type: 'string', description: '状态', enum: ['active', 'disabled'], example: 'active' },
-        concurrent: { type: 'boolean', description: '是否允许并发', example: true },
-        remark: { type: 'string', description: '备注', nullable: true, example: '每天清理过期令牌' },
-      },
-    },
-  })
+  @ApiBody({ schema: { $ref: '#/components/schemas/UpdateJobRequest' } })
   @ApiResponse({ status: 200, description: '成功' })
   @ApiBearerAuth('access-token')
   update(

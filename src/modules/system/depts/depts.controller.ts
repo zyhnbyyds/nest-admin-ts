@@ -10,6 +10,7 @@ import {
   Req,
 } from '@nestjs/common';
 import { z } from 'zod';
+import { registerComponent } from '../../../common/swagger/zod-schema.helper.js';
 import { RequirePermissions } from '../../../common/auth/permissions.decorator.js';
 import { DeptsService } from './depts.service.js';
 import {
@@ -22,19 +23,23 @@ import {
 } from '@nestjs/swagger';
 
 const createSchema = z.object({
-  parentId: z.number().int().min(0).optional(),
-  name: z.string().min(1).max(50),
-  sort: z.number().int().min(0).optional(),
-  leaderUserId: z.number().int().positive().optional(),
-  phone: z.string().max(20).optional(),
-  email: z.string().email().optional(),
-  status: z.enum(['active', 'disabled']).optional(),
+  parentId: z.number().int().min(0).optional().openapi({ example: 0, description: '父部门ID' }),
+  name: z.string().min(1).max(50).openapi({ example: '研发部', description: '部门名称' }),
+  sort: z.number().int().min(0).optional().openapi({ example: 1, description: '排序' }),
+  leaderUserId: z.number().int().positive().optional().openapi({ example: 1, description: '负责人用户ID' }),
+  phone: z.string().max(20).optional().openapi({ example: '13800138000', description: '联系电话' }),
+  email: z.string().email().optional().openapi({ example: 'dev@example.com', description: '邮箱' }),
+  status: z.enum(['active', 'disabled']).optional().openapi({ example: 'active', description: '状态' }),
 });
 const updateSchema = createSchema.partial().extend({
-  leaderUserId: z.number().int().positive().nullable().optional(),
-  phone: z.string().max(20).nullable().optional(),
-  email: z.string().email().nullable().optional(),
+  leaderUserId: z.number().int().positive().nullable().optional().openapi({ example: 1, description: '负责人用户ID' }),
+  phone: z.string().max(20).nullable().optional().openapi({ example: '13800138000', description: '联系电话' }),
+  email: z.string().email().nullable().optional().openapi({ example: 'dev@example.com', description: '邮箱' }),
 });
+
+registerComponent('CreateDeptRequest', createSchema);
+registerComponent('UpdateDeptRequest', updateSchema);
+
 type AuthRequest = { user: { id: number } };
 
 @ApiTags('部门管理')
@@ -62,22 +67,7 @@ export class DeptsController {
   @Post()
   @RequirePermissions('system:dept:create')
   @ApiOperation({ summary: '新增部门' })
-  @ApiBody({
-    description: '部门创建参数',
-    schema: {
-      type: 'object',
-      required: ['name'],
-      properties: {
-        parentId: { type: 'integer', description: '父部门ID', example: 0 },
-        name: { type: 'string', description: '部门名称', example: '研发部' },
-        sort: { type: 'integer', description: '排序', example: 0 },
-        leaderUserId: { type: 'integer', description: '负责人用户ID', example: 1 },
-        phone: { type: 'string', description: '联系电话', example: '13800138000' },
-        email: { type: 'string', description: '邮箱', example: 'dev@example.com' },
-        status: { type: 'string', description: '状态', enum: ['active', 'disabled'], example: 'active' },
-      },
-    },
-  })
+  @ApiBody({ schema: { $ref: '#/components/schemas/CreateDeptRequest' } })
   @ApiResponse({ status: 200, description: '成功' })
   create(
     @Body() body: unknown,
@@ -89,21 +79,7 @@ export class DeptsController {
   @RequirePermissions('system:dept:update')
   @ApiOperation({ summary: '修改部门' })
   @ApiParam({ name: 'id', description: '部门ID' })
-  @ApiBody({
-    description: '部门更新参数',
-    schema: {
-      type: 'object',
-      properties: {
-        parentId: { type: 'integer', description: '父部门ID', example: 0 },
-        name: { type: 'string', description: '部门名称', example: '研发部' },
-        sort: { type: 'integer', description: '排序', example: 0 },
-        leaderUserId: { type: 'integer', description: '负责人用户ID', nullable: true, example: 1 },
-        phone: { type: 'string', description: '联系电话', nullable: true, example: '13800138000' },
-        email: { type: 'string', description: '邮箱', nullable: true, example: 'dev@example.com' },
-        status: { type: 'string', description: '状态', enum: ['active', 'disabled'], example: 'active' },
-      },
-    },
-  })
+  @ApiBody({ schema: { $ref: '#/components/schemas/UpdateDeptRequest' } })
   @ApiResponse({ status: 200, description: '成功' })
   update(
     @Param('id', ParseIntPipe) id: number,
