@@ -11,6 +11,15 @@ import {
   Req,
 } from '@nestjs/common';
 import { z } from 'zod';
+import {
+  ApiBearerAuth,
+  ApiBody,
+  ApiOperation,
+  ApiParam,
+  ApiQuery,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { RequirePermissions } from '../../../common/auth/permissions.decorator.js';
 import { DictDataService } from './dict-data.service.js';
 
@@ -29,11 +38,18 @@ const updateSchema = createSchema.partial().extend({
 });
 type AuthRequest = { user: { id: number } };
 
+@ApiTags('字典数据管理')
 @Controller('system/dict-data')
 export class DictDataController {
   constructor(private readonly dictData: DictDataService) {}
   @Get()
   @RequirePermissions('system:dict:list')
+  @ApiOperation({ summary: '获取字典数据列表' })
+  @ApiQuery({ name: 'page', required: false, description: '页码' })
+  @ApiQuery({ name: 'pageSize', required: false, description: '每页数量' })
+  @ApiQuery({ name: 'type', required: false, description: '字典类型标识' })
+  @ApiResponse({ status: 200, description: '成功' })
+  @ApiBearerAuth('access-token')
   list(
     @Query('page') rawPage?: string,
     @Query('pageSize') rawPageSize?: string,
@@ -43,30 +59,57 @@ export class DictDataController {
     const pageSize = Math.min(Math.max(Number(rawPageSize) || 20, 1), 100);
     return this.dictData.list(page, pageSize, type);
   }
-  @Get('type/:type') @RequirePermissions('system:dict:list') byType(
-    @Param('type') type: string,
-  ) {
+  @Get('type/:type')
+  @RequirePermissions('system:dict:list')
+  @ApiOperation({ summary: '按类型获取字典数据' })
+  @ApiParam({ name: 'type', description: '字典类型标识' })
+  @ApiResponse({ status: 200, description: '成功' })
+  @ApiBearerAuth('access-token')
+  byType(@Param('type') type: string) {
     return this.dictData.byType(type);
   }
-  @Get(':id') @RequirePermissions('system:dict:list') findOne(
-    @Param('id', ParseIntPipe) id: number,
-  ) {
+  @Get(':id')
+  @RequirePermissions('system:dict:list')
+  @ApiOperation({ summary: '获取字典数据详情' })
+  @ApiParam({ name: 'id', description: '字典数据ID' })
+  @ApiResponse({ status: 200, description: '成功' })
+  @ApiBearerAuth('access-token')
+  findOne(@Param('id', ParseIntPipe) id: number) {
     return this.dictData.findOne(id);
   }
-  @Post() @RequirePermissions('system:dict:create') create(
+  @Post()
+  @RequirePermissions('system:dict:create')
+  @ApiOperation({ summary: '新增字典数据' })
+  @ApiBody({ description: '字典数据信息' })
+  @ApiResponse({ status: 201, description: '成功' })
+  @ApiBearerAuth('access-token')
+  create(
     @Body() body: unknown,
     @Req() request: AuthRequest,
   ) {
     return this.dictData.create(createSchema.parse(body), request.user.id);
   }
-  @Patch(':id') @RequirePermissions('system:dict:update') update(
+  @Patch(':id')
+  @RequirePermissions('system:dict:update')
+  @ApiOperation({ summary: '修改字典数据' })
+  @ApiParam({ name: 'id', description: '字典数据ID' })
+  @ApiBody({ description: '字典数据信息' })
+  @ApiResponse({ status: 200, description: '成功' })
+  @ApiBearerAuth('access-token')
+  update(
     @Param('id', ParseIntPipe) id: number,
     @Body() body: unknown,
     @Req() request: AuthRequest,
   ) {
     return this.dictData.update(id, updateSchema.parse(body), request.user.id);
   }
-  @Delete(':id') @RequirePermissions('system:dict:delete') remove(
+  @Delete(':id')
+  @RequirePermissions('system:dict:delete')
+  @ApiOperation({ summary: '删除字典数据' })
+  @ApiParam({ name: 'id', description: '字典数据ID' })
+  @ApiResponse({ status: 200, description: '成功' })
+  @ApiBearerAuth('access-token')
+  remove(
     @Param('id', ParseIntPipe) id: number,
     @Req() request: AuthRequest,
   ) {

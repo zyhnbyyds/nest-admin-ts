@@ -1,5 +1,13 @@
 import { Body, Controller, Get, Param, Post } from '@nestjs/common';
 import { z } from 'zod';
+import {
+  ApiBearerAuth,
+  ApiBody,
+  ApiOperation,
+  ApiParam,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { RequirePermissions } from '../../common/auth/permissions.decorator.js';
 import { GeneratorService } from './generator.service.js';
 
@@ -9,25 +17,43 @@ const generateSchema = z.object({
   directory: z.string().min(1).max(100),
 });
 
+@ApiTags('代码生成')
 @Controller('generator')
 export class GeneratorController {
   constructor(private readonly generator: GeneratorService) {}
-  @Get('tables') @RequirePermissions('system:generator:list') listTables() {
+  @Get('tables')
+  @RequirePermissions('system:generator:list')
+  @ApiOperation({ summary: '获取数据库表列表' })
+  @ApiResponse({ status: 200, description: '成功' })
+  @ApiBearerAuth('access-token')
+  listTables() {
     return this.generator.listTables();
   }
   @Get('tables/:table/columns')
   @RequirePermissions('system:generator:list')
+  @ApiOperation({ summary: '获取表字段信息' })
+  @ApiParam({ name: 'table', description: '表名' })
+  @ApiResponse({ status: 200, description: '成功' })
+  @ApiBearerAuth('access-token')
   getColumns(@Param('table') table: string) {
     return this.generator.getColumns(table);
   }
-  @Post('preview') @RequirePermissions('system:generator:list') preview(
-    @Body() body: unknown,
-  ) {
+  @Post('preview')
+  @RequirePermissions('system:generator:list')
+  @ApiOperation({ summary: '预览生成代码' })
+  @ApiBody({ description: '生成信息' })
+  @ApiResponse({ status: 201, description: '成功' })
+  @ApiBearerAuth('access-token')
+  preview(@Body() body: unknown) {
     return this.generator.preview(previewSchema.parse(body).table);
   }
-  @Post('generate') @RequirePermissions('system:generator:generate') generate(
-    @Body() body: unknown,
-  ) {
+  @Post('generate')
+  @RequirePermissions('system:generator:generate')
+  @ApiOperation({ summary: '生成代码文件' })
+  @ApiBody({ description: '生成信息' })
+  @ApiResponse({ status: 201, description: '成功' })
+  @ApiBearerAuth('access-token')
+  generate(@Body() body: unknown) {
     const input = generateSchema.parse(body);
     return this.generator.generate(input.table, input.directory);
   }

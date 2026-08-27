@@ -10,6 +10,14 @@ import {
 import { z } from 'zod';
 import { RequirePermissions } from '../../../common/auth/permissions.decorator.js';
 import { RolesService } from './roles.service.js';
+import {
+  ApiBearerAuth,
+  ApiBody,
+  ApiOperation,
+  ApiParam,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 
 const createSchema = z.object({
   name: z.string().min(1).max(50),
@@ -29,19 +37,36 @@ const menuSchema = z.object({
 });
 type AuthRequest = { user: { id: number } };
 
+@ApiTags('角色管理')
+@ApiBearerAuth('access-token')
 @Controller('system/roles')
 export class RolesController {
   constructor(private readonly roles: RolesService) {}
-  @Get() @RequirePermissions('system:role:list') list() {
+  @Get()
+  @RequirePermissions('system:role:list')
+  @ApiOperation({ summary: '获取角色列表' })
+  @ApiResponse({ status: 200, description: '成功' })
+  list() {
     return this.roles.list();
   }
-  @Post() @RequirePermissions('system:role:create') create(
+  @Post()
+  @RequirePermissions('system:role:create')
+  @ApiOperation({ summary: '新增角色' })
+  @ApiBody({ description: '角色创建参数' })
+  @ApiResponse({ status: 200, description: '成功' })
+  create(
     @Body() body: unknown,
     @Req() request: AuthRequest,
   ) {
     return this.roles.create(createSchema.parse(body), request.user.id);
   }
-  @Post(':id/menus') @RequirePermissions('system:role:update') setMenus(
+  @Post(':id/menus')
+  @RequirePermissions('system:role:update')
+  @ApiOperation({ summary: '设置角色菜单权限' })
+  @ApiParam({ name: 'id', description: '角色ID' })
+  @ApiBody({ description: '菜单权限参数' })
+  @ApiResponse({ status: 200, description: '成功' })
+  setMenus(
     @Param('id', ParseIntPipe) id: number,
     @Body() body: unknown,
   ) {

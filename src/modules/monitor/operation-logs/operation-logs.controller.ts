@@ -6,14 +6,30 @@ import {
   ParseIntPipe,
   Query,
 } from '@nestjs/common';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiParam,
+  ApiQuery,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { RequirePermissions } from '../../../common/auth/permissions.decorator.js';
 import { OperationLogsService } from './operation-logs.service.js';
 
+@ApiTags('操作日志')
 @Controller('monitor/operation-logs')
 export class OperationLogsController {
   constructor(private readonly operationLogs: OperationLogsService) {}
   @Get()
   @RequirePermissions('monitor:operlog:list')
+  @ApiOperation({ summary: '获取操作日志列表' })
+  @ApiQuery({ name: 'page', required: false, description: '页码' })
+  @ApiQuery({ name: 'pageSize', required: false, description: '每页数量' })
+  @ApiQuery({ name: 'status', required: false, description: '操作状态' })
+  @ApiQuery({ name: 'userId', required: false, description: '操作用户ID' })
+  @ApiResponse({ status: 200, description: '成功' })
+  @ApiBearerAuth('access-token')
   list(
     @Query('page') rawPage?: string,
     @Query('pageSize') rawPageSize?: string,
@@ -33,17 +49,30 @@ export class OperationLogsController {
       Number.isNaN(userId) ? undefined : userId,
     );
   }
-  @Get(':id') @RequirePermissions('monitor:operlog:list') findOne(
-    @Param('id', ParseIntPipe) id: number,
-  ) {
+  @Get(':id')
+  @RequirePermissions('monitor:operlog:list')
+  @ApiOperation({ summary: '获取操作日志详情' })
+  @ApiParam({ name: 'id', description: '操作日志ID' })
+  @ApiResponse({ status: 200, description: '成功' })
+  @ApiBearerAuth('access-token')
+  findOne(@Param('id', ParseIntPipe) id: number) {
     return this.operationLogs.findOne(id);
   }
-  @Delete(':id') @RequirePermissions('monitor:operlog:delete') remove(
-    @Param('id', ParseIntPipe) id: number,
-  ) {
+  @Delete(':id')
+  @RequirePermissions('monitor:operlog:delete')
+  @ApiOperation({ summary: '删除指定操作日志' })
+  @ApiParam({ name: 'id', description: '操作日志ID' })
+  @ApiResponse({ status: 200, description: '成功' })
+  @ApiBearerAuth('access-token')
+  remove(@Param('id', ParseIntPipe) id: number) {
     return this.operationLogs.remove(id);
   }
-  @Delete() @RequirePermissions('monitor:operlog:delete') clear() {
+  @Delete()
+  @RequirePermissions('monitor:operlog:delete')
+  @ApiOperation({ summary: '清空所有操作日志' })
+  @ApiResponse({ status: 200, description: '成功' })
+  @ApiBearerAuth('access-token')
+  clear() {
     return this.operationLogs.clear();
   }
 }

@@ -12,6 +12,14 @@ import {
 import { z } from 'zod';
 import { RequirePermissions } from '../../../common/auth/permissions.decorator.js';
 import { DeptsService } from './depts.service.js';
+import {
+  ApiBearerAuth,
+  ApiBody,
+  ApiOperation,
+  ApiParam,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 
 const createSchema = z.object({
   parentId: z.number().int().min(0).optional(),
@@ -29,31 +37,58 @@ const updateSchema = createSchema.partial().extend({
 });
 type AuthRequest = { user: { id: number } };
 
+@ApiTags('部门管理')
+@ApiBearerAuth('access-token')
 @Controller('system/depts')
 export class DeptsController {
   constructor(private readonly depts: DeptsService) {}
-  @Get() @RequirePermissions('system:dept:list') list() {
+  @Get()
+  @RequirePermissions('system:dept:list')
+  @ApiOperation({ summary: '获取部门树' })
+  @ApiResponse({ status: 200, description: '成功' })
+  list() {
     return this.depts.list();
   }
-  @Get(':id') @RequirePermissions('system:dept:list') findOne(
+  @Get(':id')
+  @RequirePermissions('system:dept:list')
+  @ApiOperation({ summary: '获取部门详情' })
+  @ApiParam({ name: 'id', description: '部门ID' })
+  @ApiResponse({ status: 200, description: '成功' })
+  findOne(
     @Param('id', ParseIntPipe) id: number,
   ) {
     return this.depts.findOne(id);
   }
-  @Post() @RequirePermissions('system:dept:create') create(
+  @Post()
+  @RequirePermissions('system:dept:create')
+  @ApiOperation({ summary: '新增部门' })
+  @ApiBody({ description: '部门创建参数' })
+  @ApiResponse({ status: 200, description: '成功' })
+  create(
     @Body() body: unknown,
     @Req() request: AuthRequest,
   ) {
     return this.depts.create(createSchema.parse(body), request.user.id);
   }
-  @Patch(':id') @RequirePermissions('system:dept:update') update(
+  @Patch(':id')
+  @RequirePermissions('system:dept:update')
+  @ApiOperation({ summary: '修改部门' })
+  @ApiParam({ name: 'id', description: '部门ID' })
+  @ApiBody({ description: '部门更新参数' })
+  @ApiResponse({ status: 200, description: '成功' })
+  update(
     @Param('id', ParseIntPipe) id: number,
     @Body() body: unknown,
     @Req() request: AuthRequest,
   ) {
     return this.depts.update(id, updateSchema.parse(body), request.user.id);
   }
-  @Delete(':id') @RequirePermissions('system:dept:delete') remove(
+  @Delete(':id')
+  @RequirePermissions('system:dept:delete')
+  @ApiOperation({ summary: '删除部门' })
+  @ApiParam({ name: 'id', description: '部门ID' })
+  @ApiResponse({ status: 200, description: '成功' })
+  remove(
     @Param('id', ParseIntPipe) id: number,
     @Req() request: AuthRequest,
   ) {

@@ -13,6 +13,15 @@ import {
 import { z } from 'zod';
 import { RequirePermissions } from '../../../common/auth/permissions.decorator.js';
 import { UsersService } from './users.service.js';
+import {
+  ApiBearerAuth,
+  ApiBody,
+  ApiOperation,
+  ApiParam,
+  ApiQuery,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 
 const createSchema = z.object({
   username: z.string().min(3).max(64),
@@ -33,11 +42,17 @@ const updateSchema = createSchema
   });
 type AuthRequest = { user: { id: number } };
 
+@ApiTags('用户管理')
+@ApiBearerAuth('access-token')
 @Controller('system/users')
 export class UsersController {
   constructor(private readonly users: UsersService) {}
   @Get()
   @RequirePermissions('system:user:list')
+  @ApiOperation({ summary: '获取用户列表' })
+  @ApiQuery({ name: 'page', required: false, description: '页码', example: 1 })
+  @ApiQuery({ name: 'pageSize', required: false, description: '每页条数', example: 20 })
+  @ApiResponse({ status: 200, description: '成功' })
   list(
     @Query('page') rawPage?: string,
     @Query('pageSize') rawPageSize?: string,
@@ -48,11 +63,18 @@ export class UsersController {
   }
   @Post()
   @RequirePermissions('system:user:create')
+  @ApiOperation({ summary: '新增用户' })
+  @ApiBody({ description: '用户创建参数' })
+  @ApiResponse({ status: 200, description: '成功' })
   create(@Body() body: unknown, @Req() request: AuthRequest) {
     return this.users.create(createSchema.parse(body), request.user.id);
   }
   @Patch(':id')
   @RequirePermissions('system:user:update')
+  @ApiOperation({ summary: '修改用户' })
+  @ApiParam({ name: 'id', description: '用户ID' })
+  @ApiBody({ description: '用户更新参数' })
+  @ApiResponse({ status: 200, description: '成功' })
   update(
     @Param('id', ParseIntPipe) id: number,
     @Body() body: unknown,
@@ -62,6 +84,9 @@ export class UsersController {
   }
   @Delete(':id')
   @RequirePermissions('system:user:delete')
+  @ApiOperation({ summary: '删除用户' })
+  @ApiParam({ name: 'id', description: '用户ID' })
+  @ApiResponse({ status: 200, description: '成功' })
   remove(@Param('id', ParseIntPipe) id: number, @Req() request: AuthRequest) {
     return this.users.remove(id, request.user.id);
   }

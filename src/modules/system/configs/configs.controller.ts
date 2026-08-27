@@ -11,6 +11,15 @@ import {
   Req,
 } from '@nestjs/common';
 import { z } from 'zod';
+import {
+  ApiBearerAuth,
+  ApiBody,
+  ApiOperation,
+  ApiParam,
+  ApiQuery,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { RequirePermissions } from '../../../common/auth/permissions.decorator.js';
 import { ConfigsService } from './configs.service.js';
 
@@ -30,11 +39,17 @@ const updateSchema = createSchema
   .extend({ remark: z.string().max(500).nullable().optional() });
 type AuthRequest = { user: { id: number } };
 
+@ApiTags('参数管理')
 @Controller('system/configs')
 export class ConfigsController {
   constructor(private readonly configs: ConfigsService) {}
   @Get()
   @RequirePermissions('system:config:list')
+  @ApiOperation({ summary: '获取参数列表' })
+  @ApiQuery({ name: 'page', required: false, description: '页码' })
+  @ApiQuery({ name: 'pageSize', required: false, description: '每页数量' })
+  @ApiResponse({ status: 200, description: '成功' })
+  @ApiBearerAuth('access-token')
   list(
     @Query('page') rawPage?: string,
     @Query('pageSize') rawPageSize?: string,
@@ -43,30 +58,57 @@ export class ConfigsController {
     const pageSize = Math.min(Math.max(Number(rawPageSize) || 20, 1), 100);
     return this.configs.list(page, pageSize);
   }
-  @Get('key/:key') @RequirePermissions('system:config:list') byKey(
-    @Param('key') key: string,
-  ) {
+  @Get('key/:key')
+  @RequirePermissions('system:config:list')
+  @ApiOperation({ summary: '按键查询参数' })
+  @ApiParam({ name: 'key', description: '参数键名' })
+  @ApiResponse({ status: 200, description: '成功' })
+  @ApiBearerAuth('access-token')
+  byKey(@Param('key') key: string) {
     return this.configs.byKey(key);
   }
-  @Get(':id') @RequirePermissions('system:config:list') findOne(
-    @Param('id', ParseIntPipe) id: number,
-  ) {
+  @Get(':id')
+  @RequirePermissions('system:config:list')
+  @ApiOperation({ summary: '获取参数详情' })
+  @ApiParam({ name: 'id', description: '参数ID' })
+  @ApiResponse({ status: 200, description: '成功' })
+  @ApiBearerAuth('access-token')
+  findOne(@Param('id', ParseIntPipe) id: number) {
     return this.configs.findOne(id);
   }
-  @Post() @RequirePermissions('system:config:create') create(
+  @Post()
+  @RequirePermissions('system:config:create')
+  @ApiOperation({ summary: '新增参数' })
+  @ApiBody({ description: '参数信息' })
+  @ApiResponse({ status: 201, description: '成功' })
+  @ApiBearerAuth('access-token')
+  create(
     @Body() body: unknown,
     @Req() request: AuthRequest,
   ) {
     return this.configs.create(createSchema.parse(body), request.user.id);
   }
-  @Patch(':id') @RequirePermissions('system:config:update') update(
+  @Patch(':id')
+  @RequirePermissions('system:config:update')
+  @ApiOperation({ summary: '修改参数' })
+  @ApiParam({ name: 'id', description: '参数ID' })
+  @ApiBody({ description: '参数信息' })
+  @ApiResponse({ status: 200, description: '成功' })
+  @ApiBearerAuth('access-token')
+  update(
     @Param('id', ParseIntPipe) id: number,
     @Body() body: unknown,
     @Req() request: AuthRequest,
   ) {
     return this.configs.update(id, updateSchema.parse(body), request.user.id);
   }
-  @Delete(':id') @RequirePermissions('system:config:delete') remove(
+  @Delete(':id')
+  @RequirePermissions('system:config:delete')
+  @ApiOperation({ summary: '删除参数' })
+  @ApiParam({ name: 'id', description: '参数ID' })
+  @ApiResponse({ status: 200, description: '成功' })
+  @ApiBearerAuth('access-token')
+  remove(
     @Param('id', ParseIntPipe) id: number,
     @Req() request: AuthRequest,
   ) {
