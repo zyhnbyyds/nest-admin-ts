@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { onMounted, ref } from "vue";
+import { h, onMounted, ref } from "vue";
+import { LewTable } from "lew-ui";
 import * as echarts from "echarts/core";
 import { BarChart, LineChart, PieChart } from "echarts/charts";
 import {
@@ -176,31 +177,27 @@ onMounted(async () => {
     <!-- 最近登录 -->
     <div class="app-card p-5">
       <h3 class="mt-0 mb-3 text-15px font-600">最近登录记录</h3>
-      <table class="table-base">
-        <thead>
-          <tr>
-            <th class="table-th">用户名</th>
-            <th class="table-th">IP</th>
-            <th class="table-th">状态</th>
-            <th class="table-th">时间</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="(log, index) in recentLogins" :key="index">
-            <td class="table-td">{{ log.username }}</td>
-            <td class="table-td">{{ log.ip ?? "-" }}</td>
-            <td class="table-td">
-              <span :class="log.status === 'success' ? 'tag-success' : 'tag-failure'">
-                {{ log.status === "success" ? "成功" : "失败" }}
-              </span>
-            </td>
-            <td class="table-td">{{ formatDateTime(log.createdAt) }}</td>
-          </tr>
-          <tr v-if="!recentLogins.length">
-            <td colspan="4" class="table-empty">暂无数据</td>
-          </tr>
-        </tbody>
-      </table>
+      <LewTable
+        :data-source="recentLogins"
+        size="small"
+        :columns="[
+          { title: '用户名', field: 'username' },
+          { title: 'IP', field: 'ip' },
+          {
+            title: '状态',
+            field: 'status',
+            customRender: ({ row }) =>
+              (row as { status: string }).status === 'success'
+                ? h('span', { class: 'tag-success' }, '成功')
+                : h('span', { class: 'tag-failure' }, '失败'),
+          },
+          {
+            title: '时间',
+            field: 'createdAt',
+            customRender: ({ row }) => formatDateTime((row as { createdAt: string }).createdAt),
+          },
+        ]"
+      />
     </div>
   </div>
 </template>

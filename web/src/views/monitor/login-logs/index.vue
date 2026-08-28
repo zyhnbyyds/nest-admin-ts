@@ -14,6 +14,7 @@ import type { LewTableColumn } from "lew-ui";
 import { clearLoginLogs, deleteLoginLog } from "~/api/monitor";
 import { useTable } from "~/composables/useTable";
 import { formatDateTime } from "~/composables/useFormat";
+import { renderTag } from "~/utils/render";
 import type { LoginLog } from "~/types/api";
 
 // ---------- 列表 ----------
@@ -35,8 +36,8 @@ const columns: LewTableColumn[] = [
     width: 90,
     customRender: ({ row }) =>
       (row as unknown as LoginLog).status === "success"
-        ? '<span class="tag-success">成功</span>'
-        : '<span class="tag-failure">失败</span>',
+        ? renderTag("成功", "tag-success")
+        : renderTag("失败", "tag-failure"),
   },
   { title: "消息", field: "message", width: 200 },
   {

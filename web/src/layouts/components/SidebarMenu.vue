@@ -1,97 +1,68 @@
 <script setup lang="ts">
-import type { Component } from "vue";
+import { computed } from "vue";
+import { useRoute, useRouter } from "vue-router";
+import { LewMenu } from "lew-ui";
+import type { LewMenuOption } from "lew-ui";
 import type { SidebarItem } from "~/types/app";
 import { resolveMenuIcon } from "~/utils/menu-icon";
 
-defineProps<{
+const props = defineProps<{
   items: SidebarItem[];
   collapsed: boolean;
 }>();
 
-function iconOf(item: SidebarItem): Component {
-  return resolveMenuIcon(item.icon);
+const route = useRoute();
+const router = useRouter();
+
+/** 当前选中菜单 value（路由路径） */
+const activeValue = computed(() => route.path);
+
+/** SidebarItem[] → LewMenuOption[]（分组标题 + 子菜单项） */
+const menuOptions = computed<LewMenuOption[]>(() =>
+  props.items.map((item) => ({
+    label: item.label,
+    children: (item.children?.length ? item.children : [item]).map((child) => ({
+      label: child.label,
+      value: child.path,
+      icon: () => h(resolveMenuIcon(child.icon), { size: 14 }),
+    })),
+  })),
+);
+
+/** 折叠态：仅图标按钮列表 */
+const collapsedItems = computed(() =>
+  props.items.flatMap((item) => (item.children?.length ? item.children : [item])),
+);
+
+function handleChange(item: LewMenuOption) {
+  if (item.value) router.push(item.value);
+}
+
+function go(path: string) {
+  router.push(path);
 }
 </script>
 
 <template>
-  <nav class="flex-1 overflow-y-auto p-2" :class="{ collapsed }">
-    <template v-for="item in items" :key="item.key">
-      <!-- 有子菜单：分组 -->
-      <div v-if="item.children?.length" class="mb-1">
-        <div
-          class="flex items-center gap-2 px-3 pt-2.5 pb-1.5 text-12px font-600 text-[var(--app-text-muted)] tracking-0.2%"
-        >
-          <component :is="iconOf(item)" :size="14" v-if="!collapsed" />
-          <span v-if="!collapsed">{{ item.label }}</span>
-          <span v-else class="w-1 h-1 rounded-full bg-[var(--app-text-muted)]" />
-        </div>
-        <RouterLink
-          v-for="child in item.children"
-          :key="child.key"
-          :to="child.path"
-          class="menu-link"
-          active-class="menu-link-active"
-        >
-          <component :is="iconOf(child)" :size="16" class="menu-icon" />
-          <span class="menu-text">{{ child.label }}</span>
-        </RouterLink>
-      </div>
+  <!-- 展开态：使用 lew-ui LewMenu 组件 -->
+  <nav v-if="!collapsed" class="flex-1 overflow-y-auto p-2">
+    <LewMenu :options="menuOptions" :model-value="activeValue" @change="handleChange" />
+  </nav>
 
-      <!-- 无子菜单：直接链接 -->
-      <RouterLink v-else :to="item.path" class="menu-link" active-class="menu-link-active">
-        <component :is="iconOf(item)" :size="16" class="menu-icon" />
-        <span class="menu-text">{{ item.label }}</span>
-      </RouterLink>
-    </template>
+  <!-- 折叠态：仅图标 -->
+  <nav v-else class="flex-1 overflow-y-auto p-2 flex flex-col items-center gap-1">
+    <button
+      v-for="item in collapsedItems"
+      :key="item.key"
+      class="icon-btn !w-36px !h-36px"
+      :class="{
+        '!bg-[var(--lew-color-primary-light)] !text-[var(--lew-color-primary)]':
+          activeValue === item.path,
+      }"
+      :title="item.label"
+      @click="go(item.path)"
+    >
+      <component :is="resolveMenuIcon(item.icon)" :size="14" />
+    </button>
   </nav>
 </template>
-
-<style scoped>
-/* RouterLink active 状态需要组合选择器，保留少量 CSS */
-.menu-link {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 8px 12px;
-  margin-bottom: 2px;
-  border-radius: 8px;
-  font-size: 13.5px;
-  color: var(--app-text-secondary);
-  text-decoration: none;
-  white-space: nowrap;
-  overflow: hidden;
-  transition:
-    background var(--app-transition),
-    color var(--app-transition);
-}
-
-.menu-link:hover {
-  background: var(--app-bg-hover);
-  color: var(--app-text-primary);
-}
-
-.menu-link-active {
-  background: var(--lew-color-primary-light);
-  color: var(--lew-color-primary);
-  font-weight: 600;
-}
-
-.menu-icon {
-  flex-shrink: 0;
-}
-
-.menu-text {
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-/* 折叠态：只显示图标，居中 */
-.collapsed .menu-link {
-  justify-content: center;
-  padding: 8px 0;
-}
-
-.collapsed .menu-text {
-  display: none;
-}
-</style>
