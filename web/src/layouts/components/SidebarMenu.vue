@@ -1,10 +1,16 @@
 <script setup lang="ts">
+import type { Component } from "vue";
 import type { SidebarItem } from "~/types/app";
+import { resolveMenuIcon } from "~/utils/menu-icon";
 
 defineProps<{
   items: SidebarItem[];
   collapsed: boolean;
 }>();
+
+function iconOf(item: SidebarItem): Component {
+  return resolveMenuIcon(item.icon);
+}
 </script>
 
 <template>
@@ -13,8 +19,9 @@ defineProps<{
       <!-- 有子菜单：分组 -->
       <div v-if="item.children?.length" class="mb-1">
         <div
-          class="flex items-center px-3 pt-2.5 pb-1.5 text-12px font-600 text-[var(--app-text-muted)] tracking-0.2%"
+          class="flex items-center gap-2 px-3 pt-2.5 pb-1.5 text-12px font-600 text-[var(--app-text-muted)] tracking-0.2%"
         >
+          <component :is="iconOf(item)" :size="14" v-if="!collapsed" />
           <span v-if="!collapsed">{{ item.label }}</span>
           <span v-else class="w-1 h-1 rounded-full bg-[var(--app-text-muted)]" />
         </div>
@@ -25,13 +32,15 @@ defineProps<{
           class="menu-link"
           active-class="menu-link-active"
         >
-          {{ child.label }}
+          <component :is="iconOf(child)" :size="16" class="menu-icon" />
+          <span class="menu-text">{{ child.label }}</span>
         </RouterLink>
       </div>
 
       <!-- 无子菜单：直接链接 -->
       <RouterLink v-else :to="item.path" class="menu-link" active-class="menu-link-active">
-        {{ item.label }}
+        <component :is="iconOf(item)" :size="16" class="menu-icon" />
+        <span class="menu-text">{{ item.label }}</span>
       </RouterLink>
     </template>
   </nav>
@@ -42,6 +51,7 @@ defineProps<{
 .menu-link {
   display: flex;
   align-items: center;
+  gap: 10px;
   padding: 8px 12px;
   margin-bottom: 2px;
   border-radius: 8px;
@@ -66,9 +76,22 @@ defineProps<{
   font-weight: 600;
 }
 
+.menu-icon {
+  flex-shrink: 0;
+}
+
+.menu-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* 折叠态：只显示图标，居中 */
 .collapsed .menu-link {
   justify-content: center;
   padding: 8px 0;
-  font-size: 0;
+}
+
+.collapsed .menu-text {
+  display: none;
 }
 </style>

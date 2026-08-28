@@ -25,6 +25,7 @@
     "db:generate": "drizzle-kit generate",
     "db:migrate": "tsx src/database/migrate.ts",
     "db:seed": "tsx src/database/seed/index.ts",
+    "db:seed:menus": "tsx src/database/seed/menus.ts",
     "db:studio": "drizzle-kit studio"
   },
   "dependencies": {

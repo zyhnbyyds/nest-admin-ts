@@ -94,3 +94,46 @@ body {
 ::-webkit-scrollbar-track {
   background: transparent;
 }
+
+/* ============================================
+   lew-ui 表格美化（覆盖默认变量，提升视觉层次）
+   ============================================ */
+
+:root {
+  /* 表头：浅灰底 + 更清晰的边框 */
+  --lew-table-header-bgcolor: var(--lew-bgcolor-3);
+  --lew-table-header-bgcolor-hover: var(--lew-bgcolor-4);
+  --lew-table-header-bgcolor-active: var(--lew-bgcolor-5);
+  /* 行 hover / 选中 */
+  --lew-table-tr-hover-bgcolor: var(--lew-color-primary-light);
+  --lew-table-tr-selected: var(--lew-color-primary-light);
+  --lew-table-tr-focused-bgcolor: var(--lew-color-primary-light);
+  /* 边框：更柔和 */
+  --lew-table-border-color: var(--lew-bgcolor-5);
+}
+
+/* 表头文字：加粗 + 次要色 */
+.lew-table .lew-table-head .lew-table-tr .lew-table-td {
+  font-weight: 600;
+  color: var(--app-text-secondary);
+}
+
+/* 行 hover 过渡 */
+.lew-table .lew-table-body .lew-table-tr {
+  transition: background-color var(--app-transition);
+}
+
+/* 纯 CSS hover 补充（lew-ui 用 JS 类控制，这里补一个即时反馈） */
+.lew-table .lew-table-body .lew-table-tr:hover {
+  background-color: var(--lew-table-tr-hover-bgcolor);
+}
+
+/* 表格容器圆角与溢出 */
+.lew-table {
+  border-radius: 8px;
+}
+
+/* 单元格内边距微调，更透气 */
+.lew-table .lew-table-td > span {
+  padding: 10px 8px !important;
+}
