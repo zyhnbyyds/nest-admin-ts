@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
-import { RolesController } from './roles.controller.js';
-import type { RolesService } from './roles.service.js';
+import { RolesController } from './roles.controller';
+import type { RolesService } from './roles.service';
 
 function mockRolesService(): Partial<RolesService> {
   return {

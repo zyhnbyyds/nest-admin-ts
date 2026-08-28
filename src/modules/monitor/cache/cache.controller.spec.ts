@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { CacheController } from './cache.controller.js';
+import { CacheController } from './cache.controller';
 
 function buildRedis() {
   return {

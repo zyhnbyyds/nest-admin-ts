@@ -4,8 +4,8 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { and, asc, eq, isNull, ne } from 'drizzle-orm';
-import { DatabaseService } from '../../../database/database.service.js';
-import { posts, userPosts } from '../../../database/schema/index.js';
+import { DatabaseService } from '../../../database/database.service';
+import { posts, userPosts } from '../../../database/schema/index';
 
 export type CreatePostInput = {
   name: string;

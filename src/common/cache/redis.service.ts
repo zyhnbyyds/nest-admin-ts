@@ -1,6 +1,6 @@
 import { Injectable, Logger, OnApplicationShutdown } from '@nestjs/common';
 import Redis from 'ioredis';
-import { AppConfigService } from '../../config/app-config.service.js';
+import { AppConfigService } from '../../config/app-config.service';
 
 @Injectable()
 export class RedisService implements OnApplicationShutdown {

@@ -6,8 +6,8 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { RequirePermissions } from '../../../common/auth/permissions.decorator.js';
-import { OnlineService } from './online.service.js';
+import { RequirePermissions } from '../../../common/auth/permissions.decorator';
+import { OnlineService } from './online.service';
 
 @ApiTags('在线用户')
 @Controller('monitor/online')

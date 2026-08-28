@@ -9,9 +9,9 @@ import {
   Query,
   Req,
 } from '@nestjs/common';
-import { RequirePermissions } from '../../common/auth/permissions.decorator.js';
-import { UsersService } from '../system/users/users.service.js';
-import { legacy, mapStatus } from './legacy.js';
+import { RequirePermissions } from '../../common/auth/permissions.decorator';
+import { UsersService } from '../system/users/users.service';
+import { legacy, mapStatus } from './legacy';
 
 type LegacyUserBody = {
   id?: number;

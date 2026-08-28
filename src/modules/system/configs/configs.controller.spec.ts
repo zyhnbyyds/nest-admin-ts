@@ -1,12 +1,16 @@
 import { describe, expect, it, vi } from 'vitest';
-import { ConfigsController } from './configs.controller.js';
-import type { ConfigsService } from './configs.service.js';
+import { ConfigsController } from './configs.controller';
+import type { ConfigsService } from './configs.service';
 
 function mockService(): Partial<ConfigsService> {
   return {
     list: vi.fn().mockResolvedValue({ items: [], page: 1, pageSize: 20 }),
-    byKey: vi.fn().mockResolvedValue({ id: 1, key: 'site.name', value: 'My App' }),
-    findOne: vi.fn().mockResolvedValue({ id: 1, key: 'site.name', value: 'My App' }),
+    byKey: vi
+      .fn()
+      .mockResolvedValue({ id: 1, key: 'site.name', value: 'My App' }),
+    findOne: vi
+      .fn()
+      .mockResolvedValue({ id: 1, key: 'site.name', value: 'My App' }),
     create: vi.fn().mockResolvedValue({ id: 1 }),
     update: vi.fn().mockResolvedValue(undefined),
     remove: vi.fn().mockResolvedValue(undefined),
@@ -38,7 +42,10 @@ describe('ConfigsController', () => {
   it('create creates a config', async () => {
     const s = mockService();
     const c = new ConfigsController(s as ConfigsService);
-    await c.create({ name: 'Test', key: 'test.key', value: 'val' }, { user: { id: 1 } });
+    await c.create(
+      { name: 'Test', key: 'test.key', value: 'val' },
+      { user: { id: 1 } },
+    );
     expect(s.create).toHaveBeenCalled();
   });
 

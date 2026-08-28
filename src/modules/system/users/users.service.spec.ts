@@ -1,9 +1,13 @@
 import { describe, expect, it, vi } from 'vitest';
 import { ConflictException, NotFoundException } from '@nestjs/common';
-import { UsersService } from './users.service.js';
+import { UsersService } from './users.service';
 
 vi.mock('argon2', () => ({
-  default: { verify: vi.fn().mockResolvedValue(true), hash: vi.fn().mockResolvedValue('hashed'), argon2id: 2 },
+  default: {
+    verify: vi.fn().mockResolvedValue(true),
+    hash: vi.fn().mockResolvedValue('hashed'),
+    argon2id: 2,
+  },
   verify: vi.fn().mockResolvedValue(true),
   hash: vi.fn().mockResolvedValue('hashed'),
   argon2id: 2,
@@ -14,9 +18,25 @@ function mockDbService() {
   return {
     db: {
       select: vi.fn(),
-      insert: vi.fn().mockReturnValue({ values: vi.fn().mockResolvedValue([{ insertId: 42 }]) }),
-      update: vi.fn().mockReturnValue({ set: vi.fn().mockReturnValue({ where: vi.fn().mockResolvedValue([{ affectedRows: 1 }]) }) }),
-      delete: vi.fn().mockReturnValue({ where: vi.fn().mockResolvedValue([{ affectedRows: 1 }]) }),
+      insert: vi
+        .fn()
+        .mockReturnValue({
+          values: vi.fn().mockResolvedValue([{ insertId: 42 }]),
+        }),
+      update: vi
+        .fn()
+        .mockReturnValue({
+          set: vi
+            .fn()
+            .mockReturnValue({
+              where: vi.fn().mockResolvedValue([{ affectedRows: 1 }]),
+            }),
+        }),
+      delete: vi
+        .fn()
+        .mockReturnValue({
+          where: vi.fn().mockResolvedValue([{ affectedRows: 1 }]),
+        }),
     },
   };
 }
@@ -32,7 +52,21 @@ describe('UsersService', () => {
           where: vi.fn().mockReturnValue({
             orderBy: vi.fn().mockReturnValue({
               limit: vi.fn().mockReturnValue({
-                offset: vi.fn().mockResolvedValue([{ id: 1, username: 'admin', displayName: 'Admin', email: null, phone: null, status: 'active', deptId: null, createdAt: new Date(), loginAt: null }]),
+                offset: vi
+                  .fn()
+                  .mockResolvedValue([
+                    {
+                      id: 1,
+                      username: 'admin',
+                      displayName: 'Admin',
+                      email: null,
+                      phone: null,
+                      status: 'active',
+                      deptId: null,
+                      createdAt: new Date(),
+                      loginAt: null,
+                    },
+                  ]),
               }),
             }),
           }),
@@ -57,7 +91,11 @@ describe('UsersService', () => {
       });
       const service = new UsersService({ db } as any);
       const result = await service.create(
-        { username: 'newuser', displayName: 'New User', password: 'password123456' },
+        {
+          username: 'newuser',
+          displayName: 'New User',
+          password: 'password123456',
+        },
         1,
       );
       expect(result).toEqual({ id: 42 });
@@ -74,7 +112,14 @@ describe('UsersService', () => {
       });
       const service = new UsersService({ db } as any);
       await expect(
-        service.create({ username: 'existing', displayName: 'Existing', password: 'password123456' }, 1),
+        service.create(
+          {
+            username: 'existing',
+            displayName: 'Existing',
+            password: 'password123456',
+          },
+          1,
+        ),
       ).rejects.toThrow(ConflictException);
     });
   });
@@ -83,14 +128,26 @@ describe('UsersService', () => {
     it('updates a user successfully', async () => {
       const { db } = mockDbService();
       const service = new UsersService({ db } as any);
-      await expect(service.update(1, { displayName: 'Updated' }, 1)).resolves.toBeUndefined();
+      await expect(
+        service.update(1, { displayName: 'Updated' }, 1),
+      ).resolves.toBeUndefined();
     });
 
     it('throws NotFoundException', async () => {
       const { db } = mockDbService();
-      db.update = vi.fn().mockReturnValue({ set: vi.fn().mockReturnValue({ where: vi.fn().mockResolvedValue([{ affectedRows: 0 }]) }) });
+      db.update = vi
+        .fn()
+        .mockReturnValue({
+          set: vi
+            .fn()
+            .mockReturnValue({
+              where: vi.fn().mockResolvedValue([{ affectedRows: 0 }]),
+            }),
+        });
       const service = new UsersService({ db } as any);
-      await expect(service.update(999, { displayName: 'Ghost' }, 1)).rejects.toThrow(NotFoundException);
+      await expect(
+        service.update(999, { displayName: 'Ghost' }, 1),
+      ).rejects.toThrow(NotFoundException);
     });
   });
 
@@ -103,7 +160,15 @@ describe('UsersService', () => {
 
     it('throws NotFoundException', async () => {
       const { db } = mockDbService();
-      db.update = vi.fn().mockReturnValue({ set: vi.fn().mockReturnValue({ where: vi.fn().mockResolvedValue([{ affectedRows: 0 }]) }) });
+      db.update = vi
+        .fn()
+        .mockReturnValue({
+          set: vi
+            .fn()
+            .mockReturnValue({
+              where: vi.fn().mockResolvedValue([{ affectedRows: 0 }]),
+            }),
+        });
       const service = new UsersService({ db } as any);
       await expect(service.remove(999, 1)).rejects.toThrow(NotFoundException);
     });
@@ -121,7 +186,11 @@ describe('UsersService', () => {
       });
       db.insert = vi.fn().mockReturnValue({
         values: vi.fn().mockReturnValue({
-          onDuplicateKeyUpdate: vi.fn().mockReturnValue({ set: vi.fn().mockResolvedValue([{ affectedRows: 1 }]) }),
+          onDuplicateKeyUpdate: vi
+            .fn()
+            .mockReturnValue({
+              set: vi.fn().mockResolvedValue([{ affectedRows: 1 }]),
+            }),
         }),
       });
       const service = new UsersService({ db } as any);
@@ -138,7 +207,9 @@ describe('UsersService', () => {
         }),
       });
       const service = new UsersService({ db } as any);
-      await expect(service.assignRole(999, 2)).rejects.toThrow(NotFoundException);
+      await expect(service.assignRole(999, 2)).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 });

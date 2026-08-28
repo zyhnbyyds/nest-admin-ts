@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import { UnauthorizedException } from '@nestjs/common';
-import { AuthController } from './auth.controller.js';
-import type { AuthService } from './auth.service.js';
+import { AuthController } from './auth.controller';
+import type { AuthService } from './auth.service';
 
 function mockAuthService(): Partial<AuthService> {
   return {
@@ -58,10 +58,10 @@ describe('AuthController', () => {
         { username: 'admin', password: 'password123' },
         { headers: {} },
       );
-      expect(authService.login).toHaveBeenCalledWith(
-        expect.anything(),
-        { ip: undefined, userAgent: undefined },
-      );
+      expect(authService.login).toHaveBeenCalledWith(expect.anything(), {
+        ip: undefined,
+        userAgent: undefined,
+      });
     });
   });
 
@@ -69,7 +69,9 @@ describe('AuthController', () => {
     it('returns new tokens on valid refresh token', async () => {
       const authService = mockAuthService();
       const controller = new AuthController(authService as AuthService);
-      const result = await controller.refresh({ refreshToken: 'valid-refresh-token' });
+      const result = await controller.refresh({
+        refreshToken: 'valid-refresh-token',
+      });
       expect(result).toHaveProperty('accessToken');
       expect(authService.refresh).toHaveBeenCalledWith('valid-refresh-token');
     });
@@ -90,7 +92,9 @@ describe('AuthController', () => {
     it('returns success on logout', async () => {
       const authService = mockAuthService();
       const controller = new AuthController(authService as AuthService);
-      const result = await controller.logout({ refreshToken: 'token-to-revoke' });
+      const result = await controller.logout({
+        refreshToken: 'token-to-revoke',
+      });
       expect(result).toEqual({ success: true });
       expect(authService.logout).toHaveBeenCalledWith('token-to-revoke');
     });

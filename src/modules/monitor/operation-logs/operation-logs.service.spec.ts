@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import { NotFoundException } from '@nestjs/common';
-import { OperationLogsService } from './operation-logs.service.js';
+import { OperationLogsService } from './operation-logs.service';
 
 function mockDb() {
   return { db: { select: vi.fn(), delete: vi.fn() } };
@@ -25,7 +25,9 @@ describe('OperationLogsService', () => {
   describe('list', () => {
     it('returns paginated operation logs', async () => {
       const { db } = mockDb();
-      db.select = selectChain([{ id: 1, title: 'Test', status: 'success', durationMs: 10 }]);
+      db.select = selectChain([
+        { id: 1, title: 'Test', status: 'success', durationMs: 10 },
+      ]);
       const service = new OperationLogsService({ db } as any);
       const result = await service.list(1, 20);
       expect(result.items).toHaveLength(1);
@@ -60,7 +62,11 @@ describe('OperationLogsService', () => {
   describe('remove', () => {
     it('deletes a log', async () => {
       const { db } = mockDb();
-      db.delete = vi.fn().mockReturnValue({ where: vi.fn().mockResolvedValue([{ affectedRows: 1 }]) });
+      db.delete = vi
+        .fn()
+        .mockReturnValue({
+          where: vi.fn().mockResolvedValue([{ affectedRows: 1 }]),
+        });
       const service = new OperationLogsService({ db } as any);
       await expect(service.remove(1)).resolves.toBeUndefined();
     });

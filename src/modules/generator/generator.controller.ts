@@ -1,6 +1,6 @@
 import { Body, Controller, Get, Param, Post } from '@nestjs/common';
 import { z } from 'zod';
-import { registerComponent } from '../../common/swagger/zod-schema.helper.js';
+import { registerComponent } from '../../common/swagger/zod-schema.helper';
 import {
   ApiBearerAuth,
   ApiBody,
@@ -9,15 +9,27 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { RequirePermissions } from '../../common/auth/permissions.decorator.js';
-import { GeneratorService } from './generator.service.js';
+import { RequirePermissions } from '../../common/auth/permissions.decorator';
+import { GeneratorService } from './generator.service';
 
 const previewSchema = z.object({
-  table: z.string().min(1).max(64).openapi({ example: 'sys_user', description: '表名' }),
+  table: z
+    .string()
+    .min(1)
+    .max(64)
+    .openapi({ example: 'sys_user', description: '表名' }),
 });
 const generateSchema = z.object({
-  table: z.string().min(1).max(64).openapi({ example: 'sys_user', description: '表名' }),
-  directory: z.string().min(1).max(100).openapi({ example: 'src/modules/system/users', description: '目录' }),
+  table: z
+    .string()
+    .min(1)
+    .max(64)
+    .openapi({ example: 'sys_user', description: '表名' }),
+  directory: z
+    .string()
+    .min(1)
+    .max(100)
+    .openapi({ example: 'src/modules/system/users', description: '目录' }),
 });
 
 registerComponent('PreviewCodeRequest', previewSchema);

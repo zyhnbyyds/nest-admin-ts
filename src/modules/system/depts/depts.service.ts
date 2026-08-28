@@ -4,8 +4,8 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { and, asc, eq, isNull } from 'drizzle-orm';
-import { DatabaseService } from '../../../database/database.service.js';
-import { departments, users } from '../../../database/schema/index.js';
+import { DatabaseService } from '../../../database/database.service';
+import { departments, users } from '../../../database/schema/index';
 
 export type CreateDeptInput = {
   parentId?: number | undefined;

@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import { of, throwError } from 'rxjs';
-import { OperationLogInterceptor } from './operation-log.interceptor.js';
+import { OperationLogInterceptor } from './operation-log.interceptor';
 
 function buildDb() {
   return {
@@ -12,7 +12,12 @@ function buildDb() {
   } as any;
 }
 
-function buildContext(method: string, url: string, body: unknown = null, userId?: number) {
+function buildContext(
+  method: string,
+  url: string,
+  body: unknown = null,
+  userId?: number,
+) {
   return {
     switchToHttp: vi.fn().mockReturnValue({
       getRequest: vi.fn().mockReturnValue({
@@ -53,7 +58,12 @@ describe('OperationLogInterceptor', () => {
   it('logs mutating requests on success', async () => {
     const db = buildDb();
     const interceptor = new OperationLogInterceptor(db);
-    const context = buildContext('POST', '/api/v1/system/users', { username: 'test' }, 1);
+    const context = buildContext(
+      'POST',
+      '/api/v1/system/users',
+      { username: 'test' },
+      1,
+    );
     const next = { handle: vi.fn().mockReturnValue(of({ id: 1 })) };
 
     await interceptor.intercept(context, next).toPromise();
@@ -65,10 +75,21 @@ describe('OperationLogInterceptor', () => {
   it('logs mutating requests on failure', async () => {
     const db = buildDb();
     const interceptor = new OperationLogInterceptor(db);
-    const context = buildContext('DELETE', '/api/v1/system/users/1', undefined, 1);
-    const next = { handle: vi.fn().mockReturnValue(throwError(() => new Error('Test error'))) };
+    const context = buildContext(
+      'DELETE',
+      '/api/v1/system/users/1',
+      undefined,
+      1,
+    );
+    const next = {
+      handle: vi
+        .fn()
+        .mockReturnValue(throwError(() => new Error('Test error'))),
+    };
 
-    await expect(interceptor.intercept(context, next).toPromise()).rejects.toThrow();
+    await expect(
+      interceptor.intercept(context, next).toPromise(),
+    ).rejects.toThrow();
     await vi.waitFor(() => {
       expect(db.db.insert).toHaveBeenCalled();
     });

@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
-import { UsersController } from './users.controller.js';
-import type { UsersService } from './users.service.js';
+import { UsersController } from './users.controller';
+import type { UsersService } from './users.service';
 
 function mockUsersService(): Partial<UsersService> {
   return {
@@ -52,8 +52,16 @@ describe('UsersController', () => {
     it('updates a user', async () => {
       const service = mockUsersService();
       const controller = new UsersController(service as UsersService);
-      await controller.update(1, { displayName: 'Updated' }, { user: { id: 1 } });
-      expect(service.update).toHaveBeenCalledWith(1, { displayName: 'Updated' }, 1);
+      await controller.update(
+        1,
+        { displayName: 'Updated' },
+        { user: { id: 1 } },
+      );
+      expect(service.update).toHaveBeenCalledWith(
+        1,
+        { displayName: 'Updated' },
+        1,
+      );
     });
   });
 

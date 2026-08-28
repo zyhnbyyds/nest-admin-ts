@@ -5,8 +5,8 @@ import {
 } from '@nestjs/common';
 import * as argon2 from 'argon2';
 import { and, desc, eq, isNull } from 'drizzle-orm';
-import { DatabaseService } from '../../../database/database.service.js';
-import { roles, userRoles, users } from '../../../database/schema/index.js';
+import { DatabaseService } from '../../../database/database.service';
+import { roles, userRoles, users } from '../../../database/schema/index';
 
 export type CreateUserInput = {
   username: string;

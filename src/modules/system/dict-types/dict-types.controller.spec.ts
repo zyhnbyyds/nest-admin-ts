@@ -1,11 +1,13 @@
 import { describe, expect, it, vi } from 'vitest';
-import { DictTypesController } from './dict-types.controller.js';
-import type { DictTypesService } from './dict-types.service.js';
+import { DictTypesController } from './dict-types.controller';
+import type { DictTypesService } from './dict-types.service';
 
 function mockService(): Partial<DictTypesService> {
   return {
     list: vi.fn().mockResolvedValue({ items: [], page: 1, pageSize: 20 }),
-    findOne: vi.fn().mockResolvedValue({ id: 1, name: 'Status', type: 'sys_status' }),
+    findOne: vi
+      .fn()
+      .mockResolvedValue({ id: 1, name: 'Status', type: 'sys_status' }),
     create: vi.fn().mockResolvedValue({ id: 1 }),
     update: vi.fn().mockResolvedValue(undefined),
     remove: vi.fn().mockResolvedValue(undefined),

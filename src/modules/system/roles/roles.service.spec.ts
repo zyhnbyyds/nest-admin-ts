@@ -1,21 +1,55 @@
 import { describe, expect, it, vi } from 'vitest';
 import { ConflictException, NotFoundException } from '@nestjs/common';
-import { RolesService } from './roles.service.js';
+import { RolesService } from './roles.service';
 
 function mockDb() {
   return {
     db: {
       select: vi.fn(),
-      insert: vi.fn().mockReturnValue({ values: vi.fn().mockResolvedValue([{ insertId: 10 }]) }),
-      update: vi.fn().mockReturnValue({ set: vi.fn().mockReturnValue({ where: vi.fn().mockResolvedValue([{ affectedRows: 1 }]) }) }),
-      delete: vi.fn().mockReturnValue({ where: vi.fn().mockResolvedValue([{ affectedRows: 1 }]) }),
-      transaction: vi.fn().mockImplementation(async (cb: (tx: any) => Promise<void>) => {
-        await cb({
-          delete: vi.fn().mockReturnValue({ where: vi.fn().mockResolvedValue([{ affectedRows: 1 }]) }),
-          insert: vi.fn().mockReturnValue({ values: vi.fn().mockResolvedValue([{ insertId: 1 }]) }),
-          update: vi.fn().mockReturnValue({ set: vi.fn().mockReturnValue({ where: vi.fn().mockResolvedValue([{ affectedRows: 1 }]) }) }),
-        });
-      }),
+      insert: vi
+        .fn()
+        .mockReturnValue({
+          values: vi.fn().mockResolvedValue([{ insertId: 10 }]),
+        }),
+      update: vi
+        .fn()
+        .mockReturnValue({
+          set: vi
+            .fn()
+            .mockReturnValue({
+              where: vi.fn().mockResolvedValue([{ affectedRows: 1 }]),
+            }),
+        }),
+      delete: vi
+        .fn()
+        .mockReturnValue({
+          where: vi.fn().mockResolvedValue([{ affectedRows: 1 }]),
+        }),
+      transaction: vi
+        .fn()
+        .mockImplementation(async (cb: (tx: any) => Promise<void>) => {
+          await cb({
+            delete: vi
+              .fn()
+              .mockReturnValue({
+                where: vi.fn().mockResolvedValue([{ affectedRows: 1 }]),
+              }),
+            insert: vi
+              .fn()
+              .mockReturnValue({
+                values: vi.fn().mockResolvedValue([{ insertId: 1 }]),
+              }),
+            update: vi
+              .fn()
+              .mockReturnValue({
+                set: vi
+                  .fn()
+                  .mockReturnValue({
+                    where: vi.fn().mockResolvedValue([{ affectedRows: 1 }]),
+                  }),
+              }),
+          });
+        }),
     },
   };
 }
@@ -39,7 +73,9 @@ function selectMock(result: unknown) {
     from: vi.fn().mockReturnValue({
       where: whereFn,
       orderBy: vi.fn().mockReturnValue({
-        limit: vi.fn().mockReturnValue({ offset: vi.fn().mockResolvedValue(result) }),
+        limit: vi
+          .fn()
+          .mockReturnValue({ offset: vi.fn().mockResolvedValue(result) }),
       }),
       innerJoin: vi.fn().mockReturnThis(),
     }),
@@ -52,7 +88,21 @@ describe('RolesService', () => {
     it('returns all roles sorted', async () => {
       const { db } = mockDb();
       const roleRows = [
-        { id: 1, name: 'Admin', key: 'admin', sort: 0, dataScope: 'all', status: 'active', isSystem: true, remark: null, deletedAt: null, createdAt: new Date(), updatedAt: new Date(), createdBy: null, updatedBy: null },
+        {
+          id: 1,
+          name: 'Admin',
+          key: 'admin',
+          sort: 0,
+          dataScope: 'all',
+          status: 'active',
+          isSystem: true,
+          remark: null,
+          deletedAt: null,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          createdBy: null,
+          updatedBy: null,
+        },
       ];
       db.select = selectMock(roleRows);
       const service = new RolesService({ db } as any);
@@ -74,7 +124,9 @@ describe('RolesService', () => {
       const { db } = mockDb();
       db.select = selectMock([{ id: 1 }]);
       const service = new RolesService({ db } as any);
-      await expect(service.create({ name: 'Admin', key: 'admin' }, 1)).rejects.toThrow(ConflictException);
+      await expect(
+        service.create({ name: 'Admin', key: 'admin' }, 1),
+      ).rejects.toThrow(ConflictException);
     });
   });
 
@@ -92,7 +144,9 @@ describe('RolesService', () => {
       const { db } = mockDb();
       db.select = selectMock([]);
       const service = new RolesService({ db } as any);
-      await expect(service.setMenus(999, [1])).rejects.toThrow(NotFoundException);
+      await expect(service.setMenus(999, [1])).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 
@@ -111,14 +165,18 @@ describe('RolesService', () => {
       const { db } = mockDb();
       db.select = selectMock([{ id: 1 }]);
       const service = new RolesService({ db } as any);
-      await expect(service.update(1, { name: 'Updated' }, 1)).resolves.toBeUndefined();
+      await expect(
+        service.update(1, { name: 'Updated' }, 1),
+      ).resolves.toBeUndefined();
     });
 
     it('throws NotFoundException when role not found', async () => {
       const { db } = mockDb();
       db.select = selectMock([]);
       const service = new RolesService({ db } as any);
-      await expect(service.update(999, { name: 'Ghost' }, 1)).rejects.toThrow(NotFoundException);
+      await expect(service.update(999, { name: 'Ghost' }, 1)).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 

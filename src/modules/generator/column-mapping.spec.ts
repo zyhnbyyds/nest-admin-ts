@@ -7,8 +7,8 @@ import {
   tsType,
   uniqueColumnImports,
   zodType,
-} from './column-mapping.js';
-import type { ColumnMeta } from './column-mapping.js';
+} from './column-mapping';
+import type { ColumnMeta } from './column-mapping';
 
 function col(overrides: Partial<ColumnMeta> = {}): ColumnMeta {
   return {

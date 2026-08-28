@@ -8,9 +8,9 @@ import {
   Req,
 } from '@nestjs/common';
 import { z } from 'zod';
-import { registerComponent } from '../../../common/swagger/zod-schema.helper.js';
-import { RequirePermissions } from '../../../common/auth/permissions.decorator.js';
-import { RolesService } from './roles.service.js';
+import { registerComponent } from '../../../common/swagger/zod-schema.helper';
+import { RequirePermissions } from '../../../common/auth/permissions.decorator';
+import { RolesService } from './roles.service';
 import {
   ApiBearerAuth,
   ApiBody,
@@ -21,22 +21,38 @@ import {
 } from '@nestjs/swagger';
 
 const createSchema = z.object({
-  name: z.string().min(1).max(50).openapi({ example: '管理员', description: '角色名称' }),
+  name: z
+    .string()
+    .min(1)
+    .max(50)
+    .openapi({ example: '管理员', description: '角色名称' }),
   key: z
     .string()
     .min(2)
     .max(100)
     .regex(/^[a-z0-9:_-]+$/)
     .openapi({ example: 'admin', description: '角色标识' }),
-  sort: z.number().int().min(0).optional().openapi({ example: 1, description: '排序' }),
+  sort: z
+    .number()
+    .int()
+    .min(0)
+    .optional()
+    .openapi({ example: 1, description: '排序' }),
   dataScope: z
     .enum(['all', 'custom', 'dept', 'dept_and_children', 'self'])
     .optional()
     .openapi({ example: 'all', description: '数据权限范围' }),
-  menuIds: z.array(z.number().int().positive()).max(500).optional().openapi({ example: [1, 2, 3], description: '菜单ID集合' }),
+  menuIds: z
+    .array(z.number().int().positive())
+    .max(500)
+    .optional()
+    .openapi({ example: [1, 2, 3], description: '菜单ID集合' }),
 });
 const menuSchema = z.object({
-  menuIds: z.array(z.number().int().positive()).max(500).openapi({ example: [1, 2, 3], description: '菜单ID集合' }),
+  menuIds: z
+    .array(z.number().int().positive())
+    .max(500)
+    .openapi({ example: [1, 2, 3], description: '菜单ID集合' }),
 });
 
 registerComponent('CreateRoleRequest', createSchema);
@@ -60,10 +76,7 @@ export class RolesController {
   @ApiOperation({ summary: '新增角色' })
   @ApiBody({ schema: { $ref: '#/components/schemas/CreateRoleRequest' } })
   @ApiResponse({ status: 200, description: '成功' })
-  create(
-    @Body() body: unknown,
-    @Req() request: AuthRequest,
-  ) {
+  create(@Body() body: unknown, @Req() request: AuthRequest) {
     return this.roles.create(createSchema.parse(body), request.user.id);
   }
   @Post(':id/menus')
@@ -72,10 +85,7 @@ export class RolesController {
   @ApiParam({ name: 'id', description: '角色ID' })
   @ApiBody({ schema: { $ref: '#/components/schemas/SetRoleMenusRequest' } })
   @ApiResponse({ status: 200, description: '成功' })
-  setMenus(
-    @Param('id', ParseIntPipe) id: number,
-    @Body() body: unknown,
-  ) {
+  setMenus(@Param('id', ParseIntPipe) id: number, @Body() body: unknown) {
     return this.roles.setMenus(id, menuSchema.parse(body).menuIds);
   }
 }

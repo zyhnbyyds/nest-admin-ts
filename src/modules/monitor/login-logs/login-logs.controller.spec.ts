@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
-import { LoginLogsController } from './login-logs.controller.js';
-import type { LoginLogsService } from './login-logs.service.js';
+import { LoginLogsController } from './login-logs.controller';
+import type { LoginLogsService } from './login-logs.service';
 
 function mockService(): Partial<LoginLogsService> {
   return {

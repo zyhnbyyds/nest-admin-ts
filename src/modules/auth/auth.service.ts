@@ -3,8 +3,8 @@ import * as argon2 from 'argon2';
 import { and, eq, isNull } from 'drizzle-orm';
 import { SignJWT, jwtVerify } from 'jose';
 import { createHash } from 'node:crypto';
-import { AppConfigService } from '../../config/app-config.service.js';
-import { DatabaseService } from '../../database/database.service.js';
+import { AppConfigService } from '../../config/app-config.service';
+import { DatabaseService } from '../../database/database.service';
 import {
   loginLogs,
   menus,
@@ -13,8 +13,8 @@ import {
   roles,
   userRoles,
   users,
-} from '../../database/schema/index.js';
-import { OnlineService } from '../monitor/online/online.service.js';
+} from '../../database/schema/index';
+import { OnlineService } from '../monitor/online/online.service';
 
 type LoginInput = { username: string; password: string };
 type LoginMeta = { ip?: string | undefined; userAgent?: string | undefined };

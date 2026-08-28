@@ -11,7 +11,7 @@ import {
   Req,
 } from '@nestjs/common';
 import { z } from 'zod';
-import { registerComponent } from '../../common/swagger/zod-schema.helper.js';
+import { registerComponent } from '../../common/swagger/zod-schema.helper';
 import {
   ApiBearerAuth,
   ApiBody,
@@ -21,20 +21,49 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { RequirePermissions } from '../../common/auth/permissions.decorator.js';
-import { JobsService } from './jobs.service.js';
+import { RequirePermissions } from '../../common/auth/permissions.decorator';
+import { JobsService } from './jobs.service';
 
 const createSchema = z.object({
-  name: z.string().min(1).max(100).openapi({ example: '数据同步任务', description: '任务名称' }),
-  handler: z.string().min(1).max(255).openapi({ example: 'syncData', description: '任务处理器名称' }),
-  cron: z.string().min(1).max(100).openapi({ example: '0 0 * * *', description: 'Cron表达式' }),
-  status: z.enum(['active', 'disabled']).optional().openapi({ example: 'active', description: '状态' }),
-  concurrent: z.boolean().optional().openapi({ example: false, description: '是否允许并发' }),
-  remark: z.string().max(500).optional().openapi({ example: '每天零点同步数据', description: '备注' }),
+  name: z
+    .string()
+    .min(1)
+    .max(100)
+    .openapi({ example: '数据同步任务', description: '任务名称' }),
+  handler: z
+    .string()
+    .min(1)
+    .max(255)
+    .openapi({ example: 'syncData', description: '任务处理器名称' }),
+  cron: z
+    .string()
+    .min(1)
+    .max(100)
+    .openapi({ example: '0 0 * * *', description: 'Cron表达式' }),
+  status: z
+    .enum(['active', 'disabled'])
+    .optional()
+    .openapi({ example: 'active', description: '状态' }),
+  concurrent: z
+    .boolean()
+    .optional()
+    .openapi({ example: false, description: '是否允许并发' }),
+  remark: z
+    .string()
+    .max(500)
+    .optional()
+    .openapi({ example: '每天零点同步数据', description: '备注' }),
 });
 const updateSchema = createSchema
   .partial()
-  .extend({ remark: z.string().max(500).nullable().optional().openapi({ example: '每天零点同步数据', description: '备注' }) });
+  .extend({
+    remark: z
+      .string()
+      .max(500)
+      .nullable()
+      .optional()
+      .openapi({ example: '每天零点同步数据', description: '备注' }),
+  });
 
 registerComponent('CreateJobRequest', createSchema);
 registerComponent('UpdateJobRequest', updateSchema);
@@ -92,10 +121,7 @@ export class JobsController {
   @ApiBody({ schema: { $ref: '#/components/schemas/CreateJobRequest' } })
   @ApiResponse({ status: 201, description: '成功' })
   @ApiBearerAuth('access-token')
-  create(
-    @Body() body: unknown,
-    @Req() request: AuthRequest,
-  ) {
+  create(@Body() body: unknown, @Req() request: AuthRequest) {
     return this.jobs.create(createSchema.parse(body), request.user.id);
   }
   @Post(':id/run')
@@ -135,10 +161,7 @@ export class JobsController {
   @ApiParam({ name: 'id', description: '任务ID' })
   @ApiResponse({ status: 200, description: '成功' })
   @ApiBearerAuth('access-token')
-  remove(
-    @Param('id', ParseIntPipe) id: number,
-    @Req() request: AuthRequest,
-  ) {
+  remove(@Param('id', ParseIntPipe) id: number, @Req() request: AuthRequest) {
     return this.jobs.remove(id, request.user.id);
   }
 }

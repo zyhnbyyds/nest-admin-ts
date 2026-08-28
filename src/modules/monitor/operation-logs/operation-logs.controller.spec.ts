@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
-import { OperationLogsController } from './operation-logs.controller.js';
-import type { OperationLogsService } from './operation-logs.service.js';
+import { OperationLogsController } from './operation-logs.controller';
+import type { OperationLogsService } from './operation-logs.service';
 
 function mockService(): Partial<OperationLogsService> {
   return {

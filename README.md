@@ -1,6 +1,6 @@
 # nest-admin
 
-基于 NestJS 11 + Fastify + Drizzle ORM + MySQL 的通用后台管理 API。
+基于 NestJS 12 + Fastify + Drizzle ORM + MySQL 的通用后台管理 API。
 
 [![Node.js](https://img.shields.io/badge/node-%3E%3D24-brightgreen)](https://nodejs.org)
 [![Bun](https://img.shields.io/badge/bun-%3E%3D1.4-orange)](https://bun.sh)
@@ -9,24 +9,24 @@
 
 ## 功能模块
 
-| 模块 | 说明 |
-|------|------|
-| **认证鉴权** | JWT 双 token（access + refresh）、HS256 签名、密码 argon2id 哈希 |
-| **用户管理** | 用户 CRUD、角色分配、状态管理、软删除 |
-| **角色管理** | 角色 CRUD、菜单权限分配、数据权限范围 |
-| **菜单管理** | 树形菜单 CRUD、按钮权限标识、前端路由数据 |
-| **部门管理** | 树形部门 CRUD、祖级路径维护 |
-| **岗位管理** | 岗位 CRUD、用户岗位关联 |
-| **字典管理** | 字典类型 / 字典数据 CRUD、按类型获取启用项 |
-| **参数配置** | 系统配置项 CRUD、按键查询、内置参数保护 |
-| **登录日志** | 登录记录查询、删除、清空 |
-| **操作日志** | 基于拦截器的增删改操作自动审计 |
-| **在线用户** | Redis 会话跟踪、强制下线 |
-| **定时任务** | Cron 调度、手动执行、执行日志 |
-| **文件管理** | 上传（multipart）、下载、类型/大小校验 |
-| **代码生成器** | 读取 information_schema 自动生成模块脚手架 |
-| **健康检查** | `GET /health` 免认证 |
-| **Swagger** | 开发环境自动启用，路径 `/api/v1/docs` |
+| 模块           | 说明                                                             |
+| -------------- | ---------------------------------------------------------------- |
+| **认证鉴权**   | JWT 双 token（access + refresh）、HS256 签名、密码 argon2id 哈希 |
+| **用户管理**   | 用户 CRUD、角色分配、状态管理、软删除                            |
+| **角色管理**   | 角色 CRUD、菜单权限分配、数据权限范围                            |
+| **菜单管理**   | 树形菜单 CRUD、按钮权限标识、前端路由数据                        |
+| **部门管理**   | 树形部门 CRUD、祖级路径维护                                      |
+| **岗位管理**   | 岗位 CRUD、用户岗位关联                                          |
+| **字典管理**   | 字典类型 / 字典数据 CRUD、按类型获取启用项                       |
+| **参数配置**   | 系统配置项 CRUD、按键查询、内置参数保护                          |
+| **登录日志**   | 登录记录查询、删除、清空                                         |
+| **操作日志**   | 基于拦截器的增删改操作自动审计                                   |
+| **在线用户**   | Redis 会话跟踪、强制下线                                         |
+| **定时任务**   | Cron 调度、手动执行、执行日志                                    |
+| **文件管理**   | 上传（multipart）、下载、类型/大小校验                           |
+| **代码生成器** | 读取 information_schema 自动生成模块脚手架                       |
+| **健康检查**   | `GET /health` 免认证                                             |
+| **Swagger**    | 开发环境自动启用，路径 `/api/v1/docs`                            |
 
 ## 技术栈
 
@@ -76,8 +76,8 @@ bun run dev
 
 ### 默认管理员
 
-| 用户名 | 密码 |
-|--------|------|
+| 用户名  | 密码                   |
+| ------- | ---------------------- |
 | `admin` | `db:seed` 时设置的密码 |
 
 ## 项目结构
@@ -109,23 +109,23 @@ src/
 
 ## 环境变量
 
-| 变量 | 必填 | 默认值 | 说明 |
-|------|:---:|--------|------|
-| `NODE_ENV` | 否 | `development` | 运行环境 |
-| `PORT` | 否 | `3000` | 服务端口 |
-| `API_PREFIX` | 否 | `api/v1` | API 前缀 |
-| `DATABASE_URL` | **是** | — | MySQL 连接字符串 |
-| `REDIS_URL` | 否 | — | Redis 连接（可选） |
-| `JWT_ISSUER` | **是** | — | JWT 签发者 |
-| `JWT_AUDIENCE` | **是** | — | JWT 受众 |
-| `JWT_ACCESS_SECRET` | **是** | — | Access Token 密钥（≥32 字符） |
-| `JWT_REFRESH_SECRET` | **是** | — | Refresh Token 密钥（≥32 字符） |
-| `JWT_ACCESS_TTL` | 否 | `15m` | Access Token 有效期 |
-| `JWT_REFRESH_TTL` | 否 | `7d` | Refresh Token 有效期 |
-| `CORS_ORIGINS` | 否 | `http://localhost:5173` | CORS 允许来源（逗号分隔） |
-| `UPLOAD_DIR` | 否 | `uploads` | 文件上传目录 |
-| `SWAGGER_ENABLED` | 否 | `true` | 是否启用 Swagger |
-| `SWAGGER_PATH` | 否 | `docs` | Swagger 路径 |
+| 变量                 |  必填  | 默认值                  | 说明                           |
+| -------------------- | :----: | ----------------------- | ------------------------------ |
+| `NODE_ENV`           |   否   | `development`           | 运行环境                       |
+| `PORT`               |   否   | `3000`                  | 服务端口                       |
+| `API_PREFIX`         |   否   | `api/v1`                | API 前缀                       |
+| `DATABASE_URL`       | **是** | —                       | MySQL 连接字符串               |
+| `REDIS_URL`          |   否   | —                       | Redis 连接（可选）             |
+| `JWT_ISSUER`         | **是** | —                       | JWT 签发者                     |
+| `JWT_AUDIENCE`       | **是** | —                       | JWT 受众                       |
+| `JWT_ACCESS_SECRET`  | **是** | —                       | Access Token 密钥（≥32 字符）  |
+| `JWT_REFRESH_SECRET` | **是** | —                       | Refresh Token 密钥（≥32 字符） |
+| `JWT_ACCESS_TTL`     |   否   | `15m`                   | Access Token 有效期            |
+| `JWT_REFRESH_TTL`    |   否   | `7d`                    | Refresh Token 有效期           |
+| `CORS_ORIGINS`       |   否   | `http://localhost:5173` | CORS 允许来源（逗号分隔）      |
+| `UPLOAD_DIR`         |   否   | `uploads`               | 文件上传目录                   |
+| `SWAGGER_ENABLED`    |   否   | `true`                  | 是否启用 Swagger               |
+| `SWAGGER_PATH`       |   否   | `docs`                  | Swagger 路径                   |
 
 ## 命令
 

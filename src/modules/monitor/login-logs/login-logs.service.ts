@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { and, desc, eq, like } from 'drizzle-orm';
-import { DatabaseService } from '../../../database/database.service.js';
-import { loginLogs } from '../../../database/schema/index.js';
+import { DatabaseService } from '../../../database/database.service';
+import { loginLogs } from '../../../database/schema/index';
 
 @Injectable()
 export class LoginLogsService {

@@ -1,12 +1,19 @@
 import { describe, expect, it, vi } from 'vitest';
-import { DictDataController } from './dict-data.controller.js';
-import type { DictDataService } from './dict-data.service.js';
+import { DictDataController } from './dict-data.controller';
+import type { DictDataService } from './dict-data.service';
 
 function mockService(): Partial<DictDataService> {
   return {
     list: vi.fn().mockResolvedValue({ items: [], page: 1, pageSize: 20 }),
     byType: vi.fn().mockResolvedValue([]),
-    findOne: vi.fn().mockResolvedValue({ id: 1, type: 'sys_status', label: 'Active', value: '1' }),
+    findOne: vi
+      .fn()
+      .mockResolvedValue({
+        id: 1,
+        type: 'sys_status',
+        label: 'Active',
+        value: '1',
+      }),
     create: vi.fn().mockResolvedValue({ id: 1 }),
     update: vi.fn().mockResolvedValue(undefined),
     remove: vi.fn().mockResolvedValue(undefined),
@@ -45,7 +52,10 @@ describe('DictDataController', () => {
   it('create creates dict data', async () => {
     const s = mockService();
     const c = new DictDataController(s as DictDataService);
-    await c.create({ type: 'sys_status', label: 'Active', value: '1' }, { user: { id: 1 } });
+    await c.create(
+      { type: 'sys_status', label: 'Active', value: '1' },
+      { user: { id: 1 } },
+    );
     expect(s.create).toHaveBeenCalled();
   });
 

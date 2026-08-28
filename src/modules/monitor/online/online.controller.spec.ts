@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
-import { OnlineController } from './online.controller.js';
-import type { OnlineService } from './online.service.js';
+import { OnlineController } from './online.controller';
+import type { OnlineService } from './online.service';
 
 function mockService(): Partial<OnlineService> {
   return {

@@ -1,16 +1,38 @@
 import { describe, expect, it, vi } from 'vitest';
 import { UnauthorizedException } from '@nestjs/common';
-import { AuthService } from './auth.service.js';
+import { AuthService } from './auth.service';
 
 vi.mock('argon2', () => ({
-  default: { verify: vi.fn(), hash: vi.fn().mockResolvedValue('hashed'), argon2id: 2 },
+  default: {
+    verify: vi.fn(),
+    hash: vi.fn().mockResolvedValue('hashed'),
+    argon2id: 2,
+  },
   verify: vi.fn(),
   hash: vi.fn().mockResolvedValue('hashed'),
   argon2id: 2,
 }));
 
 function mockDb() {
-  return { db: { select: vi.fn(), insert: vi.fn().mockReturnValue({ values: vi.fn().mockResolvedValue([{ insertId: 1 }]) }), update: vi.fn().mockReturnValue({ set: vi.fn().mockReturnValue({ where: vi.fn().mockResolvedValue([{ affectedRows: 1 }]) }) }) } };
+  return {
+    db: {
+      select: vi.fn(),
+      insert: vi
+        .fn()
+        .mockReturnValue({
+          values: vi.fn().mockResolvedValue([{ insertId: 1 }]),
+        }),
+      update: vi
+        .fn()
+        .mockReturnValue({
+          set: vi
+            .fn()
+            .mockReturnValue({
+              where: vi.fn().mockResolvedValue([{ affectedRows: 1 }]),
+            }),
+        }),
+    },
+  };
 }
 
 function selectWithLimit(result: unknown) {
@@ -44,14 +66,31 @@ function buildConfig() {
 }
 
 function buildOnline() {
-  return { track: vi.fn().mockResolvedValue(undefined), remove: vi.fn().mockResolvedValue(undefined) };
+  return {
+    track: vi.fn().mockResolvedValue(undefined),
+    remove: vi.fn().mockResolvedValue(undefined),
+  };
 }
 
 function fakeUser() {
   return {
-    id: 1, username: 'admin', passwordHash: 'hash', status: 'active', displayName: 'Admin',
-    email: null, phone: null, avatar: null, loginAt: null, loginIp: null, passwordChangedAt: null,
-    deptId: null, deletedAt: null, createdAt: new Date(), updatedAt: new Date(), createdBy: null, updatedBy: null,
+    id: 1,
+    username: 'admin',
+    passwordHash: 'hash',
+    status: 'active',
+    displayName: 'Admin',
+    email: null,
+    phone: null,
+    avatar: null,
+    loginAt: null,
+    loginIp: null,
+    passwordChangedAt: null,
+    deptId: null,
+    deletedAt: null,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    createdBy: null,
+    updatedBy: null,
   };
 }
 
@@ -62,15 +101,27 @@ describe('AuthService', () => {
     it('throws UnauthorizedException when user not found', async () => {
       const { db } = mockDb();
       db.select = selectWithLimit([]);
-      const service = new AuthService({ db } as any, buildConfig() as any, buildOnline() as any);
-      await expect(service.login({ username: 'nobody', password: 'password123' })).rejects.toThrow(UnauthorizedException);
+      const service = new AuthService(
+        { db } as any,
+        buildConfig() as any,
+        buildOnline() as any,
+      );
+      await expect(
+        service.login({ username: 'nobody', password: 'password123' }),
+      ).rejects.toThrow(UnauthorizedException);
     });
 
     it('rejects disabled user', async () => {
       const { db } = mockDb();
       db.select = selectWithLimit([{ ...fakeUser(), status: 'disabled' }]);
-      const service = new AuthService({ db } as any, buildConfig() as any, buildOnline() as any);
-      await expect(service.login({ username: 'disabled', password: 'pass' })).rejects.toThrow(UnauthorizedException);
+      const service = new AuthService(
+        { db } as any,
+        buildConfig() as any,
+        buildOnline() as any,
+      );
+      await expect(
+        service.login({ username: 'disabled', password: 'pass' }),
+      ).rejects.toThrow(UnauthorizedException);
     });
   });
 
@@ -78,7 +129,11 @@ describe('AuthService', () => {
     it('tolerates invalid token', async () => {
       const { db } = mockDb();
       db.select = selectWithLimit([]);
-      const service = new AuthService({ db } as any, buildConfig() as any, buildOnline() as any);
+      const service = new AuthService(
+        { db } as any,
+        buildConfig() as any,
+        buildOnline() as any,
+      );
       await expect(service.logout('invalid')).resolves.toBeUndefined();
     });
   });
@@ -87,7 +142,11 @@ describe('AuthService', () => {
     it('throws for invalid token', async () => {
       const { db } = mockDb();
       db.select = selectWithLimit([]);
-      const service = new AuthService({ db } as any, buildConfig() as any, buildOnline() as any);
+      const service = new AuthService(
+        { db } as any,
+        buildConfig() as any,
+        buildOnline() as any,
+      );
       await expect(service.refresh('invalid')).rejects.toThrow();
     });
   });

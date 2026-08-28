@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
-import { DeptsController } from './depts.controller.js';
-import type { DeptsService } from './depts.service.js';
+import { DeptsController } from './depts.controller';
+import type { DeptsService } from './depts.service';
 
 function mockDeptsService(): Partial<DeptsService> {
   return {
@@ -30,7 +30,10 @@ describe('DeptsController', () => {
   it('create creates a department', async () => {
     const service = mockDeptsService();
     const controller = new DeptsController(service as DeptsService);
-    const result = await controller.create({ name: 'New Dept' }, { user: { id: 1 } });
+    const result = await controller.create(
+      { name: 'New Dept' },
+      { user: { id: 1 } },
+    );
     expect(result).toEqual({ id: 1 });
   });
 

@@ -3,10 +3,10 @@ import { and, eq, isNull } from 'drizzle-orm';
 import {
   ONLINE_SESSION_PREFIX,
   onlineSessionKey,
-} from '../../../common/cache/cache-keys.js';
-import { RedisService } from '../../../common/cache/redis.service.js';
-import { DatabaseService } from '../../../database/database.service.js';
-import { refreshTokens } from '../../../database/schema/index.js';
+} from '../../../common/cache/cache-keys';
+import { RedisService } from '../../../common/cache/redis.service';
+import { DatabaseService } from '../../../database/database.service';
+import { refreshTokens } from '../../../database/schema/index';
 
 export type OnlineSession = {
   userId: number;

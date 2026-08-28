@@ -23,7 +23,9 @@ const envSchema = z.object({
     .transform((value) => value === 'true'),
   SWAGGER_PATH: z.string().default('docs'),
   SWAGGER_TITLE: z.string().default('Nest Admin API'),
-  SWAGGER_DESCRIPTION: z.string().default('Administration API built with NestJS, Fastify and Drizzle ORM'),
+  SWAGGER_DESCRIPTION: z
+    .string()
+    .default('Administration API built with NestJS, Fastify and Drizzle ORM'),
   SWAGGER_VERSION: z.string().default('0.1.0'),
 });
 export type AppEnvironment = z.infer<typeof envSchema>;

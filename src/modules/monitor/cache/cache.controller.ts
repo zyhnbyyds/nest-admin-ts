@@ -5,8 +5,8 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { RequirePermissions } from '../../../common/auth/permissions.decorator.js';
-import { RedisService } from '../../../common/cache/redis.service.js';
+import { RequirePermissions } from '../../../common/auth/permissions.decorator';
+import { RedisService } from '../../../common/cache/redis.service';
 
 @ApiTags('缓存监控')
 @Controller('monitor/cache')

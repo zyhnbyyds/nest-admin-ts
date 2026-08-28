@@ -1,8 +1,8 @@
 import { Injectable, OnApplicationShutdown } from '@nestjs/common';
 import { drizzle, MySql2Database } from 'drizzle-orm/mysql2';
 import mysql from 'mysql2/promise';
-import { AppConfigService } from '../config/app-config.service.js';
-import { relations } from './schema/index.js';
+import { AppConfigService } from '../config/app-config.service';
+import { relations } from './schema/index';
 
 @Injectable()
 export class DatabaseService implements OnApplicationShutdown {

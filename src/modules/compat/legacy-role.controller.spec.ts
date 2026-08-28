@@ -1,9 +1,12 @@
 import { describe, expect, it, vi } from 'vitest';
-import { LegacyRoleController } from './legacy-role.controller.js';
-import type { RolesService } from '../system/roles/roles.service.js';
+import { LegacyRoleController } from './legacy-role.controller';
+import type { RolesService } from '../system/roles/roles.service';
 
 function mockService(): Partial<RolesService> {
-  return { list: vi.fn().mockResolvedValue([]), create: vi.fn().mockResolvedValue({ id: 1 }) };
+  return {
+    list: vi.fn().mockResolvedValue([]),
+    create: vi.fn().mockResolvedValue({ id: 1 }),
+  };
 }
 
 describe('LegacyRoleController', () => {
@@ -17,7 +20,10 @@ describe('LegacyRoleController', () => {
   it('create returns wrapped result', async () => {
     const s = mockService();
     const c = new LegacyRoleController(s as RolesService);
-    const result = await c.create({ roleName: 'Test', key: 'test' }, { user: { id: 1 } });
+    const result = await c.create(
+      { roleName: 'Test', key: 'test' },
+      { user: { id: 1 } },
+    );
     expect(result).toHaveProperty('code', 200);
   });
 });

@@ -1,16 +1,74 @@
 import { describe, expect, it, vi } from 'vitest';
 import { ConflictException, NotFoundException } from '@nestjs/common';
-import { PostsService } from './posts.service.js';
+import { PostsService } from './posts.service';
 
 function mockDb() {
-  return { db: { select: vi.fn(), insert: vi.fn().mockReturnValue({ values: vi.fn().mockResolvedValue([{ insertId: 7 }]) }), update: vi.fn().mockReturnValue({ set: vi.fn().mockReturnValue({ where: vi.fn().mockResolvedValue([{ affectedRows: 1 }]) }) }), delete: vi.fn().mockReturnValue({ where: vi.fn().mockResolvedValue([{ affectedRows: 1 }]) }), transaction: vi.fn().mockImplementation(async (cb: any) => { await cb({ delete: vi.fn().mockReturnValue({ where: vi.fn().mockResolvedValue([{ affectedRows: 1 }]) }), update: vi.fn().mockReturnValue({ set: vi.fn().mockReturnValue({ where: vi.fn().mockResolvedValue([{ affectedRows: 1 }]) }) }) }); }) } };
+  return {
+    db: {
+      select: vi.fn(),
+      insert: vi
+        .fn()
+        .mockReturnValue({
+          values: vi.fn().mockResolvedValue([{ insertId: 7 }]),
+        }),
+      update: vi
+        .fn()
+        .mockReturnValue({
+          set: vi
+            .fn()
+            .mockReturnValue({
+              where: vi.fn().mockResolvedValue([{ affectedRows: 1 }]),
+            }),
+        }),
+      delete: vi
+        .fn()
+        .mockReturnValue({
+          where: vi.fn().mockResolvedValue([{ affectedRows: 1 }]),
+        }),
+      transaction: vi.fn().mockImplementation(async (cb: any) => {
+        await cb({
+          delete: vi
+            .fn()
+            .mockReturnValue({
+              where: vi.fn().mockResolvedValue([{ affectedRows: 1 }]),
+            }),
+          update: vi
+            .fn()
+            .mockReturnValue({
+              set: vi
+                .fn()
+                .mockReturnValue({
+                  where: vi.fn().mockResolvedValue([{ affectedRows: 1 }]),
+                }),
+            }),
+        });
+      }),
+    },
+  };
 }
 
 function selectWithLimit(result: unknown) {
   return vi.fn().mockReturnValue({
     from: vi.fn().mockReturnValue({
-      where: vi.fn().mockReturnValue({ limit: vi.fn().mockResolvedValue(result), orderBy: vi.fn().mockReturnValue({ limit: vi.fn().mockReturnValue({ offset: vi.fn().mockResolvedValue(result) }) }) }),
-      orderBy: vi.fn().mockReturnValue({ limit: vi.fn().mockReturnValue({ offset: vi.fn().mockResolvedValue(result) }) }),
+      where: vi
+        .fn()
+        .mockReturnValue({
+          limit: vi.fn().mockResolvedValue(result),
+          orderBy: vi
+            .fn()
+            .mockReturnValue({
+              limit: vi
+                .fn()
+                .mockReturnValue({ offset: vi.fn().mockResolvedValue(result) }),
+            }),
+        }),
+      orderBy: vi
+        .fn()
+        .mockReturnValue({
+          limit: vi
+            .fn()
+            .mockReturnValue({ offset: vi.fn().mockResolvedValue(result) }),
+        }),
     }),
   });
 }
@@ -19,7 +77,21 @@ describe('PostsService', () => {
   describe('list', () => {
     it('returns paginated posts', async () => {
       const { db } = mockDb();
-      db.select = selectWithLimit([{ id: 1, name: 'Engineer', key: 'engineer', sort: 0, status: 'active', remark: null, deletedAt: null, createdAt: new Date(), updatedAt: new Date(), createdBy: null, updatedBy: null }]);
+      db.select = selectWithLimit([
+        {
+          id: 1,
+          name: 'Engineer',
+          key: 'engineer',
+          sort: 0,
+          status: 'active',
+          remark: null,
+          deletedAt: null,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          createdBy: null,
+          updatedBy: null,
+        },
+      ]);
       const service = new PostsService({ db } as any);
       const result = await service.list(1, 20);
       expect(result.items).toHaveLength(1);
@@ -29,7 +101,21 @@ describe('PostsService', () => {
   describe('findOne', () => {
     it('returns a post by id', async () => {
       const { db } = mockDb();
-      db.select = selectWithLimit([{ id: 1, name: 'Engineer', key: 'engineer', sort: 0, status: 'active', remark: null, deletedAt: null, createdAt: new Date(), updatedAt: new Date(), createdBy: null, updatedBy: null }]);
+      db.select = selectWithLimit([
+        {
+          id: 1,
+          name: 'Engineer',
+          key: 'engineer',
+          sort: 0,
+          status: 'active',
+          remark: null,
+          deletedAt: null,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          createdBy: null,
+          updatedBy: null,
+        },
+      ]);
       const service = new PostsService({ db } as any);
       const result = await service.findOne(1);
       expect(result.name).toBe('Engineer');
@@ -48,7 +134,10 @@ describe('PostsService', () => {
       const { db } = mockDb();
       db.select = selectWithLimit([]);
       const service = new PostsService({ db } as any);
-      const result = await service.create({ name: 'Engineer', key: 'engineer' }, 1);
+      const result = await service.create(
+        { name: 'Engineer', key: 'engineer' },
+        1,
+      );
       expect(result).toEqual({ id: 7 });
     });
 
@@ -56,7 +145,9 @@ describe('PostsService', () => {
       const { db } = mockDb();
       db.select = selectWithLimit([{ id: 1 }]);
       const service = new PostsService({ db } as any);
-      await expect(service.create({ name: 'Engineer', key: 'engineer' }, 1)).rejects.toThrow(ConflictException);
+      await expect(
+        service.create({ name: 'Engineer', key: 'engineer' }, 1),
+      ).rejects.toThrow(ConflictException);
     });
   });
 
@@ -65,7 +156,9 @@ describe('PostsService', () => {
       const { db } = mockDb();
       db.select = selectWithLimit([{ id: 1 }]);
       const service = new PostsService({ db } as any);
-      await expect(service.update(1, { name: 'Updated' }, 1)).resolves.toBeUndefined();
+      await expect(
+        service.update(1, { name: 'Updated' }, 1),
+      ).resolves.toBeUndefined();
     });
   });
 

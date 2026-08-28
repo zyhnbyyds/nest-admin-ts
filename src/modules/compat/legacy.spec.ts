@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { legacy, mapMenuType, mapStatus, slugify } from './legacy.js';
+import { legacy, mapMenuType, mapStatus, slugify } from './legacy';
 
 describe('legacy compatibility helpers', () => {
   it('wraps data in the legacy envelope', () => {

@@ -11,7 +11,7 @@ describe('AppConfigService', () => {
       JWT_ACCESS_SECRET: 'short',
       JWT_REFRESH_SECRET: 'short',
     };
-    const { AppConfigService } = await import('./app-config.service.js');
+    const { AppConfigService } = await import('./app-config.service');
     expect(() => new AppConfigService()).toThrow();
   });
 });

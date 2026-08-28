@@ -1,11 +1,13 @@
 import { describe, expect, it, vi } from 'vitest';
-import { PostsController } from './posts.controller.js';
-import type { PostsService } from './posts.service.js';
+import { PostsController } from './posts.controller';
+import type { PostsService } from './posts.service';
 
 function mockPostsService(): Partial<PostsService> {
   return {
     list: vi.fn().mockResolvedValue({ items: [], page: 1, pageSize: 20 }),
-    findOne: vi.fn().mockResolvedValue({ id: 1, name: 'Engineer', key: 'engineer' }),
+    findOne: vi
+      .fn()
+      .mockResolvedValue({ id: 1, name: 'Engineer', key: 'engineer' }),
     create: vi.fn().mockResolvedValue({ id: 1 }),
     update: vi.fn().mockResolvedValue(undefined),
     remove: vi.fn().mockResolvedValue(undefined),
@@ -30,7 +32,10 @@ describe('PostsController', () => {
   it('create creates a post', async () => {
     const service = mockPostsService();
     const controller = new PostsController(service as PostsService);
-    await controller.create({ name: 'Engineer', key: 'engineer' }, { user: { id: 1 } });
+    await controller.create(
+      { name: 'Engineer', key: 'engineer' },
+      { user: { id: 1 } },
+    );
     expect(service.create).toHaveBeenCalled();
   });
 

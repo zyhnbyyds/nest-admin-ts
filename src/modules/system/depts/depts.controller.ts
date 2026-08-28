@@ -10,9 +10,9 @@ import {
   Req,
 } from '@nestjs/common';
 import { z } from 'zod';
-import { registerComponent } from '../../../common/swagger/zod-schema.helper.js';
-import { RequirePermissions } from '../../../common/auth/permissions.decorator.js';
-import { DeptsService } from './depts.service.js';
+import { registerComponent } from '../../../common/swagger/zod-schema.helper';
+import { RequirePermissions } from '../../../common/auth/permissions.decorator';
+import { DeptsService } from './depts.service';
 import {
   ApiBearerAuth,
   ApiBody,
@@ -23,18 +23,64 @@ import {
 } from '@nestjs/swagger';
 
 const createSchema = z.object({
-  parentId: z.number().int().min(0).optional().openapi({ example: 0, description: '父部门ID' }),
-  name: z.string().min(1).max(50).openapi({ example: '研发部', description: '部门名称' }),
-  sort: z.number().int().min(0).optional().openapi({ example: 1, description: '排序' }),
-  leaderUserId: z.number().int().positive().optional().openapi({ example: 1, description: '负责人用户ID' }),
-  phone: z.string().max(20).optional().openapi({ example: '13800138000', description: '联系电话' }),
-  email: z.string().email().optional().openapi({ example: 'dev@example.com', description: '邮箱' }),
-  status: z.enum(['active', 'disabled']).optional().openapi({ example: 'active', description: '状态' }),
+  parentId: z
+    .number()
+    .int()
+    .min(0)
+    .optional()
+    .openapi({ example: 0, description: '父部门ID' }),
+  name: z
+    .string()
+    .min(1)
+    .max(50)
+    .openapi({ example: '研发部', description: '部门名称' }),
+  sort: z
+    .number()
+    .int()
+    .min(0)
+    .optional()
+    .openapi({ example: 1, description: '排序' }),
+  leaderUserId: z
+    .number()
+    .int()
+    .positive()
+    .optional()
+    .openapi({ example: 1, description: '负责人用户ID' }),
+  phone: z
+    .string()
+    .max(20)
+    .optional()
+    .openapi({ example: '13800138000', description: '联系电话' }),
+  email: z
+    .string()
+    .email()
+    .optional()
+    .openapi({ example: 'dev@example.com', description: '邮箱' }),
+  status: z
+    .enum(['active', 'disabled'])
+    .optional()
+    .openapi({ example: 'active', description: '状态' }),
 });
 const updateSchema = createSchema.partial().extend({
-  leaderUserId: z.number().int().positive().nullable().optional().openapi({ example: 1, description: '负责人用户ID' }),
-  phone: z.string().max(20).nullable().optional().openapi({ example: '13800138000', description: '联系电话' }),
-  email: z.string().email().nullable().optional().openapi({ example: 'dev@example.com', description: '邮箱' }),
+  leaderUserId: z
+    .number()
+    .int()
+    .positive()
+    .nullable()
+    .optional()
+    .openapi({ example: 1, description: '负责人用户ID' }),
+  phone: z
+    .string()
+    .max(20)
+    .nullable()
+    .optional()
+    .openapi({ example: '13800138000', description: '联系电话' }),
+  email: z
+    .string()
+    .email()
+    .nullable()
+    .optional()
+    .openapi({ example: 'dev@example.com', description: '邮箱' }),
 });
 
 registerComponent('CreateDeptRequest', createSchema);
@@ -59,9 +105,7 @@ export class DeptsController {
   @ApiOperation({ summary: '获取部门详情' })
   @ApiParam({ name: 'id', description: '部门ID' })
   @ApiResponse({ status: 200, description: '成功' })
-  findOne(
-    @Param('id', ParseIntPipe) id: number,
-  ) {
+  findOne(@Param('id', ParseIntPipe) id: number) {
     return this.depts.findOne(id);
   }
   @Post()
@@ -69,10 +113,7 @@ export class DeptsController {
   @ApiOperation({ summary: '新增部门' })
   @ApiBody({ schema: { $ref: '#/components/schemas/CreateDeptRequest' } })
   @ApiResponse({ status: 200, description: '成功' })
-  create(
-    @Body() body: unknown,
-    @Req() request: AuthRequest,
-  ) {
+  create(@Body() body: unknown, @Req() request: AuthRequest) {
     return this.depts.create(createSchema.parse(body), request.user.id);
   }
   @Patch(':id')
@@ -93,10 +134,7 @@ export class DeptsController {
   @ApiOperation({ summary: '删除部门' })
   @ApiParam({ name: 'id', description: '部门ID' })
   @ApiResponse({ status: 200, description: '成功' })
-  remove(
-    @Param('id', ParseIntPipe) id: number,
-    @Req() request: AuthRequest,
-  ) {
+  remove(@Param('id', ParseIntPipe) id: number, @Req() request: AuthRequest) {
     return this.depts.remove(id, request.user.id);
   }
 }

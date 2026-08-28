@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import { NotFoundException } from '@nestjs/common';
-import { LoginLogsService } from './login-logs.service.js';
+import { LoginLogsService } from './login-logs.service';
 
 function mockDb() {
   return { db: { select: vi.fn(), delete: vi.fn() } };
@@ -25,7 +25,18 @@ describe('LoginLogsService', () => {
   describe('list', () => {
     it('returns paginated login logs', async () => {
       const { db } = mockDb();
-      db.select = selectChain([{ id: 1, username: 'admin', ip: '127.0.0.1', userAgent: null, status: 'success', message: null, userId: null, createdAt: new Date() }]);
+      db.select = selectChain([
+        {
+          id: 1,
+          username: 'admin',
+          ip: '127.0.0.1',
+          userAgent: null,
+          status: 'success',
+          message: null,
+          userId: null,
+          createdAt: new Date(),
+        },
+      ]);
       const service = new LoginLogsService({ db } as any);
       const result = await service.list(1, 20);
       expect(result.items).toHaveLength(1);
@@ -60,14 +71,22 @@ describe('LoginLogsService', () => {
   describe('remove', () => {
     it('deletes a log by id', async () => {
       const { db } = mockDb();
-      db.delete = vi.fn().mockReturnValue({ where: vi.fn().mockResolvedValue([{ affectedRows: 1 }]) });
+      db.delete = vi
+        .fn()
+        .mockReturnValue({
+          where: vi.fn().mockResolvedValue([{ affectedRows: 1 }]),
+        });
       const service = new LoginLogsService({ db } as any);
       await expect(service.remove(1)).resolves.toBeUndefined();
     });
 
     it('throws NotFoundException', async () => {
       const { db } = mockDb();
-      db.delete = vi.fn().mockReturnValue({ where: vi.fn().mockResolvedValue([{ affectedRows: 0 }]) });
+      db.delete = vi
+        .fn()
+        .mockReturnValue({
+          where: vi.fn().mockResolvedValue([{ affectedRows: 0 }]),
+        });
       const service = new LoginLogsService({ db } as any);
       await expect(service.remove(999)).rejects.toThrow(NotFoundException);
     });

@@ -7,8 +7,8 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { z } from 'zod';
-import { AuthService } from './auth.service.js';
-import { Public } from '../../common/auth/public.decorator.js';
+import { AuthService } from './auth.service';
+import { Public } from '../../common/auth/public.decorator';
 import {
   ApiBearerAuth,
   ApiBody,
@@ -16,14 +16,25 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { registerComponent } from '../../common/swagger/zod-schema.helper.js';
+import { registerComponent } from '../../common/swagger/zod-schema.helper';
 
 const loginSchema = z.object({
-  username: z.string().min(1).max(64).openapi({ example: 'admin', description: '用户名' }),
-  password: z.string().min(8).max(128).openapi({ example: '123456', description: '密码' }),
+  username: z
+    .string()
+    .min(1)
+    .max(64)
+    .openapi({ example: 'admin', description: '用户名' }),
+  password: z
+    .string()
+    .min(8)
+    .max(128)
+    .openapi({ example: '123456', description: '密码' }),
 });
 const refreshSchema = z.object({
-  refreshToken: z.string().min(1).openapi({ example: 'eyJhbG...', description: '刷新令牌' }),
+  refreshToken: z
+    .string()
+    .min(1)
+    .openapi({ example: 'eyJhbG...', description: '刷新令牌' }),
 });
 
 registerComponent('LoginRequest', loginSchema);

@@ -10,8 +10,8 @@ import {
 import { SchedulerRegistry } from '@nestjs/schedule';
 import { CronJob } from 'cron';
 import { and, desc, eq, isNotNull, isNull, lt, ne, or } from 'drizzle-orm';
-import { DatabaseService } from '../../database/database.service.js';
-import { jobLogs, jobs, refreshTokens } from '../../database/schema/index.js';
+import { DatabaseService } from '../../database/database.service';
+import { jobLogs, jobs, refreshTokens } from '../../database/schema/index';
 
 export type CreateJobInput = {
   name: string;

@@ -6,9 +6,9 @@ import {
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { jwtVerify } from 'jose';
-import { AppConfigService } from '../../config/app-config.service.js';
-import { IS_PUBLIC } from './public.decorator.js';
-import { REQUIRED_PERMISSIONS } from './permissions.decorator.js';
+import { AppConfigService } from '../../config/app-config.service';
+import { IS_PUBLIC } from './public.decorator';
+import { REQUIRED_PERMISSIONS } from './permissions.decorator';
 
 type RequestUser = {
   id: number;

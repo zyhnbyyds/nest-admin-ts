@@ -14,8 +14,8 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { RequirePermissions } from '../../../common/auth/permissions.decorator.js';
-import { LoginLogsService } from './login-logs.service.js';
+import { RequirePermissions } from '../../../common/auth/permissions.decorator';
+import { LoginLogsService } from './login-logs.service';
 
 @ApiTags('登录日志')
 @Controller('monitor/login-logs')

@@ -3,7 +3,7 @@ import * as argon2 from 'argon2';
 import { eq } from 'drizzle-orm';
 import { drizzle } from 'drizzle-orm/mysql2';
 import mysql from 'mysql2/promise';
-import { roles, userRoles, users } from '../schema/index.js';
+import { roles, userRoles, users } from '../schema/index';
 
 async function seed(): Promise<void> {
   const url = process.env.DATABASE_URL;

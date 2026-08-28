@@ -1,16 +1,64 @@
 import { describe, expect, it, vi } from 'vitest';
 import { ConflictException, NotFoundException } from '@nestjs/common';
-import { DictTypesService } from './dict-types.service.js';
+import { DictTypesService } from './dict-types.service';
 
 function mockDb() {
-  return { db: { select: vi.fn(), insert: vi.fn().mockReturnValue({ values: vi.fn().mockResolvedValue([{ insertId: 4 }]) }), update: vi.fn().mockReturnValue({ set: vi.fn().mockReturnValue({ where: vi.fn().mockResolvedValue([{ affectedRows: 1 }]) }) }), transaction: vi.fn().mockImplementation(async (cb: any) => { await cb({ update: vi.fn().mockReturnValue({ set: vi.fn().mockReturnValue({ where: vi.fn().mockResolvedValue([{ affectedRows: 1 }]) }) }) }); }) } };
+  return {
+    db: {
+      select: vi.fn(),
+      insert: vi
+        .fn()
+        .mockReturnValue({
+          values: vi.fn().mockResolvedValue([{ insertId: 4 }]),
+        }),
+      update: vi
+        .fn()
+        .mockReturnValue({
+          set: vi
+            .fn()
+            .mockReturnValue({
+              where: vi.fn().mockResolvedValue([{ affectedRows: 1 }]),
+            }),
+        }),
+      transaction: vi.fn().mockImplementation(async (cb: any) => {
+        await cb({
+          update: vi
+            .fn()
+            .mockReturnValue({
+              set: vi
+                .fn()
+                .mockReturnValue({
+                  where: vi.fn().mockResolvedValue([{ affectedRows: 1 }]),
+                }),
+            }),
+        });
+      }),
+    },
+  };
 }
 
 function selectWithLimit(result: unknown) {
   return vi.fn().mockReturnValue({
     from: vi.fn().mockReturnValue({
-      where: vi.fn().mockReturnValue({ limit: vi.fn().mockResolvedValue(result), orderBy: vi.fn().mockReturnValue({ limit: vi.fn().mockReturnValue({ offset: vi.fn().mockResolvedValue(result) }) }) }),
-      orderBy: vi.fn().mockReturnValue({ limit: vi.fn().mockReturnValue({ offset: vi.fn().mockResolvedValue(result) }) }),
+      where: vi
+        .fn()
+        .mockReturnValue({
+          limit: vi.fn().mockResolvedValue(result),
+          orderBy: vi
+            .fn()
+            .mockReturnValue({
+              limit: vi
+                .fn()
+                .mockReturnValue({ offset: vi.fn().mockResolvedValue(result) }),
+            }),
+        }),
+      orderBy: vi
+        .fn()
+        .mockReturnValue({
+          limit: vi
+            .fn()
+            .mockReturnValue({ offset: vi.fn().mockResolvedValue(result) }),
+        }),
     }),
   });
 }
@@ -19,7 +67,20 @@ describe('DictTypesService', () => {
   describe('list', () => {
     it('returns paginated dict types', async () => {
       const { db } = mockDb();
-      db.select = selectWithLimit([{ id: 1, name: 'Status', type: 'sys_status', status: 'active', remark: null, deletedAt: null, createdAt: new Date(), updatedAt: new Date(), createdBy: null, updatedBy: null }]);
+      db.select = selectWithLimit([
+        {
+          id: 1,
+          name: 'Status',
+          type: 'sys_status',
+          status: 'active',
+          remark: null,
+          deletedAt: null,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          createdBy: null,
+          updatedBy: null,
+        },
+      ]);
       const service = new DictTypesService({ db } as any);
       const result = await service.list(1, 20);
       expect(result.items).toHaveLength(1);
@@ -29,7 +90,20 @@ describe('DictTypesService', () => {
   describe('findOne', () => {
     it('returns a dict type', async () => {
       const { db } = mockDb();
-      db.select = selectWithLimit([{ id: 1, name: 'Status', type: 'sys_status', status: 'active', remark: null, deletedAt: null, createdAt: new Date(), updatedAt: new Date(), createdBy: null, updatedBy: null }]);
+      db.select = selectWithLimit([
+        {
+          id: 1,
+          name: 'Status',
+          type: 'sys_status',
+          status: 'active',
+          remark: null,
+          deletedAt: null,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          createdBy: null,
+          updatedBy: null,
+        },
+      ]);
       const service = new DictTypesService({ db } as any);
       const result = await service.findOne(1);
       expect(result.name).toBe('Status');
@@ -48,7 +122,10 @@ describe('DictTypesService', () => {
       const { db } = mockDb();
       db.select = selectWithLimit([]);
       const service = new DictTypesService({ db } as any);
-      const result = await service.create({ name: 'Status', type: 'sys_status' }, 1);
+      const result = await service.create(
+        { name: 'Status', type: 'sys_status' },
+        1,
+      );
       expect(result).toEqual({ id: 4 });
     });
 
@@ -56,7 +133,9 @@ describe('DictTypesService', () => {
       const { db } = mockDb();
       db.select = selectWithLimit([{ id: 1 }]);
       const service = new DictTypesService({ db } as any);
-      await expect(service.create({ name: 'Status', type: 'sys_status' }, 1)).rejects.toThrow(ConflictException);
+      await expect(
+        service.create({ name: 'Status', type: 'sys_status' }, 1),
+      ).rejects.toThrow(ConflictException);
     });
   });
 
@@ -65,14 +144,29 @@ describe('DictTypesService', () => {
       const { db } = mockDb();
       db.select = selectWithLimit([{ id: 1 }]);
       const service = new DictTypesService({ db } as any);
-      await expect(service.update(1, { name: 'Updated' }, 1)).resolves.toBeUndefined();
+      await expect(
+        service.update(1, { name: 'Updated' }, 1),
+      ).resolves.toBeUndefined();
     });
   });
 
   describe('remove', () => {
     it('soft-deletes a dict type and its data', async () => {
       const { db } = mockDb();
-      db.select = selectWithLimit([{ id: 1, name: 'Status', type: 'sys_status', status: 'active', remark: null, deletedAt: null, createdAt: new Date(), updatedAt: new Date(), createdBy: null, updatedBy: null }]);
+      db.select = selectWithLimit([
+        {
+          id: 1,
+          name: 'Status',
+          type: 'sys_status',
+          status: 'active',
+          remark: null,
+          deletedAt: null,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          createdBy: null,
+          updatedBy: null,
+        },
+      ]);
       const service = new DictTypesService({ db } as any);
       await expect(service.remove(1, 1)).resolves.toBeUndefined();
     });

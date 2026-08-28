@@ -4,13 +4,13 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { and, asc, eq, inArray, isNull, ne } from 'drizzle-orm';
-import { DatabaseService } from '../../../database/database.service.js';
+import { DatabaseService } from '../../../database/database.service';
 import {
   menus,
   roleMenus,
   roles,
   userRoles,
-} from '../../../database/schema/index.js';
+} from '../../../database/schema/index';
 
 export type CreateRoleInput = {
   name: string;

@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { OnlineService } from './online.service.js';
+import { OnlineService } from './online.service';
 
 function mockDb() {
   return { db: { select: vi.fn(), update: vi.fn() } };
@@ -20,7 +20,16 @@ describe('OnlineService', () => {
       const redis = mockRedis();
       const { db } = mockDb();
       const service = new OnlineService(redis as any, { db } as any);
-      await service.track({ userId: 1, username: 'admin', ip: '127.0.0.1', userAgent: 'test', loginAt: new Date().toISOString() }, 3600);
+      await service.track(
+        {
+          userId: 1,
+          username: 'admin',
+          ip: '127.0.0.1',
+          userAgent: 'test',
+          loginAt: new Date().toISOString(),
+        },
+        3600,
+      );
       expect(redis.setJson).toHaveBeenCalledOnce();
     });
   });
@@ -30,7 +39,13 @@ describe('OnlineService', () => {
       const redis = mockRedis();
       const { db } = mockDb();
       redis.keys.mockResolvedValue(['online:1']);
-      redis.getJson.mockResolvedValue({ userId: 1, username: 'admin', ip: '127.0.0.1', userAgent: null, loginAt: new Date().toISOString() });
+      redis.getJson.mockResolvedValue({
+        userId: 1,
+        username: 'admin',
+        ip: '127.0.0.1',
+        userAgent: null,
+        loginAt: new Date().toISOString(),
+      });
       const service = new OnlineService(redis as any, { db } as any);
       const result = await service.list();
       expect(result).toHaveLength(1);
@@ -51,7 +66,15 @@ describe('OnlineService', () => {
     it('removes session and revokes refresh tokens', async () => {
       const redis = mockRedis();
       const { db } = mockDb();
-      db.update = vi.fn().mockReturnValue({ set: vi.fn().mockReturnValue({ where: vi.fn().mockResolvedValue([{ affectedRows: 1 }]) }) });
+      db.update = vi
+        .fn()
+        .mockReturnValue({
+          set: vi
+            .fn()
+            .mockReturnValue({
+              where: vi.fn().mockResolvedValue([{ affectedRows: 1 }]),
+            }),
+        });
       const service = new OnlineService(redis as any, { db } as any);
       await expect(service.forceLogout(1)).resolves.toBeUndefined();
       expect(redis.del).toHaveBeenCalledWith('online:1');

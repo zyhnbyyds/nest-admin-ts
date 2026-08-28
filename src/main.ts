@@ -9,8 +9,8 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import helmet from '@fastify/helmet';
 import rateLimit from '@fastify/rate-limit';
 import multipart from '@fastify/multipart';
-import { AppModule } from './app.module.js';
-import { AppConfigService } from './config/app-config.service.js';
+import { AppModule } from './app.module';
+import { AppConfigService } from './config/app-config.service';
 
 async function bootstrap(): Promise<void> {
   const app = await NestFactory.create<NestFastifyApplication>(
@@ -40,7 +40,8 @@ async function bootstrap(): Promise<void> {
     const document = SwaggerModule.createDocument(app, swaggerConfig);
 
     // Merge zod-to-openapi registry schemas into the NestJS-generated document
-    const { getComponentSchemas } = await import('./common/swagger/zod-schema.helper.js');
+    const { getComponentSchemas } =
+      await import('./common/swagger/zod-schema.helper');
     const zodSchemas = getComponentSchemas();
     if (document.components) {
       document.components.schemas = {

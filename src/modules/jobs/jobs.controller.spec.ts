@@ -1,11 +1,18 @@
 import { describe, expect, it, vi } from 'vitest';
-import { JobsController } from './jobs.controller.js';
-import type { JobsService } from './jobs.service.js';
+import { JobsController } from './jobs.controller';
+import type { JobsService } from './jobs.service';
 
 function mockService(): Partial<JobsService> {
   return {
     list: vi.fn().mockResolvedValue({ items: [], page: 1, pageSize: 20 }),
-    findOne: vi.fn().mockResolvedValue({ id: 1, name: 'Test', handler: 'noop', cron: '0 0 * * *' }),
+    findOne: vi
+      .fn()
+      .mockResolvedValue({
+        id: 1,
+        name: 'Test',
+        handler: 'noop',
+        cron: '0 0 * * *',
+      }),
     create: vi.fn().mockResolvedValue({ id: 1 }),
     update: vi.fn().mockResolvedValue(undefined),
     remove: vi.fn().mockResolvedValue(undefined),
@@ -33,7 +40,10 @@ describe('JobsController', () => {
   it('create creates a job', async () => {
     const s = mockService();
     const c = new JobsController(s as JobsService);
-    await c.create({ name: 'Test', handler: 'noop', cron: '0 0 * * *' }, { user: { id: 1 } });
+    await c.create(
+      { name: 'Test', handler: 'noop', cron: '0 0 * * *' },
+      { user: { id: 1 } },
+    );
     expect(s.create).toHaveBeenCalled();
   });
 

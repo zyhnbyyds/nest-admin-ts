@@ -11,9 +11,9 @@ import {
   Req,
 } from '@nestjs/common';
 import { z } from 'zod';
-import { registerComponent } from '../../../common/swagger/zod-schema.helper.js';
-import { RequirePermissions } from '../../../common/auth/permissions.decorator.js';
-import { UsersService } from './users.service.js';
+import { registerComponent } from '../../../common/swagger/zod-schema.helper';
+import { RequirePermissions } from '../../../common/auth/permissions.decorator';
+import { UsersService } from './users.service';
 import {
   ApiBearerAuth,
   ApiBody,
@@ -25,21 +25,65 @@ import {
 } from '@nestjs/swagger';
 
 const createSchema = z.object({
-  username: z.string().min(3).max(64).openapi({ example: 'zhangsan', description: '用户名' }),
-  displayName: z.string().min(1).max(64).openapi({ example: '张三', description: '显示名称' }),
-  password: z.string().min(12).max(128).openapi({ example: 'password123456', description: '密码（最少12位）' }),
-  email: z.string().email().optional().openapi({ example: 'zhangsan@example.com', description: '邮箱' }),
-  phone: z.string().max(20).optional().openapi({ example: '13800138000', description: '手机号' }),
-  deptId: z.number().int().positive().optional().openapi({ example: 1, description: '部门ID' }),
+  username: z
+    .string()
+    .min(3)
+    .max(64)
+    .openapi({ example: 'zhangsan', description: '用户名' }),
+  displayName: z
+    .string()
+    .min(1)
+    .max(64)
+    .openapi({ example: '张三', description: '显示名称' }),
+  password: z
+    .string()
+    .min(12)
+    .max(128)
+    .openapi({ example: 'password123456', description: '密码（最少12位）' }),
+  email: z
+    .string()
+    .email()
+    .optional()
+    .openapi({ example: 'zhangsan@example.com', description: '邮箱' }),
+  phone: z
+    .string()
+    .max(20)
+    .optional()
+    .openapi({ example: '13800138000', description: '手机号' }),
+  deptId: z
+    .number()
+    .int()
+    .positive()
+    .optional()
+    .openapi({ example: 1, description: '部门ID' }),
 });
 const updateSchema = createSchema
   .omit({ username: true, password: true })
   .partial()
   .extend({
-    email: z.string().email().nullable().optional().openapi({ example: 'zhangsan@example.com', description: '邮箱' }),
-    phone: z.string().max(20).nullable().optional().openapi({ example: '13800138000', description: '手机号' }),
-    deptId: z.number().int().positive().nullable().optional().openapi({ example: 1, description: '部门ID' }),
-    status: z.enum(['active', 'disabled']).optional().openapi({ example: 'active', description: '状态' }),
+    email: z
+      .string()
+      .email()
+      .nullable()
+      .optional()
+      .openapi({ example: 'zhangsan@example.com', description: '邮箱' }),
+    phone: z
+      .string()
+      .max(20)
+      .nullable()
+      .optional()
+      .openapi({ example: '13800138000', description: '手机号' }),
+    deptId: z
+      .number()
+      .int()
+      .positive()
+      .nullable()
+      .optional()
+      .openapi({ example: 1, description: '部门ID' }),
+    status: z
+      .enum(['active', 'disabled'])
+      .optional()
+      .openapi({ example: 'active', description: '状态' }),
   });
 
 registerComponent('CreateUserRequest', createSchema);
@@ -56,7 +100,12 @@ export class UsersController {
   @RequirePermissions('system:user:list')
   @ApiOperation({ summary: '获取用户列表' })
   @ApiQuery({ name: 'page', required: false, description: '页码', example: 1 })
-  @ApiQuery({ name: 'pageSize', required: false, description: '每页条数', example: 20 })
+  @ApiQuery({
+    name: 'pageSize',
+    required: false,
+    description: '每页条数',
+    example: 20,
+  })
   @ApiResponse({ status: 200, description: '成功' })
   list(
     @Query('page') rawPage?: string,

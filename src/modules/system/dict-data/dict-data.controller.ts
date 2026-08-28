@@ -11,7 +11,7 @@ import {
   Req,
 } from '@nestjs/common';
 import { z } from 'zod';
-import { registerComponent } from '../../../common/swagger/zod-schema.helper.js';
+import { registerComponent } from '../../../common/swagger/zod-schema.helper';
 import {
   ApiBearerAuth,
   ApiBody,
@@ -21,21 +21,59 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { RequirePermissions } from '../../../common/auth/permissions.decorator.js';
-import { DictDataService } from './dict-data.service.js';
+import { RequirePermissions } from '../../../common/auth/permissions.decorator';
+import { DictDataService } from './dict-data.service';
 
 const createSchema = z.object({
-  type: z.string().min(1).max(100).openapi({ example: 'user_gender', description: '字典类型标识' }),
-  label: z.string().min(1).max(100).openapi({ example: '男', description: '字典标签' }),
-  value: z.string().min(1).max(100).openapi({ example: '1', description: '字典键值' }),
-  sort: z.number().int().min(0).optional().openapi({ example: 1, description: '排序' }),
-  status: z.enum(['active', 'disabled']).optional().openapi({ example: 'active', description: '状态' }),
-  cssClass: z.string().max(100).optional().openapi({ example: '', description: '样式类名' }),
-  listClass: z.string().max(100).optional().openapi({ example: '', description: '列表样式' }),
+  type: z
+    .string()
+    .min(1)
+    .max(100)
+    .openapi({ example: 'user_gender', description: '字典类型标识' }),
+  label: z
+    .string()
+    .min(1)
+    .max(100)
+    .openapi({ example: '男', description: '字典标签' }),
+  value: z
+    .string()
+    .min(1)
+    .max(100)
+    .openapi({ example: '1', description: '字典键值' }),
+  sort: z
+    .number()
+    .int()
+    .min(0)
+    .optional()
+    .openapi({ example: 1, description: '排序' }),
+  status: z
+    .enum(['active', 'disabled'])
+    .optional()
+    .openapi({ example: 'active', description: '状态' }),
+  cssClass: z
+    .string()
+    .max(100)
+    .optional()
+    .openapi({ example: '', description: '样式类名' }),
+  listClass: z
+    .string()
+    .max(100)
+    .optional()
+    .openapi({ example: '', description: '列表样式' }),
 });
 const updateSchema = createSchema.partial().extend({
-  cssClass: z.string().max(100).nullable().optional().openapi({ example: '', description: '样式类名' }),
-  listClass: z.string().max(100).nullable().optional().openapi({ example: '', description: '列表样式' }),
+  cssClass: z
+    .string()
+    .max(100)
+    .nullable()
+    .optional()
+    .openapi({ example: '', description: '样式类名' }),
+  listClass: z
+    .string()
+    .max(100)
+    .nullable()
+    .optional()
+    .openapi({ example: '', description: '列表样式' }),
 });
 
 registerComponent('CreateDictDataRequest', createSchema);
@@ -88,10 +126,7 @@ export class DictDataController {
   @ApiBody({ schema: { $ref: '#/components/schemas/CreateDictDataRequest' } })
   @ApiResponse({ status: 201, description: '成功' })
   @ApiBearerAuth('access-token')
-  create(
-    @Body() body: unknown,
-    @Req() request: AuthRequest,
-  ) {
+  create(@Body() body: unknown, @Req() request: AuthRequest) {
     return this.dictData.create(createSchema.parse(body), request.user.id);
   }
   @Patch(':id')
@@ -114,10 +149,7 @@ export class DictDataController {
   @ApiParam({ name: 'id', description: '字典数据ID' })
   @ApiResponse({ status: 200, description: '成功' })
   @ApiBearerAuth('access-token')
-  remove(
-    @Param('id', ParseIntPipe) id: number,
-    @Req() request: AuthRequest,
-  ) {
+  remove(@Param('id', ParseIntPipe) id: number, @Req() request: AuthRequest) {
     return this.dictData.remove(id, request.user.id);
   }
 }

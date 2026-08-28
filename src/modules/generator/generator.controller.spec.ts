@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
-import { GeneratorController } from './generator.controller.js';
-import type { GeneratorService } from './generator.service.js';
+import { GeneratorController } from './generator.controller';
+import type { GeneratorService } from './generator.service';
 
 function mockService(): Partial<GeneratorService> {
   return {

@@ -1,6 +1,10 @@
 import { describe, expect, it, vi } from 'vitest';
-import { NotFoundException, BadRequestException, PayloadTooLargeException } from '@nestjs/common';
-import { FilesService } from './files.service.js';
+import {
+  NotFoundException,
+  BadRequestException,
+  PayloadTooLargeException,
+} from '@nestjs/common';
+import { FilesService } from './files.service';
 
 vi.mock('node:fs', () => ({
   createReadStream: vi.fn().mockReturnValue('stream-object'),
@@ -19,7 +23,8 @@ vi.mock('node:crypto', () => ({
 function buildChain(offsetResult: unknown = []) {
   const offsetMock = vi.fn().mockResolvedValue(offsetResult);
   // limit returns a thenable that also has .offset() for chaining
-  const limitImpl = () => Object.assign(Promise.resolve([]), { offset: offsetMock });
+  const limitImpl = () =>
+    Object.assign(Promise.resolve([]), { offset: offsetMock });
 
   const chain: any = {
     from: vi.fn().mockReturnThis(),
@@ -36,8 +41,16 @@ function buildDb(offsetResult?: unknown) {
   return {
     db: {
       select: vi.fn().mockReturnValue(chain),
-      insert: vi.fn().mockReturnValue({ values: vi.fn().mockResolvedValue([{ insertId: 15 }]) }),
-      delete: vi.fn().mockReturnValue({ where: vi.fn().mockResolvedValue([{ affectedRows: 1 }]) }),
+      insert: vi
+        .fn()
+        .mockReturnValue({
+          values: vi.fn().mockResolvedValue([{ insertId: 15 }]),
+        }),
+      delete: vi
+        .fn()
+        .mockReturnValue({
+          where: vi.fn().mockResolvedValue([{ affectedRows: 1 }]),
+        }),
     },
     chain,
   };
@@ -62,7 +75,19 @@ function mockMultipartFile(overrides = {}) {
 describe('FilesService', () => {
   describe('list', () => {
     it('returns paginated files', async () => {
-      const { db } = buildDb([{ id: 1, name: 'abc.png', originalName: 'test.png', path: '/uploads/abc.png', mime: 'image/png', ext: '.png', size: 100, createdBy: null, createdAt: new Date() }]);
+      const { db } = buildDb([
+        {
+          id: 1,
+          name: 'abc.png',
+          originalName: 'test.png',
+          path: '/uploads/abc.png',
+          mime: 'image/png',
+          ext: '.png',
+          size: 100,
+          createdBy: null,
+          createdAt: new Date(),
+        },
+      ]);
       const service = new FilesService({ db } as any, buildConfig() as any);
       const result = await service.list(1, 20);
       expect(result.items).toHaveLength(1);
@@ -74,7 +99,22 @@ describe('FilesService', () => {
     it('returns file detail', async () => {
       const { db, chain } = buildDb([]);
       chain.limit.mockImplementation(() =>
-        Object.assign(Promise.resolve([{ id: 1, name: 'abc.png', originalName: 'test.png', path: '/uploads/abc.png', mime: 'image/png', ext: '.png', size: 100, createdBy: null, createdAt: new Date() }]), { offset: chain.offset })
+        Object.assign(
+          Promise.resolve([
+            {
+              id: 1,
+              name: 'abc.png',
+              originalName: 'test.png',
+              path: '/uploads/abc.png',
+              mime: 'image/png',
+              ext: '.png',
+              size: 100,
+              createdBy: null,
+              createdAt: new Date(),
+            },
+          ]),
+          { offset: chain.offset },
+        ),
       );
       const service = new FilesService({ db } as any, buildConfig() as any);
       const result = await service.detail(1);
@@ -96,21 +136,31 @@ describe('FilesService', () => {
       const { db } = buildDb();
       const file = mockMultipartFile({ filename: 'evil.exe' });
       const service = new FilesService({ db } as any, buildConfig() as any);
-      await expect(service.save(file as any, 1)).rejects.toThrow(BadRequestException);
+      await expect(service.save(file as any, 1)).rejects.toThrow(
+        BadRequestException,
+      );
     });
 
     it('throws BadRequestException for empty file', async () => {
       const { db } = buildDb();
-      const file = mockMultipartFile({ toBuffer: vi.fn().mockResolvedValue(Buffer.from([])) });
+      const file = mockMultipartFile({
+        toBuffer: vi.fn().mockResolvedValue(Buffer.from([])),
+      });
       const service = new FilesService({ db } as any, buildConfig() as any);
-      await expect(service.save(file as any, 1)).rejects.toThrow(BadRequestException);
+      await expect(service.save(file as any, 1)).rejects.toThrow(
+        BadRequestException,
+      );
     });
 
     it('throws PayloadTooLargeException for oversized file', async () => {
       const { db } = buildDb();
-      const file = mockMultipartFile({ toBuffer: vi.fn().mockResolvedValue(Buffer.alloc(11 * 1024 * 1024)) });
+      const file = mockMultipartFile({
+        toBuffer: vi.fn().mockResolvedValue(Buffer.alloc(11 * 1024 * 1024)),
+      });
       const service = new FilesService({ db } as any, buildConfig() as any);
-      await expect(service.save(file as any, 1)).rejects.toThrow(PayloadTooLargeException);
+      await expect(service.save(file as any, 1)).rejects.toThrow(
+        PayloadTooLargeException,
+      );
     });
 
     it('handles undefined actor id', async () => {
@@ -126,7 +176,22 @@ describe('FilesService', () => {
     it('returns file stream', async () => {
       const { db, chain } = buildDb([]);
       chain.limit.mockImplementation(() =>
-        Object.assign(Promise.resolve([{ id: 1, name: 'abc.png', originalName: 'test.png', path: '/uploads/abc.png', mime: 'image/png', ext: '.png', size: 100, createdBy: null, createdAt: new Date() }]), { offset: chain.offset })
+        Object.assign(
+          Promise.resolve([
+            {
+              id: 1,
+              name: 'abc.png',
+              originalName: 'test.png',
+              path: '/uploads/abc.png',
+              mime: 'image/png',
+              ext: '.png',
+              size: 100,
+              createdBy: null,
+              createdAt: new Date(),
+            },
+          ]),
+          { offset: chain.offset },
+        ),
       );
       const service = new FilesService({ db } as any, buildConfig() as any);
       const result = await service.open(1);
@@ -139,7 +204,22 @@ describe('FilesService', () => {
     it('deletes file from db and disk', async () => {
       const { db, chain } = buildDb([]);
       chain.limit.mockImplementation(() =>
-        Object.assign(Promise.resolve([{ id: 1, name: 'abc.png', originalName: 'test.png', path: '/uploads/abc.png', mime: 'image/png', ext: '.png', size: 100, createdBy: null, createdAt: new Date() }]), { offset: chain.offset })
+        Object.assign(
+          Promise.resolve([
+            {
+              id: 1,
+              name: 'abc.png',
+              originalName: 'test.png',
+              path: '/uploads/abc.png',
+              mime: 'image/png',
+              ext: '.png',
+              size: 100,
+              createdBy: null,
+              createdAt: new Date(),
+            },
+          ]),
+          { offset: chain.offset },
+        ),
       );
       const service = new FilesService({ db } as any, buildConfig() as any);
       await expect(service.remove(1)).resolves.toBeUndefined();
@@ -148,7 +228,7 @@ describe('FilesService', () => {
     it('throws NotFoundException', async () => {
       const { db, chain } = buildDb([]);
       chain.limit.mockImplementation(() =>
-        Object.assign(Promise.resolve([]), { offset: chain.offset })
+        Object.assign(Promise.resolve([]), { offset: chain.offset }),
       );
       const service = new FilesService({ db } as any, buildConfig() as any);
       await expect(service.remove(999)).rejects.toThrow(NotFoundException);

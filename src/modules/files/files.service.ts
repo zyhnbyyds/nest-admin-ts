@@ -10,9 +10,9 @@ import { mkdir, unlink, writeFile } from 'node:fs/promises';
 import { randomUUID } from 'node:crypto';
 import path from 'node:path';
 import { and, desc, eq } from 'drizzle-orm';
-import { AppConfigService } from '../../config/app-config.service.js';
-import { DatabaseService } from '../../database/database.service.js';
-import { files } from '../../database/schema/index.js';
+import { AppConfigService } from '../../config/app-config.service';
+import { DatabaseService } from '../../database/database.service';
+import { files } from '../../database/schema/index';
 
 const ALLOWED_EXTENSIONS = new Set([
   '.jpg',

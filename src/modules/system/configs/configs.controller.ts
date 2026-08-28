@@ -11,7 +11,7 @@ import {
   Req,
 } from '@nestjs/common';
 import { z } from 'zod';
-import { registerComponent } from '../../../common/swagger/zod-schema.helper.js';
+import { registerComponent } from '../../../common/swagger/zod-schema.helper';
 import {
   ApiBearerAuth,
   ApiBody,
@@ -21,24 +21,46 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { RequirePermissions } from '../../../common/auth/permissions.decorator.js';
-import { ConfigsService } from './configs.service.js';
+import { RequirePermissions } from '../../../common/auth/permissions.decorator';
+import { ConfigsService } from './configs.service';
 
 const createSchema = z.object({
-  name: z.string().min(1).max(100).openapi({ example: '系统名称', description: '参数名称' }),
+  name: z
+    .string()
+    .min(1)
+    .max(100)
+    .openapi({ example: '系统名称', description: '参数名称' }),
   key: z
     .string()
     .min(1)
     .max(100)
     .regex(/^[a-zA-Z0-9._:-]+$/)
     .openapi({ example: 'sys.name', description: '参数键名' }),
-  value: z.string().min(1).max(500).openapi({ example: 'Nest Admin', description: '参数值' }),
-  builtin: z.boolean().optional().openapi({ example: true, description: '是否内置' }),
-  remark: z.string().max(500).optional().openapi({ example: '系统参数', description: '备注' }),
+  value: z
+    .string()
+    .min(1)
+    .max(500)
+    .openapi({ example: 'Nest Admin', description: '参数值' }),
+  builtin: z
+    .boolean()
+    .optional()
+    .openapi({ example: true, description: '是否内置' }),
+  remark: z
+    .string()
+    .max(500)
+    .optional()
+    .openapi({ example: '系统参数', description: '备注' }),
 });
 const updateSchema = createSchema
   .partial()
-  .extend({ remark: z.string().max(500).nullable().optional().openapi({ example: '系统参数', description: '备注' }) });
+  .extend({
+    remark: z
+      .string()
+      .max(500)
+      .nullable()
+      .optional()
+      .openapi({ example: '系统参数', description: '备注' }),
+  });
 
 registerComponent('CreateConfigRequest', createSchema);
 registerComponent('UpdateConfigRequest', updateSchema);
@@ -88,10 +110,7 @@ export class ConfigsController {
   @ApiBody({ schema: { $ref: '#/components/schemas/CreateConfigRequest' } })
   @ApiResponse({ status: 201, description: '成功' })
   @ApiBearerAuth('access-token')
-  create(
-    @Body() body: unknown,
-    @Req() request: AuthRequest,
-  ) {
+  create(@Body() body: unknown, @Req() request: AuthRequest) {
     return this.configs.create(createSchema.parse(body), request.user.id);
   }
   @Patch(':id')
@@ -114,10 +133,7 @@ export class ConfigsController {
   @ApiParam({ name: 'id', description: '参数ID' })
   @ApiResponse({ status: 200, description: '成功' })
   @ApiBearerAuth('access-token')
-  remove(
-    @Param('id', ParseIntPipe) id: number,
-    @Req() request: AuthRequest,
-  ) {
+  remove(@Param('id', ParseIntPipe) id: number, @Req() request: AuthRequest) {
     return this.configs.remove(id, request.user.id);
   }
 }

@@ -5,8 +5,8 @@ import {
   NestInterceptor,
 } from '@nestjs/common';
 import { Observable, tap } from 'rxjs';
-import { DatabaseService } from '../../database/database.service.js';
-import { operationLogs } from '../../database/schema/index.js';
+import { DatabaseService } from '../../database/database.service';
+import { operationLogs } from '../../database/schema/index';
 
 type LogRequest = {
   method?: string;

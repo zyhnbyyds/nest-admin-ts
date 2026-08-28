@@ -9,9 +9,9 @@ import {
   Query,
   Req,
 } from '@nestjs/common';
-import { RequirePermissions } from '../../common/auth/permissions.decorator.js';
-import { RolesService } from '../system/roles/roles.service.js';
-import { legacy, mapStatus, slugify } from './legacy.js';
+import { RequirePermissions } from '../../common/auth/permissions.decorator';
+import { RolesService } from '../system/roles/roles.service';
+import { legacy, mapStatus, slugify } from './legacy';
 
 type LegacyRoleBody = {
   id?: number;

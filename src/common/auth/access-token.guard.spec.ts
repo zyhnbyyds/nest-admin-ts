@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import { Reflector } from '@nestjs/core';
 import { UnauthorizedException } from '@nestjs/common';
-import { AccessTokenGuard } from './access-token.guard.js';
+import { AccessTokenGuard } from './access-token.guard';
 
 function buildReflector(isPublic = false, permissions: string[] = []) {
   const getAllAndOverride = vi.fn((key: symbol) => {
@@ -14,7 +14,13 @@ function buildReflector(isPublic = false, permissions: string[] = []) {
 }
 
 function buildConfig() {
-  return { jwt: { JWT_ACCESS_SECRET: 'a'.repeat(32), JWT_ISSUER: 'test-issuer', JWT_AUDIENCE: 'test-audience' } };
+  return {
+    jwt: {
+      JWT_ACCESS_SECRET: 'a'.repeat(32),
+      JWT_ISSUER: 'test-issuer',
+      JWT_AUDIENCE: 'test-audience',
+    },
+  };
 }
 
 function buildContext(authHeader?: string) {
@@ -32,22 +38,34 @@ function buildContext(authHeader?: string) {
 
 describe('AccessTokenGuard', () => {
   it('allows public routes without token', async () => {
-    const guard = new AccessTokenGuard(buildReflector(true), buildConfig() as any);
+    const guard = new AccessTokenGuard(
+      buildReflector(true),
+      buildConfig() as any,
+    );
     await expect(guard.canActivate(buildContext())).resolves.toBe(true);
   });
 
   it('throws UnauthorizedException when no token provided', async () => {
     const guard = new AccessTokenGuard(buildReflector(), buildConfig() as any);
-    await expect(guard.canActivate(buildContext())).rejects.toThrow(UnauthorizedException);
+    await expect(guard.canActivate(buildContext())).rejects.toThrow(
+      UnauthorizedException,
+    );
   });
 
   it('throws UnauthorizedException for malformed token', async () => {
     const guard = new AccessTokenGuard(buildReflector(), buildConfig() as any);
-    await expect(guard.canActivate(buildContext('Bearer bad-token'))).rejects.toThrow(UnauthorizedException);
+    await expect(
+      guard.canActivate(buildContext('Bearer bad-token')),
+    ).rejects.toThrow(UnauthorizedException);
   });
 
   it('throws UnauthorizedException when permissions required but missing', async () => {
-    const guard = new AccessTokenGuard(buildReflector(false, ['system:admin']), buildConfig() as any);
-    await expect(guard.canActivate(buildContext('Bearer bad-token'))).rejects.toThrow(UnauthorizedException);
+    const guard = new AccessTokenGuard(
+      buildReflector(false, ['system:admin']),
+      buildConfig() as any,
+    );
+    await expect(
+      guard.canActivate(buildContext('Bearer bad-token')),
+    ).rejects.toThrow(UnauthorizedException);
   });
 });

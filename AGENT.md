@@ -11,20 +11,19 @@
 
 ## 技术栈
 
-| 领域               | 选型                                                          |
-| ------------------ | ------------------------------------------------------------- |
-| 运行时 / 包管理器  | Bun / pnpm                                                    |
-| Web 框架           | NestJS 11 + Fastify 适配器（不是 Express）                    |
-| ORM                | Drizzle ORM 1.0.0-rc.3（MySQL 方言）                         |
-| 数据校验           | Zod 4（Controller 层校验请求体；`AppConfigService` 校验环境变量） |
-| 认证               | JWT via `jose`（HS256）；密码哈希 `argon2id`                    |
-| 调度               | `@nestjs/schedule` + `cron`                                  |
-| API 文档           | `@nestjs/swagger`（开启时路径：`/api/v1/docs`）               |
-| 日志               | `pino`（Fastify 内置）                                       |
-| 测试               | `vitest` 4.x + `@vitest/coverage-v8`                          |
-| Lint / 格式化      | `oxlint`、`oxfmt`（不用 ESLint / Prettier）                    |
-| 语言               | TypeScript 5.9，`moduleResolution: NodeNext`，ESM `.js` 后缀导入 |
-
+| 领域              | 选型                                                              |
+| ----------------- | ----------------------------------------------------------------- |
+| 运行时 / 包管理器 | Bun / pnpm                                                        |
+| Web 框架          | NestJS 12 + Fastify 适配器（不是 Express）                        |
+| ORM               | Drizzle ORM 1.0.0-rc.3（MySQL 方言）                              |
+| 数据校验          | Zod 4（Controller 层校验请求体；`AppConfigService` 校验环境变量） |
+| 认证              | JWT via `jose`（HS256）；密码哈希 `argon2id`                      |
+| 调度              | `@nestjs/schedule` + `cron`                                       |
+| API 文档          | `@nestjs/swagger`（开启时路径：`/api/v1/docs`）                   |
+| 日志              | `pino`（Fastify 内置）                                            |
+| 测试              | `vitest` 4.x + `@vitest/coverage-v8`                              |
+| Lint / 格式化     | `oxlint`、`oxfmt`（不用 ESLint / Prettier）                       |
+| 语言              | TypeScript 5.9，`moduleResolution: NodeNext`，ESM `.js` 后缀导入  |
 
 ## 常用命令
 
@@ -112,6 +111,7 @@ src/
 全部 17 张表的定义在 **一个文件** 中：`src/database/schema/index.ts`。
 
 所有支持软删除/审计的表都包含：
+
 - `created_at`、`updated_at`（timestamp）
 - `deleted_at`（datetime，可为空）
 - `created_by`、`updated_by`（unsigned int，可为空）
@@ -119,15 +119,16 @@ src/
 Drizzle 关联也定义在同一文件中（通过 `defineRelations`）。
 
 **核心表说明：**
-| 表名                | 说明                                                         |
-| ------------------- | ------------------------------------------------------------ |
-| `sys_user`          | `username` 唯一、`password_hash`、`status`(active/disabled)、`dept_id` 外键，软删除 |
-| `sys_role`          | `role_key` 唯一、`is_system` 标记、`data_scope`，软删除         |
-| `sys_menu`          | `parent_id` 实现树形、`type`(M/C/F=目录/菜单/按钮)、`permission` 权限标识，软删除 |
-| `sys_user_role`     | 用户-角色关联表                                              |
-| `sys_role_menu`     | 角色-菜单关联表                                              |
-| `sys_dept`          | `parent_id` + `ancestors`(祖级路径) 实现树形                   |
-| `sys_job`           | `handler` 字符串映射到注册的处理器名称；通过 `@nestjs/schedule` 调度 |
+
+| 表名            | 说明                                                                                |
+| --------------- | ----------------------------------------------------------------------------------- |
+| `sys_user`      | `username` 唯一、`password_hash`、`status`(active/disabled)、`dept_id` 外键，软删除 |
+| `sys_role`      | `role_key` 唯一、`is_system` 标记、`data_scope`，软删除                             |
+| `sys_menu`      | `parent_id` 实现树形、`type`(M/C/F=目录/菜单/按钮)、`permission` 权限标识，软删除   |
+| `sys_user_role` | 用户-角色关联表                                                                     |
+| `sys_role_menu` | 角色-菜单关联表                                                                     |
+| `sys_dept`      | `parent_id` + `ancestors`(祖级路径) 实现树形                                        |
+| `sys_job`       | `handler` 字符串映射到注册的处理器名称；通过 `@nestjs/schedule` 调度                |
 
 ## 认证与鉴权
 
@@ -144,18 +145,22 @@ Drizzle 关联也定义在同一文件中（通过 `defineRelations`）。
 ## 编码规范
 
 ### ESM 导入
+
 所有 `.ts` 文件的导入路径必须使用 `.js` 后缀（匹配 `moduleResolution: NodeNext`）：
+
 ```ts
 import { UsersService } from './users.service.js';
 ```
 
 ### Controller 编写规范
+
 - 路由前缀采用分层风格：`system/users`、`system/roles`、`monitor/login-logs` 等。
 - 所有受保护路由必须用 `@RequirePermissions('模块:资源:操作')` 装饰。
 - 请求体用 Zod schema 校验，schema 定义在 Controller 文件中。
 - Controller 保持薄层——仅调用 Service 并返回结果。
 
 ### Service 编写规范
+
 - Service 依赖 `DatabaseService`（提供 `db` 即 Drizzle 实例）和/或 `RedisService`。
 - 分页 `list` 方法接收 `page` 和 `pageSize`，做范围限制后返回 `{ items, page, pageSize }`。
 - 软删除使用 `deletedAt = new Date()`，不物理删除行。
@@ -163,6 +168,7 @@ import { UsersService } from './users.service.js';
 - 实体不存在抛 `NotFoundException`。
 
 ### 命名约定
+
 - **文件名**：`kebab-case.service.ts`、`kebab-case.controller.ts`、`kebab-case.spec.ts`
 - **类名**：`PascalCase`（`UsersService`、`UsersController`）
 - **表名**：数据库中为 `snake_case`，Drizzle 变量为 `camelCase`（`sys_dept` → `departments`）
@@ -171,12 +177,14 @@ import { UsersService } from './users.service.js';
 ## 测试
 
 ### 运行测试
+
 ```bash
 bun run test          # 单次运行
 bun run test:watch    # 监听模式
 ```
 
 ### 测试结构
+
 - 测试文件与源文件同目录：`src/modules/system/users/users.service.spec.ts`
 - 使用 `vitest` + `describe`/`it`/`expect`/`vi`
 - 全部 229 个测试用例完全隔离——每个 Service 测试都 mock 了 `DatabaseService`（必要时还有 `RedisService`、`AppConfigService`、`SchedulerRegistry`）
@@ -193,19 +201,31 @@ function mockDb() {
   return {
     db: {
       select: vi.fn(),
-      insert: vi.fn().mockReturnValue({ values: vi.fn().mockResolvedValue([{ insertId: 1 }]) }),
+      insert: vi.fn().mockReturnValue({
+        values: vi.fn().mockResolvedValue([{ insertId: 1 }]),
+      }),
       update: vi.fn().mockReturnValue({
-        set: vi.fn().mockReturnValue({ where: vi.fn().mockResolvedValue([{ affectedRows: 1 }]) }),
+        set: vi.fn().mockReturnValue({
+          where: vi.fn().mockResolvedValue([{ affectedRows: 1 }]),
+        }),
       }),
-      delete: vi.fn().mockReturnValue({ where: vi.fn().mockResolvedValue([{ affectedRows: 1 }]) }),
-      transaction: vi.fn().mockImplementation(async (cb: (tx: any) => Promise<void>) => {
-        await cb({
-          delete: vi.fn().mockReturnValue({ where: vi.fn().mockResolvedValue([{ affectedRows: 1 }]) }),
-          update: vi.fn().mockReturnValue({
-            set: vi.fn().mockReturnValue({ where: vi.fn().mockResolvedValue([{ affectedRows: 1 }]) }),
-          }),
-        });
+      delete: vi.fn().mockReturnValue({
+        where: vi.fn().mockResolvedValue([{ affectedRows: 1 }]),
       }),
+      transaction: vi
+        .fn()
+        .mockImplementation(async (cb: (tx: any) => Promise<void>) => {
+          await cb({
+            delete: vi.fn().mockReturnValue({
+              where: vi.fn().mockResolvedValue([{ affectedRows: 1 }]),
+            }),
+            update: vi.fn().mockReturnValue({
+              set: vi.fn().mockReturnValue({
+                where: vi.fn().mockResolvedValue([{ affectedRows: 1 }]),
+              }),
+            }),
+          });
+        }),
     },
   };
 }
@@ -233,6 +253,7 @@ function selectMock(result: unknown) {
 ```
 
 **使用方式**：解构后传入 `{ db }` 包装对象给 Service 构造器：
+
 ```ts
 const { db } = mockDb();
 db.select = selectMock([{ id: 1, name: '测试' }]);
@@ -243,29 +264,30 @@ const service = new UsersService({ db } as any);
 
 由 `AppConfigService` 通过 Zod schema 校验：
 
-| 变量名                | 必填 | 默认值                  | 说明                              |
-| --------------------- | :--: | ----------------------- | --------------------------------- |
-| `NODE_ENV`            | 否   | `development`           | `development` / `test` / `production` |
-| `PORT`                | 否   | `3000`                  | 服务端口                          |
-| `API_PREFIX`          | 否   | `api/v1`                | API 前缀                          |
-| `DATABASE_URL`        | **是** | —                     | MySQL 连接串                      |
-| `REDIS_URL`           | 否   | —                       | Redis 连接串（可选）              |
-| `JWT_ISSUER`          | **是** | —                     | JWT 签发者                        |
-| `JWT_AUDIENCE`        | **是** | —                     | JWT 受众                          |
-| `JWT_ACCESS_SECRET`   | **是** | —                     | 访问令牌密钥（最少 32 个字符）    |
-| `JWT_REFRESH_SECRET`  | **是** | —                     | 刷新令牌密钥（最少 32 个字符）    |
-| `JWT_ACCESS_TTL`      | 否   | `15m`                   | 访问令牌有效期，格式 `\d+(s\|m\|h\|d)` |
-| `JWT_REFRESH_TTL`     | 否   | `7d`                    | 刷新令牌有效期，格式 `\d+(s\|m\|h\|d)` |
-| `CORS_ORIGINS`        | 否   | `http://localhost:5173` | 允许的跨域来源，逗号分隔          |
-| `UPLOAD_DIR`          | 否   | `uploads`               | 文件上传目录                      |
-| `SWAGGER_ENABLED`     | 否   | `true`                  | 是否启用 Swagger（`true`/`false`） |
-| `SWAGGER_PATH`        | 否   | `docs`                  | Swagger 文档路径                  |
+| 变量名               |  必填  | 默认值                  | 说明                                   |
+| -------------------- | :----: | ----------------------- | -------------------------------------- |
+| `NODE_ENV`           |   否   | `development`           | `development` / `test` / `production`  |
+| `PORT`               |   否   | `3000`                  | 服务端口                               |
+| `API_PREFIX`         |   否   | `api/v1`                | API 前缀                               |
+| `DATABASE_URL`       | **是** | —                       | MySQL 连接串                           |
+| `REDIS_URL`          |   否   | —                       | Redis 连接串（可选）                   |
+| `JWT_ISSUER`         | **是** | —                       | JWT 签发者                             |
+| `JWT_AUDIENCE`       | **是** | —                       | JWT 受众                               |
+| `JWT_ACCESS_SECRET`  | **是** | —                       | 访问令牌密钥（最少 32 个字符）         |
+| `JWT_REFRESH_SECRET` | **是** | —                       | 刷新令牌密钥（最少 32 个字符）         |
+| `JWT_ACCESS_TTL`     |   否   | `15m`                   | 访问令牌有效期，格式 `\d+(s\|m\|h\|d)` |
+| `JWT_REFRESH_TTL`    |   否   | `7d`                    | 刷新令牌有效期，格式 `\d+(s\|m\|h\|d)` |
+| `CORS_ORIGINS`       |   否   | `http://localhost:5173` | 允许的跨域来源，逗号分隔               |
+| `UPLOAD_DIR`         |   否   | `uploads`               | 文件上传目录                           |
+| `SWAGGER_ENABLED`    |   否   | `true`                  | 是否启用 Swagger（`true`/`false`）     |
+| `SWAGGER_PATH`       |   否   | `docs`                  | Swagger 文档路径                       |
 
 ## 代码生成器
 
 `/generator` 模块通过查询 `information_schema` 为任意已存在的数据库表生成 NestJS 模块脚手架（schema、service、controller、module）。输出到 `src/modules/generated/<目录>/`，该目录已被 **gitignore**。
 
 接口：
+
 - `GET /generator/tables` — 列出所有表
 - `GET /generator/tables/:table/columns` — 获取表字段元数据
 - `POST /generator/preview` — 预览生成的文件

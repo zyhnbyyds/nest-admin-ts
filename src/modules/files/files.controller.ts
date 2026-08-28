@@ -19,8 +19,8 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { RequirePermissions } from '../../common/auth/permissions.decorator.js';
-import { FilesService } from './files.service.js';
+import { RequirePermissions } from '../../common/auth/permissions.decorator';
+import { FilesService } from './files.service';
 
 type UploadRequest = {
   file: () => Promise<MultipartFile | undefined>;

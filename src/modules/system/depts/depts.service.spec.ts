@@ -1,9 +1,27 @@
 import { describe, expect, it, vi } from 'vitest';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
-import { DeptsService } from './depts.service.js';
+import { DeptsService } from './depts.service';
 
 function mockDb() {
-  return { db: { select: vi.fn(), insert: vi.fn().mockReturnValue({ values: vi.fn().mockResolvedValue([{ insertId: 3 }]) }), update: vi.fn().mockReturnValue({ set: vi.fn().mockReturnValue({ where: vi.fn().mockResolvedValue([{ affectedRows: 1 }]) }) }) } };
+  return {
+    db: {
+      select: vi.fn(),
+      insert: vi
+        .fn()
+        .mockReturnValue({
+          values: vi.fn().mockResolvedValue([{ insertId: 3 }]),
+        }),
+      update: vi
+        .fn()
+        .mockReturnValue({
+          set: vi
+            .fn()
+            .mockReturnValue({
+              where: vi.fn().mockResolvedValue([{ affectedRows: 1 }]),
+            }),
+        }),
+    },
+  };
 }
 
 function selectWithLimit(result: unknown) {
@@ -35,8 +53,38 @@ describe('DeptsService', () => {
     it('returns department tree', async () => {
       const { db } = mockDb();
       const rows = [
-        { id: 1, parentId: 0, name: 'HQ', ancestors: '0', sort: 0, leaderUserId: null, phone: null, email: null, status: 'active', deletedAt: null, createdAt: new Date(), updatedAt: new Date(), createdBy: null, updatedBy: null },
-        { id: 2, parentId: 1, name: 'IT', ancestors: '0,1', sort: 1, leaderUserId: null, phone: null, email: null, status: 'active', deletedAt: null, createdAt: new Date(), updatedAt: new Date(), createdBy: null, updatedBy: null },
+        {
+          id: 1,
+          parentId: 0,
+          name: 'HQ',
+          ancestors: '0',
+          sort: 0,
+          leaderUserId: null,
+          phone: null,
+          email: null,
+          status: 'active',
+          deletedAt: null,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          createdBy: null,
+          updatedBy: null,
+        },
+        {
+          id: 2,
+          parentId: 1,
+          name: 'IT',
+          ancestors: '0,1',
+          sort: 1,
+          leaderUserId: null,
+          phone: null,
+          email: null,
+          status: 'active',
+          deletedAt: null,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          createdBy: null,
+          updatedBy: null,
+        },
       ];
       db.select = selectWithLimit(rows);
       const service = new DeptsService({ db } as any);
@@ -49,7 +97,22 @@ describe('DeptsService', () => {
   describe('findOne', () => {
     it('returns a department by id', async () => {
       const { db } = mockDb();
-      const dept = { id: 1, parentId: 0, name: 'HQ', ancestors: '0', sort: 0, leaderUserId: null, phone: null, email: null, status: 'active', deletedAt: null, createdAt: new Date(), updatedAt: new Date(), createdBy: null, updatedBy: null };
+      const dept = {
+        id: 1,
+        parentId: 0,
+        name: 'HQ',
+        ancestors: '0',
+        sort: 0,
+        leaderUserId: null,
+        phone: null,
+        email: null,
+        status: 'active',
+        deletedAt: null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        createdBy: null,
+        updatedBy: null,
+      };
       db.select = selectWithLimit([dept]);
       const service = new DeptsService({ db } as any);
       const result = await service.findOne(1);
@@ -84,10 +147,27 @@ describe('DeptsService', () => {
   describe('update', () => {
     it('updates a department', async () => {
       const { db } = mockDb();
-      const existing = { id: 1, parentId: 0, name: 'HQ', ancestors: '0', sort: 0, leaderUserId: null, phone: null, email: null, status: 'active', deletedAt: null, createdAt: new Date(), updatedAt: new Date(), createdBy: null, updatedBy: null };
+      const existing = {
+        id: 1,
+        parentId: 0,
+        name: 'HQ',
+        ancestors: '0',
+        sort: 0,
+        leaderUserId: null,
+        phone: null,
+        email: null,
+        status: 'active',
+        deletedAt: null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        createdBy: null,
+        updatedBy: null,
+      };
       db.select = selectWithLimit([existing]);
       const service = new DeptsService({ db } as any);
-      await expect(service.update(1, { name: 'Updated HQ' }, 1)).resolves.toBeUndefined();
+      await expect(
+        service.update(1, { name: 'Updated HQ' }, 1),
+      ).resolves.toBeUndefined();
     });
   });
 
@@ -96,7 +176,12 @@ describe('DeptsService', () => {
       const { db } = mockDb();
       db.select = vi.fn().mockReturnValue({
         from: vi.fn().mockReturnValue({
-          where: vi.fn().mockReturnValue({ limit: vi.fn().mockResolvedValueOnce([{ id: 1 }]).mockResolvedValueOnce([{ id: 2 }]) }),
+          where: vi.fn().mockReturnValue({
+            limit: vi
+              .fn()
+              .mockResolvedValueOnce([{ id: 1 }])
+              .mockResolvedValueOnce([{ id: 2 }]),
+          }),
         }),
       });
       const service = new DeptsService({ db } as any);
@@ -107,7 +192,13 @@ describe('DeptsService', () => {
       const { db } = mockDb();
       db.select = vi.fn().mockReturnValue({
         from: vi.fn().mockReturnValue({
-          where: vi.fn().mockReturnValue({ limit: vi.fn().mockResolvedValueOnce([{ id: 1 }]).mockResolvedValueOnce([]).mockResolvedValueOnce([]) }),
+          where: vi.fn().mockReturnValue({
+            limit: vi
+              .fn()
+              .mockResolvedValueOnce([{ id: 1 }])
+              .mockResolvedValueOnce([])
+              .mockResolvedValueOnce([]),
+          }),
         }),
       });
       const service = new DeptsService({ db } as any);

@@ -1,9 +1,15 @@
 import { describe, expect, it, vi } from 'vitest';
-import { LegacyMenuController } from './legacy-menu.controller.js';
-import type { MenusService } from '../system/menus/menus.service.js';
+import { LegacyMenuController } from './legacy-menu.controller';
+import type { MenusService } from '../system/menus/menus.service';
 
 function mockService(): Partial<MenusService> {
-  return { list: vi.fn().mockResolvedValue([]), findOne: vi.fn().mockResolvedValue({ id: 1, name: 'Test', title: 'Test', type: 'M' }), create: vi.fn().mockResolvedValue({ id: 1 }) };
+  return {
+    list: vi.fn().mockResolvedValue([]),
+    findOne: vi
+      .fn()
+      .mockResolvedValue({ id: 1, name: 'Test', title: 'Test', type: 'M' }),
+    create: vi.fn().mockResolvedValue({ id: 1 }),
+  };
 }
 
 describe('LegacyMenuController', () => {

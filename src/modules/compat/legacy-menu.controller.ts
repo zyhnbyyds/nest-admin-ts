@@ -11,9 +11,9 @@ import {
   Query,
   Req,
 } from '@nestjs/common';
-import { RequirePermissions } from '../../common/auth/permissions.decorator.js';
-import { MenusService } from '../system/menus/menus.service.js';
-import { legacy, mapMenuType } from './legacy.js';
+import { RequirePermissions } from '../../common/auth/permissions.decorator';
+import { MenusService } from '../system/menus/menus.service';
+import { legacy, mapMenuType } from './legacy';
 
 type LegacyMenuBody = {
   id?: number;

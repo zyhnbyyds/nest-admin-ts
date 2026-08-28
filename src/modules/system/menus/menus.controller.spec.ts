@@ -1,11 +1,13 @@
 import { describe, expect, it, vi } from 'vitest';
-import { MenusController } from './menus.controller.js';
-import type { MenusService } from './menus.service.js';
+import { MenusController } from './menus.controller';
+import type { MenusService } from './menus.service';
 
 function mockMenusService(): Partial<MenusService> {
   return {
     list: vi.fn().mockResolvedValue([]),
-    findOne: vi.fn().mockResolvedValue({ id: 1, name: 'Menu', title: 'Menu', type: 'M' }),
+    findOne: vi
+      .fn()
+      .mockResolvedValue({ id: 1, name: 'Menu', title: 'Menu', type: 'M' }),
     create: vi.fn().mockResolvedValue({ id: 1 }),
     update: vi.fn().mockResolvedValue(undefined),
     remove: vi.fn().mockResolvedValue(undefined),
