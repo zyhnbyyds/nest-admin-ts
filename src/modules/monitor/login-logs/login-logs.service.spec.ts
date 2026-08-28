@@ -71,22 +71,18 @@ describe('LoginLogsService', () => {
   describe('remove', () => {
     it('deletes a log by id', async () => {
       const { db } = mockDb();
-      db.delete = vi
-        .fn()
-        .mockReturnValue({
-          where: vi.fn().mockResolvedValue([{ affectedRows: 1 }]),
-        });
+      db.delete = vi.fn().mockReturnValue({
+        where: vi.fn().mockResolvedValue([{ affectedRows: 1 }]),
+      });
       const service = new LoginLogsService({ db } as any);
       await expect(service.remove(1)).resolves.toBeUndefined();
     });
 
     it('throws NotFoundException', async () => {
       const { db } = mockDb();
-      db.delete = vi
-        .fn()
-        .mockReturnValue({
-          where: vi.fn().mockResolvedValue([{ affectedRows: 0 }]),
-        });
+      db.delete = vi.fn().mockReturnValue({
+        where: vi.fn().mockResolvedValue([{ affectedRows: 0 }]),
+      });
       const service = new LoginLogsService({ db } as any);
       await expect(service.remove(999)).rejects.toThrow(NotFoundException);
     });

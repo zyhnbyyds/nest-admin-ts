@@ -46,16 +46,14 @@ const createSchema = z.object({
     .optional()
     .openapi({ example: '用户性别字典', description: '备注' }),
 });
-const updateSchema = createSchema
-  .partial()
-  .extend({
-    remark: z
-      .string()
-      .max(500)
-      .nullable()
-      .optional()
-      .openapi({ example: '用户性别字典', description: '备注' }),
-  });
+const updateSchema = createSchema.partial().extend({
+  remark: z
+    .string()
+    .max(500)
+    .nullable()
+    .optional()
+    .openapi({ example: '用户性别字典', description: '备注' }),
+});
 
 registerComponent('CreateDictTypeRequest', createSchema);
 registerComponent('UpdateDictTypeRequest', updateSchema);

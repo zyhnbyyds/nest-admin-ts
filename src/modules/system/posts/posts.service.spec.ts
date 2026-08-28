@@ -6,41 +6,27 @@ function mockDb() {
   return {
     db: {
       select: vi.fn(),
-      insert: vi
-        .fn()
-        .mockReturnValue({
-          values: vi.fn().mockResolvedValue([{ insertId: 7 }]),
-        }),
-      update: vi
-        .fn()
-        .mockReturnValue({
-          set: vi
-            .fn()
-            .mockReturnValue({
-              where: vi.fn().mockResolvedValue([{ affectedRows: 1 }]),
-            }),
-        }),
-      delete: vi
-        .fn()
-        .mockReturnValue({
+      insert: vi.fn().mockReturnValue({
+        values: vi.fn().mockResolvedValue([{ insertId: 7 }]),
+      }),
+      update: vi.fn().mockReturnValue({
+        set: vi.fn().mockReturnValue({
           where: vi.fn().mockResolvedValue([{ affectedRows: 1 }]),
         }),
+      }),
+      delete: vi.fn().mockReturnValue({
+        where: vi.fn().mockResolvedValue([{ affectedRows: 1 }]),
+      }),
       transaction: vi.fn().mockImplementation(async (cb: any) => {
         await cb({
-          delete: vi
-            .fn()
-            .mockReturnValue({
+          delete: vi.fn().mockReturnValue({
+            where: vi.fn().mockResolvedValue([{ affectedRows: 1 }]),
+          }),
+          update: vi.fn().mockReturnValue({
+            set: vi.fn().mockReturnValue({
               where: vi.fn().mockResolvedValue([{ affectedRows: 1 }]),
             }),
-          update: vi
-            .fn()
-            .mockReturnValue({
-              set: vi
-                .fn()
-                .mockReturnValue({
-                  where: vi.fn().mockResolvedValue([{ affectedRows: 1 }]),
-                }),
-            }),
+          }),
         });
       }),
     },
@@ -50,25 +36,19 @@ function mockDb() {
 function selectWithLimit(result: unknown) {
   return vi.fn().mockReturnValue({
     from: vi.fn().mockReturnValue({
-      where: vi
-        .fn()
-        .mockReturnValue({
-          limit: vi.fn().mockResolvedValue(result),
-          orderBy: vi
-            .fn()
-            .mockReturnValue({
-              limit: vi
-                .fn()
-                .mockReturnValue({ offset: vi.fn().mockResolvedValue(result) }),
-            }),
-        }),
-      orderBy: vi
-        .fn()
-        .mockReturnValue({
+      where: vi.fn().mockReturnValue({
+        limit: vi.fn().mockResolvedValue(result),
+        orderBy: vi.fn().mockReturnValue({
           limit: vi
             .fn()
             .mockReturnValue({ offset: vi.fn().mockResolvedValue(result) }),
         }),
+      }),
+      orderBy: vi.fn().mockReturnValue({
+        limit: vi
+          .fn()
+          .mockReturnValue({ offset: vi.fn().mockResolvedValue(result) }),
+      }),
     }),
   });
 }

@@ -41,16 +41,12 @@ function buildDb(offsetResult?: unknown) {
   return {
     db: {
       select: vi.fn().mockReturnValue(chain),
-      insert: vi
-        .fn()
-        .mockReturnValue({
-          values: vi.fn().mockResolvedValue([{ insertId: 15 }]),
-        }),
-      delete: vi
-        .fn()
-        .mockReturnValue({
-          where: vi.fn().mockResolvedValue([{ affectedRows: 1 }]),
-        }),
+      insert: vi.fn().mockReturnValue({
+        values: vi.fn().mockResolvedValue([{ insertId: 15 }]),
+      }),
+      delete: vi.fn().mockReturnValue({
+        where: vi.fn().mockResolvedValue([{ affectedRows: 1 }]),
+      }),
     },
     chain,
   };

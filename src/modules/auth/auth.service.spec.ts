@@ -17,20 +17,14 @@ function mockDb() {
   return {
     db: {
       select: vi.fn(),
-      insert: vi
-        .fn()
-        .mockReturnValue({
-          values: vi.fn().mockResolvedValue([{ insertId: 1 }]),
+      insert: vi.fn().mockReturnValue({
+        values: vi.fn().mockResolvedValue([{ insertId: 1 }]),
+      }),
+      update: vi.fn().mockReturnValue({
+        set: vi.fn().mockReturnValue({
+          where: vi.fn().mockResolvedValue([{ affectedRows: 1 }]),
         }),
-      update: vi
-        .fn()
-        .mockReturnValue({
-          set: vi
-            .fn()
-            .mockReturnValue({
-              where: vi.fn().mockResolvedValue([{ affectedRows: 1 }]),
-            }),
-        }),
+      }),
     },
   };
 }

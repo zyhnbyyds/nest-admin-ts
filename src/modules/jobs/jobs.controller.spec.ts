@@ -5,14 +5,12 @@ import type { JobsService } from './jobs.service';
 function mockService(): Partial<JobsService> {
   return {
     list: vi.fn().mockResolvedValue({ items: [], page: 1, pageSize: 20 }),
-    findOne: vi
-      .fn()
-      .mockResolvedValue({
-        id: 1,
-        name: 'Test',
-        handler: 'noop',
-        cron: '0 0 * * *',
-      }),
+    findOne: vi.fn().mockResolvedValue({
+      id: 1,
+      name: 'Test',
+      handler: 'noop',
+      cron: '0 0 * * *',
+    }),
     create: vi.fn().mockResolvedValue({ id: 1 }),
     update: vi.fn().mockResolvedValue(undefined),
     remove: vi.fn().mockResolvedValue(undefined),

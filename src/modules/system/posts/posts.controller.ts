@@ -52,16 +52,14 @@ const createSchema = z.object({
     .optional()
     .openapi({ example: '负责前端开发', description: '备注' }),
 });
-const updateSchema = createSchema
-  .partial()
-  .extend({
-    remark: z
-      .string()
-      .max(500)
-      .nullable()
-      .optional()
-      .openapi({ example: '负责前端开发', description: '备注' }),
-  });
+const updateSchema = createSchema.partial().extend({
+  remark: z
+    .string()
+    .max(500)
+    .nullable()
+    .optional()
+    .openapi({ example: '负责前端开发', description: '备注' }),
+});
 
 registerComponent('CreatePostRequest', createSchema);
 registerComponent('UpdatePostRequest', updateSchema);

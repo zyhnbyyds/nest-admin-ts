@@ -6,48 +6,32 @@ function mockDb() {
   return {
     db: {
       select: vi.fn(),
-      insert: vi
-        .fn()
-        .mockReturnValue({
-          values: vi.fn().mockResolvedValue([{ insertId: 10 }]),
-        }),
-      update: vi
-        .fn()
-        .mockReturnValue({
-          set: vi
-            .fn()
-            .mockReturnValue({
-              where: vi.fn().mockResolvedValue([{ affectedRows: 1 }]),
-            }),
-        }),
-      delete: vi
-        .fn()
-        .mockReturnValue({
+      insert: vi.fn().mockReturnValue({
+        values: vi.fn().mockResolvedValue([{ insertId: 10 }]),
+      }),
+      update: vi.fn().mockReturnValue({
+        set: vi.fn().mockReturnValue({
           where: vi.fn().mockResolvedValue([{ affectedRows: 1 }]),
         }),
+      }),
+      delete: vi.fn().mockReturnValue({
+        where: vi.fn().mockResolvedValue([{ affectedRows: 1 }]),
+      }),
       transaction: vi
         .fn()
         .mockImplementation(async (cb: (tx: any) => Promise<void>) => {
           await cb({
-            delete: vi
-              .fn()
-              .mockReturnValue({
+            delete: vi.fn().mockReturnValue({
+              where: vi.fn().mockResolvedValue([{ affectedRows: 1 }]),
+            }),
+            insert: vi.fn().mockReturnValue({
+              values: vi.fn().mockResolvedValue([{ insertId: 1 }]),
+            }),
+            update: vi.fn().mockReturnValue({
+              set: vi.fn().mockReturnValue({
                 where: vi.fn().mockResolvedValue([{ affectedRows: 1 }]),
               }),
-            insert: vi
-              .fn()
-              .mockReturnValue({
-                values: vi.fn().mockResolvedValue([{ insertId: 1 }]),
-              }),
-            update: vi
-              .fn()
-              .mockReturnValue({
-                set: vi
-                  .fn()
-                  .mockReturnValue({
-                    where: vi.fn().mockResolvedValue([{ affectedRows: 1 }]),
-                  }),
-              }),
+            }),
           });
         }),
     },

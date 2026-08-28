@@ -6,20 +6,14 @@ function mockDb() {
   return {
     db: {
       select: vi.fn(),
-      insert: vi
-        .fn()
-        .mockReturnValue({
-          values: vi.fn().mockResolvedValue([{ insertId: 8 }]),
+      insert: vi.fn().mockReturnValue({
+        values: vi.fn().mockResolvedValue([{ insertId: 8 }]),
+      }),
+      update: vi.fn().mockReturnValue({
+        set: vi.fn().mockReturnValue({
+          where: vi.fn().mockResolvedValue([{ affectedRows: 1 }]),
         }),
-      update: vi
-        .fn()
-        .mockReturnValue({
-          set: vi
-            .fn()
-            .mockReturnValue({
-              where: vi.fn().mockResolvedValue([{ affectedRows: 1 }]),
-            }),
-        }),
+      }),
     },
   };
 }
@@ -207,15 +201,11 @@ describe('DictDataService', () => {
 
     it('throws NotFoundException', async () => {
       const { db } = mockDb();
-      db.update = vi
-        .fn()
-        .mockReturnValue({
-          set: vi
-            .fn()
-            .mockReturnValue({
-              where: vi.fn().mockResolvedValue([{ affectedRows: 0 }]),
-            }),
-        });
+      db.update = vi.fn().mockReturnValue({
+        set: vi.fn().mockReturnValue({
+          where: vi.fn().mockResolvedValue([{ affectedRows: 0 }]),
+        }),
+      });
       const service = new DictDataService({ db } as any);
       await expect(service.remove(999, 1)).rejects.toThrow(NotFoundException);
     });

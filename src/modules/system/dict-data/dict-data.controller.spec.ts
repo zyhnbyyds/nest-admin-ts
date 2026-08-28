@@ -6,14 +6,12 @@ function mockService(): Partial<DictDataService> {
   return {
     list: vi.fn().mockResolvedValue({ items: [], page: 1, pageSize: 20 }),
     byType: vi.fn().mockResolvedValue([]),
-    findOne: vi
-      .fn()
-      .mockResolvedValue({
-        id: 1,
-        type: 'sys_status',
-        label: 'Active',
-        value: '1',
-      }),
+    findOne: vi.fn().mockResolvedValue({
+      id: 1,
+      type: 'sys_status',
+      label: 'Active',
+      value: '1',
+    }),
     create: vi.fn().mockResolvedValue({ id: 1 }),
     update: vi.fn().mockResolvedValue(undefined),
     remove: vi.fn().mockResolvedValue(undefined),

@@ -66,15 +66,11 @@ describe('OnlineService', () => {
     it('removes session and revokes refresh tokens', async () => {
       const redis = mockRedis();
       const { db } = mockDb();
-      db.update = vi
-        .fn()
-        .mockReturnValue({
-          set: vi
-            .fn()
-            .mockReturnValue({
-              where: vi.fn().mockResolvedValue([{ affectedRows: 1 }]),
-            }),
-        });
+      db.update = vi.fn().mockReturnValue({
+        set: vi.fn().mockReturnValue({
+          where: vi.fn().mockResolvedValue([{ affectedRows: 1 }]),
+        }),
+      });
       const service = new OnlineService(redis as any, { db } as any);
       await expect(service.forceLogout(1)).resolves.toBeUndefined();
       expect(redis.del).toHaveBeenCalledWith('online:1');

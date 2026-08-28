@@ -54,16 +54,14 @@ const createSchema = z.object({
     .optional()
     .openapi({ example: '每天零点同步数据', description: '备注' }),
 });
-const updateSchema = createSchema
-  .partial()
-  .extend({
-    remark: z
-      .string()
-      .max(500)
-      .nullable()
-      .optional()
-      .openapi({ example: '每天零点同步数据', description: '备注' }),
-  });
+const updateSchema = createSchema.partial().extend({
+  remark: z
+    .string()
+    .max(500)
+    .nullable()
+    .optional()
+    .openapi({ example: '每天零点同步数据', description: '备注' }),
+});
 
 registerComponent('CreateJobRequest', createSchema);
 registerComponent('UpdateJobRequest', updateSchema);

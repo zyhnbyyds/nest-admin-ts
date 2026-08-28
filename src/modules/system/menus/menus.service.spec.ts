@@ -11,41 +11,27 @@ function mockDb() {
   return {
     db: {
       select: vi.fn(),
-      insert: vi
-        .fn()
-        .mockReturnValue({
-          values: vi.fn().mockResolvedValue([{ insertId: 5 }]),
-        }),
-      update: vi
-        .fn()
-        .mockReturnValue({
-          set: vi
-            .fn()
-            .mockReturnValue({
-              where: vi.fn().mockResolvedValue([{ affectedRows: 1 }]),
-            }),
-        }),
-      delete: vi
-        .fn()
-        .mockReturnValue({
+      insert: vi.fn().mockReturnValue({
+        values: vi.fn().mockResolvedValue([{ insertId: 5 }]),
+      }),
+      update: vi.fn().mockReturnValue({
+        set: vi.fn().mockReturnValue({
           where: vi.fn().mockResolvedValue([{ affectedRows: 1 }]),
         }),
+      }),
+      delete: vi.fn().mockReturnValue({
+        where: vi.fn().mockResolvedValue([{ affectedRows: 1 }]),
+      }),
       transaction: vi.fn().mockImplementation(async (cb: any) => {
         await cb({
-          delete: vi
-            .fn()
-            .mockReturnValue({
+          delete: vi.fn().mockReturnValue({
+            where: vi.fn().mockResolvedValue([{ affectedRows: 1 }]),
+          }),
+          update: vi.fn().mockReturnValue({
+            set: vi.fn().mockReturnValue({
               where: vi.fn().mockResolvedValue([{ affectedRows: 1 }]),
             }),
-          update: vi
-            .fn()
-            .mockReturnValue({
-              set: vi
-                .fn()
-                .mockReturnValue({
-                  where: vi.fn().mockResolvedValue([{ affectedRows: 1 }]),
-                }),
-            }),
+          }),
         });
       }),
     },
@@ -60,18 +46,14 @@ function sel(result: unknown) {
       orderBy: vi.fn().mockResolvedValue(result),
     }),
   );
-  return vi
-    .fn()
-    .mockReturnValue({
-      from: vi
-        .fn()
-        .mockReturnValue({
-          where: w,
-          orderBy: vi.fn().mockResolvedValue(result),
-          innerJoin: vi.fn().mockReturnThis(),
-        }),
+  return vi.fn().mockReturnValue({
+    from: vi.fn().mockReturnValue({
+      where: w,
+      orderBy: vi.fn().mockResolvedValue(result),
       innerJoin: vi.fn().mockReturnThis(),
-    });
+    }),
+    innerJoin: vi.fn().mockReturnThis(),
+  });
 }
 
 describe('MenusService', () => {
@@ -304,23 +286,19 @@ describe('MenusService', () => {
         .fn()
         .mockResolvedValue([{ roleId: 1, isSystem: true }]);
       const q2OrderBy = vi.fn().mockResolvedValue([]);
-      const q2Where = vi
-        .fn()
-        .mockImplementation(() => ({
-          orderBy: q2OrderBy,
-          limit: vi.fn().mockResolvedValue([]),
-        }));
+      const q2Where = vi.fn().mockImplementation(() => ({
+        orderBy: q2OrderBy,
+        limit: vi.fn().mockResolvedValue([]),
+      }));
       db.select = vi.fn().mockReturnValue({
         from: vi.fn().mockReturnValue({
           innerJoin: vi.fn().mockReturnValue({ where: q1Where }),
           where: q2Where,
-          orderBy: vi
-            .fn()
-            .mockReturnValue({
-              limit: vi
-                .fn()
-                .mockReturnValue({ offset: vi.fn().mockResolvedValue([]) }),
-            }),
+          orderBy: vi.fn().mockReturnValue({
+            limit: vi
+              .fn()
+              .mockReturnValue({ offset: vi.fn().mockResolvedValue([]) }),
+          }),
         }),
         innerJoin: vi.fn().mockReturnThis(),
       });

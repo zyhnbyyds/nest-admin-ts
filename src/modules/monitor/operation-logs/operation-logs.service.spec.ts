@@ -62,11 +62,9 @@ describe('OperationLogsService', () => {
   describe('remove', () => {
     it('deletes a log', async () => {
       const { db } = mockDb();
-      db.delete = vi
-        .fn()
-        .mockReturnValue({
-          where: vi.fn().mockResolvedValue([{ affectedRows: 1 }]),
-        });
+      db.delete = vi.fn().mockReturnValue({
+        where: vi.fn().mockResolvedValue([{ affectedRows: 1 }]),
+      });
       const service = new OperationLogsService({ db } as any);
       await expect(service.remove(1)).resolves.toBeUndefined();
     });

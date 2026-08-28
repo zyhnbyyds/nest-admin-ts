@@ -5,37 +5,31 @@ import type { FilesService } from './files.service';
 function mockService(): Partial<FilesService> {
   return {
     list: vi.fn().mockResolvedValue({ items: [], page: 1, pageSize: 20 }),
-    detail: vi
-      .fn()
-      .mockResolvedValue({
-        id: 1,
-        name: 'abc.png',
-        originalName: 'test.png',
-        url: '/api/v1/files/1/download',
-        mime: 'image/png',
-        ext: '.png',
-        size: 100,
-        createdAt: new Date(),
-      }),
-    save: vi
-      .fn()
-      .mockResolvedValue({
-        id: 1,
-        name: 'abc.png',
-        originalName: 'test.png',
-        url: '/api/v1/files/1/download',
-        mime: 'image/png',
-        ext: '.png',
-        size: 100,
-        createdAt: new Date(),
-      }),
-    open: vi
-      .fn()
-      .mockResolvedValue({
-        stream: 'stream',
-        mime: 'image/png',
-        originalName: 'test.png',
-      }),
+    detail: vi.fn().mockResolvedValue({
+      id: 1,
+      name: 'abc.png',
+      originalName: 'test.png',
+      url: '/api/v1/files/1/download',
+      mime: 'image/png',
+      ext: '.png',
+      size: 100,
+      createdAt: new Date(),
+    }),
+    save: vi.fn().mockResolvedValue({
+      id: 1,
+      name: 'abc.png',
+      originalName: 'test.png',
+      url: '/api/v1/files/1/download',
+      mime: 'image/png',
+      ext: '.png',
+      size: 100,
+      createdAt: new Date(),
+    }),
+    open: vi.fn().mockResolvedValue({
+      stream: 'stream',
+      mime: 'image/png',
+      originalName: 'test.png',
+    }),
     remove: vi.fn().mockResolvedValue(undefined),
   };
 }

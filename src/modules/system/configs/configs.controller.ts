@@ -51,16 +51,14 @@ const createSchema = z.object({
     .optional()
     .openapi({ example: '系统参数', description: '备注' }),
 });
-const updateSchema = createSchema
-  .partial()
-  .extend({
-    remark: z
-      .string()
-      .max(500)
-      .nullable()
-      .optional()
-      .openapi({ example: '系统参数', description: '备注' }),
-  });
+const updateSchema = createSchema.partial().extend({
+  remark: z
+    .string()
+    .max(500)
+    .nullable()
+    .optional()
+    .openapi({ example: '系统参数', description: '备注' }),
+});
 
 registerComponent('CreateConfigRequest', createSchema);
 registerComponent('UpdateConfigRequest', updateSchema);

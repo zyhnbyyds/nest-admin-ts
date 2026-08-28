@@ -18,25 +18,17 @@ function mockDbService() {
   return {
     db: {
       select: vi.fn(),
-      insert: vi
-        .fn()
-        .mockReturnValue({
-          values: vi.fn().mockResolvedValue([{ insertId: 42 }]),
-        }),
-      update: vi
-        .fn()
-        .mockReturnValue({
-          set: vi
-            .fn()
-            .mockReturnValue({
-              where: vi.fn().mockResolvedValue([{ affectedRows: 1 }]),
-            }),
-        }),
-      delete: vi
-        .fn()
-        .mockReturnValue({
+      insert: vi.fn().mockReturnValue({
+        values: vi.fn().mockResolvedValue([{ insertId: 42 }]),
+      }),
+      update: vi.fn().mockReturnValue({
+        set: vi.fn().mockReturnValue({
           where: vi.fn().mockResolvedValue([{ affectedRows: 1 }]),
         }),
+      }),
+      delete: vi.fn().mockReturnValue({
+        where: vi.fn().mockResolvedValue([{ affectedRows: 1 }]),
+      }),
     },
   };
 }
@@ -52,21 +44,19 @@ describe('UsersService', () => {
           where: vi.fn().mockReturnValue({
             orderBy: vi.fn().mockReturnValue({
               limit: vi.fn().mockReturnValue({
-                offset: vi
-                  .fn()
-                  .mockResolvedValue([
-                    {
-                      id: 1,
-                      username: 'admin',
-                      displayName: 'Admin',
-                      email: null,
-                      phone: null,
-                      status: 'active',
-                      deptId: null,
-                      createdAt: new Date(),
-                      loginAt: null,
-                    },
-                  ]),
+                offset: vi.fn().mockResolvedValue([
+                  {
+                    id: 1,
+                    username: 'admin',
+                    displayName: 'Admin',
+                    email: null,
+                    phone: null,
+                    status: 'active',
+                    deptId: null,
+                    createdAt: new Date(),
+                    loginAt: null,
+                  },
+                ]),
               }),
             }),
           }),
@@ -135,15 +125,11 @@ describe('UsersService', () => {
 
     it('throws NotFoundException', async () => {
       const { db } = mockDbService();
-      db.update = vi
-        .fn()
-        .mockReturnValue({
-          set: vi
-            .fn()
-            .mockReturnValue({
-              where: vi.fn().mockResolvedValue([{ affectedRows: 0 }]),
-            }),
-        });
+      db.update = vi.fn().mockReturnValue({
+        set: vi.fn().mockReturnValue({
+          where: vi.fn().mockResolvedValue([{ affectedRows: 0 }]),
+        }),
+      });
       const service = new UsersService({ db } as any);
       await expect(
         service.update(999, { displayName: 'Ghost' }, 1),
@@ -160,15 +146,11 @@ describe('UsersService', () => {
 
     it('throws NotFoundException', async () => {
       const { db } = mockDbService();
-      db.update = vi
-        .fn()
-        .mockReturnValue({
-          set: vi
-            .fn()
-            .mockReturnValue({
-              where: vi.fn().mockResolvedValue([{ affectedRows: 0 }]),
-            }),
-        });
+      db.update = vi.fn().mockReturnValue({
+        set: vi.fn().mockReturnValue({
+          where: vi.fn().mockResolvedValue([{ affectedRows: 0 }]),
+        }),
+      });
       const service = new UsersService({ db } as any);
       await expect(service.remove(999, 1)).rejects.toThrow(NotFoundException);
     });
@@ -186,11 +168,9 @@ describe('UsersService', () => {
       });
       db.insert = vi.fn().mockReturnValue({
         values: vi.fn().mockReturnValue({
-          onDuplicateKeyUpdate: vi
-            .fn()
-            .mockReturnValue({
-              set: vi.fn().mockResolvedValue([{ affectedRows: 1 }]),
-            }),
+          onDuplicateKeyUpdate: vi.fn().mockReturnValue({
+            set: vi.fn().mockResolvedValue([{ affectedRows: 1 }]),
+          }),
         }),
       });
       const service = new UsersService({ db } as any);
