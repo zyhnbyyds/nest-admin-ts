@@ -8,3 +8,4 @@ uploads/
 *.log
 .DS_Store
 src/modules/generated/
+.playwright-mcp/
