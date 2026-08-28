@@ -21,6 +21,7 @@ const columns: LewTableColumn[] = [
     width: 180,
     customRender: ({ row }) => formatDateTime((row as unknown as OnlineSession).loginAt),
   },
+  { title: "操作", field: "operation", width: 90, fixed: "right" },
 ];
 
 async function fetchList() {

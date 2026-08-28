@@ -48,6 +48,7 @@ const columns: LewTableColumn[] = [
     width: 170,
     customRender: ({ row }) => formatDateTime((row as unknown as User).loginAt),
   },
+  { title: "操作", field: "operation", width: 100, fixed: "right" },
 ];
 
 void search();

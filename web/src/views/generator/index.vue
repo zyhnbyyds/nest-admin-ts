@@ -16,6 +16,7 @@ const columns: LewTableColumn[] = [
   { title: "表名", field: "tableName", width: 220 },
   { title: "注释", field: "comment" },
   { title: "创建时间", field: "createdAt", width: 180 },
+  { title: "操作", field: "operation", width: 100, fixed: "right" },
 ];
 
 async function fetchTables() {

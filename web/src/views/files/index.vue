@@ -29,6 +29,7 @@ const columns: LewTableColumn[] = [
     width: 170,
     customRender: ({ row }) => formatDateTime((row as unknown as FileItem).createdAt),
   },
+  { title: "操作", field: "operation", width: 90, fixed: "right" },
 ];
 
 void refresh();

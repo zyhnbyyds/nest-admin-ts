@@ -37,6 +37,7 @@ const typeColumns: LewTableColumn[] = [
     width: 80,
     customRender: ({ row }) => renderStatus((row as { status: string }).status),
   },
+  { title: "操作", field: "operation", width: 80, fixed: "right" },
 ];
 
 const selectedType = ref<DictType | null>(null);
@@ -75,6 +76,7 @@ const dataColumns: LewTableColumn[] = [
   },
   { title: "样式类名", field: "cssClass", width: 120 },
   { title: "列表样式", field: "listClass", width: 120 },
+  { title: "操作", field: "operation", width: 80, fixed: "right" },
 ];
 
 // ---------- 字典类型弹窗 ----------

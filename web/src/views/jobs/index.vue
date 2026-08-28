@@ -39,6 +39,7 @@ const columns: LewTableColumn[] = [
     customRender: ({ row }) => ((row as unknown as Job).concurrent ? "是" : "否"),
   },
   { title: "备注", field: "remark" },
+  { title: "操作", field: "operation", width: 150, fixed: "right" },
 ];
 
 void search();

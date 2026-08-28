@@ -23,6 +23,7 @@ const columns: LewTableColumn[] = [
     width: 90,
     customRender: ({ row }) => renderStatus((row as { status: string }).status),
   },
+  { title: "操作", field: "operation", width: 120, fixed: "right" },
 ];
 
 async function fetchList() {
