@@ -1,0 +1,96 @@
+/* ============================================
+   设计 token 入口（唯一来源）
+   浅色 / 深色 / 自定义主题色共用同一套变量体系
+   深色模式由 html.lew-dark 提供（lew-ui 内置变量切换）
+   ============================================ */
+
+:root {
+  /* 布局尺寸 */
+  --app-sidebar-width: 232px;
+  --app-sidebar-collapsed-width: 64px;
+  --app-header-height: 56px;
+  --app-page-padding: 20px;
+
+  /* 圆角与阴影（克制风格：细边框 + 极浅阴影） */
+  --app-radius: 10px;
+  --app-shadow: 0 1px 2px rgb(0 0 0 / 4%), 0 2px 8px rgb(0 0 0 / 3%);
+  --app-shadow-hover: 0 2px 6px rgb(0 0 0 / 6%), 0 6px 16px rgb(0 0 0 / 6%);
+
+  /* 过渡 */
+  --app-transition: 0.2s cubic-bezier(0.2, 0.9, 0.4, 1);
+
+  /* 语义变量（浅色默认值，引用 lew-ui 底层变量） */
+  --app-bg-page: var(--lew-bgcolor-2);
+  --app-bg-card: var(--lew-bgcolor-0);
+  --app-bg-hover: var(--lew-bgcolor-3);
+  --app-text-primary: var(--lew-text-color-0);
+  --app-text-secondary: var(--lew-text-color-3);
+  --app-text-muted: var(--lew-text-color-5);
+  --app-border: var(--lew-bgcolor-5);
+}
+
+/* 深色模式覆盖：调整对比度与阴影，避免刺眼 */
+.lew-dark {
+  --app-shadow: 0 1px 2px rgb(0 0 0 / 30%), 0 2px 10px rgb(0 0 0 / 20%);
+  --app-shadow-hover: 0 2px 8px rgb(0 0 0 / 40%), 0 6px 20px rgb(0 0 0 / 30%);
+}
+
+/* ============================================
+   全局基础样式（原子类之外的必要补充）
+   ============================================ */
+
+html,
+body,
+#app {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  font-family:
+    "Inter",
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    "PingFang SC",
+    "Hiragino Sans GB",
+    "Microsoft YaHei",
+    sans-serif;
+  font-size: 14px;
+  color: var(--app-text-primary);
+  background: var(--app-bg-page);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* 页面切换过渡（Vue Transition 类名，无法用原子类表达） */
+.fade-slide-enter-active,
+.fade-slide-leave-active {
+  transition:
+    opacity var(--app-transition),
+    transform var(--app-transition);
+}
+
+.fade-slide-enter-from {
+  opacity: 0;
+  transform: translateY(8px);
+}
+
+.fade-slide-leave-to {
+  opacity: 0;
+  transform: translateY(-4px);
+}
+
+/* 滚动条 */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--lew-bgcolor-6);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
