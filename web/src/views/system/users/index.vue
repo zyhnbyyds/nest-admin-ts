@@ -224,16 +224,32 @@ function handleDelete(row: User) {
       v-model:visible="modalVisible"
       :title="editingId === null ? '新增用户' : '编辑用户'"
       width="480px"
+      :footer-buttons="[
+        {
+          props: {
+            type: 'text',
+            color: 'gray',
+            size: 'small',
+            text: '取消',
+            request: () => {
+              modalVisible = false;
+            },
+          },
+        },
+        {
+          props: {
+            type: 'fill',
+            color: 'primary',
+            size: 'small',
+            text: editingId === null ? '创建' : '保存',
+            request: handleSubmit,
+          },
+        },
+      ]"
     >
-      <LewForm ref="formRef" v-model="form" :options="formOptions" label-width="72px" />
-      <template v-if="editingId !== null" #footer>
-        <LewButton type="light" @click="modalVisible = false">取消</LewButton>
-        <LewButton type="fill" @click="handleSubmit">保存</LewButton>
-      </template>
-      <template v-else #footer>
-        <LewButton type="light" @click="modalVisible = false">取消</LewButton>
-        <LewButton type="fill" @click="handleSubmit">创建</LewButton>
-      </template>
+      <div class="p-5">
+        <LewForm ref="formRef" v-model="form" :options="formOptions" label-width="72px" />
+      </div>
     </LewModal>
   </div>
 </template>

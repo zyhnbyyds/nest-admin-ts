@@ -1,4 +1,5 @@
 import "virtual:uno.css";
+// @ts-expect-error ide problem
 import "lew-ui/style";
 import "./styles/index.css";
 

@@ -240,47 +240,67 @@ async function handleClearLogs() {
       v-model:visible="modalVisible"
       :title="editingId === null ? '新增任务' : '编辑任务'"
       width="500px"
+      :footer-buttons="[
+        {
+          props: {
+            type: 'text',
+            color: 'gray',
+            size: 'small',
+            text: '取消',
+            request: () => {
+              modalVisible = false;
+            },
+          },
+        },
+        {
+          props: {
+            type: 'fill',
+            color: 'primary',
+            size: 'small',
+            text: '保存',
+            request: handleSubmit,
+          },
+        },
+      ]"
     >
-      <LewForm
-        ref="formRef"
-        v-model="form"
-        label-width="80px"
-        :options="[
-          {
-            field: 'name',
-            label: '任务名称',
-            as: 'input',
-            rule: 'Yup.string().required()',
-            props: { placeholder: '如 数据同步任务', clearable: true },
-          },
-          {
-            field: 'handler',
-            label: '处理器',
-            as: 'input',
-            rule: 'Yup.string().required()',
-            props: { placeholder: '如 syncData', clearable: true },
-          },
-          {
-            field: 'cron',
-            label: 'Cron',
-            as: 'input',
-            rule: 'Yup.string().required()',
-            props: { placeholder: '如 0 0 * * *', clearable: true },
-          },
-          { field: 'status', label: '状态', as: 'select', props: { options: statusOptions } },
-          { field: 'concurrent', label: '允许并发', as: 'switch' },
-          {
-            field: 'remark',
-            label: '备注',
-            as: 'textarea',
-            props: { placeholder: '选填', rows: 2 },
-          },
-        ]"
-      />
-      <template #footer>
-        <LewButton type="light" @click="modalVisible = false">取消</LewButton>
-        <LewButton type="fill" @click="handleSubmit">保存</LewButton>
-      </template>
+      <div class="p-5">
+        <LewForm
+          ref="formRef"
+          v-model="form"
+          label-width="80px"
+          :options="[
+            {
+              field: 'name',
+              label: '任务名称',
+              as: 'input',
+              rule: 'Yup.string().required()',
+              props: { placeholder: '如 数据同步任务', clearable: true },
+            },
+            {
+              field: 'handler',
+              label: '处理器',
+              as: 'input',
+              rule: 'Yup.string().required()',
+              props: { placeholder: '如 syncData', clearable: true },
+            },
+            {
+              field: 'cron',
+              label: 'Cron',
+              as: 'input',
+              rule: 'Yup.string().required()',
+              props: { placeholder: '如 0 0 * * *', clearable: true },
+            },
+            { field: 'status', label: '状态', as: 'select', props: { options: statusOptions } },
+            { field: 'concurrent', label: '允许并发', as: 'switch' },
+            {
+              field: 'remark',
+              label: '备注',
+              as: 'textarea',
+              props: { placeholder: '选填', rows: 2 },
+            },
+          ]"
+        />
+      </div>
     </LewModal>
 
     <!-- 执行日志弹窗 -->
@@ -290,19 +310,21 @@ async function handleClearLogs() {
       width="720px"
       :hide-footer="true"
     >
-      <LewTable
-        :data-source="logs"
-        :loading="logsLoading"
-        size="small"
-        :columns="[
-          { title: 'ID', field: 'id', width: 70 },
-          { title: '状态', field: 'status', width: 90 },
-          { title: '消息', field: 'message' },
-          { title: '开始时间', field: 'startedAt', width: 170 },
-          { title: '结束时间', field: 'finishedAt', width: 170 },
-          { title: '耗时(ms)', field: 'durationMs', width: 100 },
-        ]"
-      />
+      <div class="p-5">
+        <LewTable
+          :data-source="logs"
+          :loading="logsLoading"
+          size="small"
+          :columns="[
+            { title: 'ID', field: 'id', width: 70 },
+            { title: '状态', field: 'status', width: 90 },
+            { title: '消息', field: 'message' },
+            { title: '开始时间', field: 'startedAt', width: 170 },
+            { title: '结束时间', field: 'finishedAt', width: 170 },
+            { title: '耗时(ms)', field: 'durationMs', width: 100 },
+          ]"
+        />
+      </div>
     </LewModal>
   </div>
 </template>

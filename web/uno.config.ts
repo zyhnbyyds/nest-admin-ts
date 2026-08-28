@@ -11,7 +11,8 @@ export default defineConfig({
     "app-card":
       "rounded-10px bg-[var(--app-bg-card)] border border-[var(--app-border)] shadow-[var(--app-shadow)] transition-shadow duration-200",
     // 页面容器
-    "page-container": "p-5 flex flex-col gap-4",
+    "page-container":
+      "p-5 flex flex-col gap-4 rounded-10px bg-[var(--app-bg-card)] border border-[var(--app-border)] shadow-[var(--app-shadow)]",
     // 页面标题层级
     "page-title": "text-20px font-700 tracking--1%",
     "page-subtitle": "text-13px text-[var(--app-text-secondary)]",

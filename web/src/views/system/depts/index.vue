@@ -188,46 +188,71 @@ function handleDelete(row: Dept) {
       v-model:visible="modalVisible"
       :title="editingId === null ? '新增部门' : '编辑部门'"
       width="480px"
+      :footer-buttons="[
+        {
+          props: {
+            type: 'text',
+            color: 'gray',
+            size: 'small',
+            text: '取消',
+            request: () => {
+              modalVisible = false;
+            },
+          },
+        },
+        {
+          props: {
+            type: 'fill',
+            color: 'primary',
+            size: 'small',
+            text: '保存',
+            request: handleSubmit,
+          },
+        },
+      ]"
     >
-      <LewForm
-        ref="formRef"
-        v-model="form"
-        label-width="80px"
-        :options="[
-          { field: 'parentId', label: '上级部门', as: 'select', props: { options: parentOptions } },
-          {
-            field: 'name',
-            label: '部门名称',
-            as: 'input',
-            rule: 'Yup.string().required()',
-            props: { placeholder: '请输入部门名称', clearable: true },
-          },
-          { field: 'sort', label: '排序', as: 'input-number', props: { min: 0 } },
-          {
-            field: 'leaderUserId',
-            label: '负责人ID',
-            as: 'input-number',
-            props: { min: 1, placeholder: '选填' },
-          },
-          {
-            field: 'phone',
-            label: '联系电话',
-            as: 'input',
-            props: { placeholder: '选填', clearable: true },
-          },
-          {
-            field: 'email',
-            label: '邮箱',
-            as: 'input',
-            props: { placeholder: '选填', clearable: true },
-          },
-          { field: 'status', label: '状态', as: 'select', props: { options: statusOptions } },
-        ]"
-      />
-      <template #footer>
-        <LewButton type="light" @click="modalVisible = false">取消</LewButton>
-        <LewButton type="fill" @click="handleSubmit">保存</LewButton>
-      </template>
+      <div class="p-5">
+        <LewForm
+          ref="formRef"
+          v-model="form"
+          label-width="80px"
+          :options="[
+            {
+              field: 'parentId',
+              label: '上级部门',
+              as: 'select',
+              props: { options: parentOptions },
+            },
+            {
+              field: 'name',
+              label: '部门名称',
+              as: 'input',
+              rule: 'Yup.string().required()',
+              props: { placeholder: '请输入部门名称', clearable: true },
+            },
+            { field: 'sort', label: '排序', as: 'input-number', props: { min: 0 } },
+            {
+              field: 'leaderUserId',
+              label: '负责人ID',
+              as: 'input-number',
+              props: { min: 1, placeholder: '选填' },
+            },
+            {
+              field: 'phone',
+              label: '联系电话',
+              as: 'input',
+              props: { placeholder: '选填', clearable: true },
+            },
+            {
+              field: 'email',
+              label: '邮箱',
+              as: 'input',
+              props: { placeholder: '选填', clearable: true },
+            },
+            { field: 'status', label: '状态', as: 'select', props: { options: statusOptions } },
+          ]"
+        />
+      </div>
     </LewModal>
   </div>
 </template>

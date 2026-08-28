@@ -134,44 +134,50 @@ async function handleGenerate() {
 
     <!-- 字段弹窗 -->
     <LewModal v-model:visible="columnsVisible" title="表字段信息" width="720px" :hide-footer="true">
-      <LewTable
-        :data-source="tableColumns"
-        :loading="columnsLoading"
-        size="small"
-        :columns="[
-          { title: '字段名', field: 'name', width: 160 },
-          { title: '类型', field: 'columnType', width: 140 },
-          { title: '可空', field: 'nullable', width: 80 },
-          { title: '键', field: 'columnKey', width: 80 },
-          { title: '默认值', field: 'defaultValue', width: 120 },
-          { title: '注释', field: 'comment' },
-        ]"
-      />
+      <div class="p-5">
+        <LewTable
+          :data-source="tableColumns"
+          :loading="columnsLoading"
+          size="small"
+          :columns="[
+            { title: '字段名', field: 'name', width: 160 },
+            { title: '类型', field: 'columnType', width: 140 },
+            { title: '可空', field: 'nullable', width: 80 },
+            { title: '键', field: 'columnKey', width: 80 },
+            { title: '默认值', field: 'defaultValue', width: 120 },
+            { title: '注释', field: 'comment' },
+          ]"
+        />
+      </div>
     </LewModal>
 
     <!-- 代码预览弹窗 -->
     <LewModal v-model:visible="previewVisible" title="代码预览" width="860px" :hide-footer="true">
-      <div class="flex gap-3" style="height: 480px">
-        <!-- 文件列表 -->
-        <div class="w-220px shrink-0 overflow-y-auto border border-[var(--app-border)] rounded-8px">
-          <button
-            v-for="file in previewFiles"
-            :key="file.path"
-            class="block w-full px-3 py-2 text-left text-12.5px border-none bg-transparent cursor-pointer transition-colors duration-150 hover:bg-[var(--app-bg-hover)]"
-            :class="
-              activeFile?.path === file.path
-                ? 'bg-[var(--lew-color-primary-light)] text-[var(--lew-color-primary)] font-600'
-                : 'text-[var(--app-text-secondary)]'
-            "
-            @click="activeFile = file"
+      <div class="p-5">
+        <div class="flex gap-3" style="height: 480px">
+          <!-- 文件列表 -->
+          <div
+            class="w-220px shrink-0 overflow-y-auto border border-[var(--app-border)] rounded-8px"
           >
-            {{ file.path }}
-          </button>
+            <button
+              v-for="file in previewFiles"
+              :key="file.path"
+              class="block w-full px-3 py-2 text-left text-12.5px border-none bg-transparent cursor-pointer transition-colors duration-150 hover:bg-[var(--app-bg-hover)]"
+              :class="
+                activeFile?.path === file.path
+                  ? 'bg-[var(--lew-color-primary-light)] text-[var(--lew-color-primary)] font-600'
+                  : 'text-[var(--app-text-secondary)]'
+              "
+              @click="activeFile = file"
+            >
+              {{ file.path }}
+            </button>
+          </div>
+          <!-- 代码内容 -->
+          <pre
+            class="flex-1 m-0 p-3 overflow-auto bg-[var(--lew-bgcolor-1)] border border-[var(--app-border)] rounded-8px text-12px leading-relaxed"
+          ><code>{{ activeFile?.content ?? '选择左侧文件查看' }}</code></pre>
         </div>
-        <!-- 代码内容 -->
-        <pre
-          class="flex-1 m-0 p-3 overflow-auto bg-[var(--lew-bgcolor-1)] border border-[var(--app-border)] rounded-8px text-12px leading-relaxed"
-        ><code>{{ activeFile?.content ?? '选择左侧文件查看' }}</code></pre>
       </div>
     </LewModal>
   </div>

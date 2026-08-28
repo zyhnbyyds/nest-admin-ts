@@ -170,12 +170,36 @@ function handleDelete(_row: Role) {
     </div>
 
     <!-- 新增弹窗 -->
-    <LewModal v-model:visible="modalVisible" title="新增角色" width="480px">
-      <LewForm ref="formRef" v-model="form" :options="formOptions" label-width="72px" />
-      <template #footer>
-        <LewButton type="light" @click="modalVisible = false">取消</LewButton>
-        <LewButton type="fill" @click="handleSubmit">创建</LewButton>
-      </template>
+    <LewModal
+      v-model:visible="modalVisible"
+      title="新增角色"
+      width="480px"
+      :footer-buttons="[
+        {
+          props: {
+            type: 'text',
+            color: 'gray',
+            size: 'small',
+            text: '取消',
+            request: () => {
+              modalVisible = false;
+            },
+          },
+        },
+        {
+          props: {
+            type: 'fill',
+            color: 'primary',
+            size: 'small',
+            text: '创建',
+            request: handleSubmit,
+          },
+        },
+      ]"
+    >
+      <div class="p-5">
+        <LewForm ref="formRef" v-model="form" :options="formOptions" label-width="72px" />
+      </div>
     </LewModal>
 
     <!-- 分配菜单权限弹窗 -->
@@ -183,17 +207,37 @@ function handleDelete(_row: Role) {
       v-model:visible="authVisible"
       :title="`分配菜单权限 - ${authRole?.name ?? ''}`"
       width="420px"
+      :footer-buttons="[
+        {
+          props: {
+            type: 'text',
+            color: 'gray',
+            size: 'small',
+            text: '取消',
+            request: () => {
+              authVisible = false;
+            },
+          },
+        },
+        {
+          props: {
+            type: 'fill',
+            color: 'primary',
+            size: 'small',
+            text: '保存',
+            request: handleAuthSubmit,
+          },
+        },
+      ]"
     >
-      <div class="max-h-400px overflow-y-auto">
-        <p class="text-13px text-[var(--app-text-muted)] m-0 mb-2">
-          勾选菜单后保存（按钮权限随其父菜单自动关联）
-        </p>
-        <LewTree v-model="checkedKeys" checkable expand-all :data-source="menuTree" />
+      <div class="p-5">
+        <div class="max-h-400px overflow-y-auto">
+          <p class="text-13px text-[var(--app-text-muted)] m-0 mb-2">
+            勾选菜单后保存（按钮权限随其父菜单自动关联）
+          </p>
+          <LewTree v-model="checkedKeys" checkable expand-all :data-source="menuTree" />
+        </div>
       </div>
-      <template #footer>
-        <LewButton type="light" @click="authVisible = false">取消</LewButton>
-        <LewButton type="fill" @click="handleAuthSubmit">保存</LewButton>
-      </template>
     </LewModal>
   </div>
 </template>

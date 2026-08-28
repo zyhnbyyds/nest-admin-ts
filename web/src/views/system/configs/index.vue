@@ -156,46 +156,66 @@ function handleDelete(row: Config) {
       v-model:visible="modalVisible"
       :title="editingId === null ? '新增参数' : '编辑参数'"
       width="480px"
+      :footer-buttons="[
+        {
+          props: {
+            type: 'text',
+            color: 'gray',
+            size: 'small',
+            text: '取消',
+            request: () => {
+              modalVisible = false;
+            },
+          },
+        },
+        {
+          props: {
+            type: 'fill',
+            color: 'primary',
+            size: 'small',
+            text: '保存',
+            request: handleSubmit,
+          },
+        },
+      ]"
     >
-      <LewForm
-        ref="formRef"
-        v-model="form"
-        label-width="72px"
-        :options="[
-          {
-            field: 'name',
-            label: '参数名称',
-            as: 'input',
-            rule: 'Yup.string().required()',
-            props: { placeholder: '如 系统名称', clearable: true },
-          },
-          {
-            field: 'key',
-            label: '参数键名',
-            as: 'input',
-            rule: 'Yup.string().required()',
-            props: { placeholder: '如 sys.name', clearable: true },
-          },
-          {
-            field: 'value',
-            label: '参数值',
-            as: 'input',
-            rule: 'Yup.string().required()',
-            props: { placeholder: '请输入参数值', clearable: true },
-          },
-          { field: 'builtin', label: '是否内置', as: 'switch' },
-          {
-            field: 'remark',
-            label: '备注',
-            as: 'textarea',
-            props: { placeholder: '选填', rows: 2 },
-          },
-        ]"
-      />
-      <template #footer>
-        <LewButton type="light" @click="modalVisible = false">取消</LewButton>
-        <LewButton type="fill" @click="handleSubmit">保存</LewButton>
-      </template>
+      <div class="p-5">
+        <LewForm
+          ref="formRef"
+          v-model="form"
+          label-width="72px"
+          :options="[
+            {
+              field: 'name',
+              label: '参数名称',
+              as: 'input',
+              rule: 'Yup.string().required()',
+              props: { placeholder: '如 系统名称', clearable: true },
+            },
+            {
+              field: 'key',
+              label: '参数键名',
+              as: 'input',
+              rule: 'Yup.string().required()',
+              props: { placeholder: '如 sys.name', clearable: true },
+            },
+            {
+              field: 'value',
+              label: '参数值',
+              as: 'input',
+              rule: 'Yup.string().required()',
+              props: { placeholder: '请输入参数值', clearable: true },
+            },
+            { field: 'builtin', label: '是否内置', as: 'switch' },
+            {
+              field: 'remark',
+              label: '备注',
+              as: 'textarea',
+              props: { placeholder: '选填', rows: 2 },
+            },
+          ]"
+        />
+      </div>
     </LewModal>
   </div>
 </template>

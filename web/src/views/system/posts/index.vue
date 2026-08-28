@@ -162,40 +162,60 @@ function handleDelete(row: Post) {
       v-model:visible="modalVisible"
       :title="editingId === null ? '新增岗位' : '编辑岗位'"
       width="480px"
+      :footer-buttons="[
+        {
+          props: {
+            type: 'text',
+            color: 'gray',
+            size: 'small',
+            text: '取消',
+            request: () => {
+              modalVisible = false;
+            },
+          },
+        },
+        {
+          props: {
+            type: 'fill',
+            color: 'primary',
+            size: 'small',
+            text: '保存',
+            request: handleSubmit,
+          },
+        },
+      ]"
     >
-      <LewForm
-        ref="formRef"
-        v-model="form"
-        label-width="72px"
-        :options="[
-          {
-            field: 'name',
-            label: '岗位名称',
-            as: 'input',
-            rule: 'Yup.string().required()',
-            props: { placeholder: '请输入岗位名称', clearable: true },
-          },
-          {
-            field: 'key',
-            label: '岗位标识',
-            as: 'input',
-            rule: 'Yup.string().required()',
-            props: { placeholder: '小写字母/数字/:-_', clearable: true },
-          },
-          { field: 'sort', label: '排序', as: 'input-number', props: { min: 0 } },
-          { field: 'status', label: '状态', as: 'select', props: { options: statusOptions } },
-          {
-            field: 'remark',
-            label: '备注',
-            as: 'textarea',
-            props: { placeholder: '选填', rows: 2 },
-          },
-        ]"
-      />
-      <template #footer>
-        <LewButton type="light" @click="modalVisible = false">取消</LewButton>
-        <LewButton type="fill" @click="handleSubmit">保存</LewButton>
-      </template>
+      <div class="p-5">
+        <LewForm
+          ref="formRef"
+          v-model="form"
+          label-width="72px"
+          :options="[
+            {
+              field: 'name',
+              label: '岗位名称',
+              as: 'input',
+              rule: 'Yup.string().required()',
+              props: { placeholder: '请输入岗位名称', clearable: true },
+            },
+            {
+              field: 'key',
+              label: '岗位标识',
+              as: 'input',
+              rule: 'Yup.string().required()',
+              props: { placeholder: '小写字母/数字/:-_', clearable: true },
+            },
+            { field: 'sort', label: '排序', as: 'input-number', props: { min: 0 } },
+            { field: 'status', label: '状态', as: 'select', props: { options: statusOptions } },
+            {
+              field: 'remark',
+              label: '备注',
+              as: 'textarea',
+              props: { placeholder: '选填', rows: 2 },
+            },
+          ]"
+        />
+      </div>
     </LewModal>
   </div>
 </template>

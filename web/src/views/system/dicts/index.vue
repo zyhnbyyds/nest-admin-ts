@@ -329,39 +329,59 @@ function handleDataDelete(row: DictData) {
       v-model:visible="typeModalVisible"
       :title="typeEditingId === null ? '新增字典类型' : '编辑字典类型'"
       width="440px"
+      :footer-buttons="[
+        {
+          props: {
+            type: 'text',
+            color: 'gray',
+            size: 'small',
+            text: '取消',
+            request: () => {
+              typeModalVisible = false;
+            },
+          },
+        },
+        {
+          props: {
+            type: 'fill',
+            color: 'primary',
+            size: 'small',
+            text: '保存',
+            request: handleTypeSubmit,
+          },
+        },
+      ]"
     >
-      <LewForm
-        ref="typeFormRef"
-        v-model="typeForm"
-        label-width="72px"
-        :options="[
-          {
-            field: 'name',
-            label: '字典名称',
-            as: 'input',
-            rule: 'Yup.string().required()',
-            props: { placeholder: '如 用户性别', clearable: true },
-          },
-          {
-            field: 'type',
-            label: '类型标识',
-            as: 'input',
-            rule: 'Yup.string().required()',
-            props: { placeholder: '小写字母/数字/:-_', clearable: true },
-          },
-          { field: 'status', label: '状态', as: 'select', props: { options: statusOptions } },
-          {
-            field: 'remark',
-            label: '备注',
-            as: 'textarea',
-            props: { placeholder: '选填', rows: 2 },
-          },
-        ]"
-      />
-      <template #footer>
-        <LewButton type="light" @click="typeModalVisible = false">取消</LewButton>
-        <LewButton type="fill" @click="handleTypeSubmit">保存</LewButton>
-      </template>
+      <div class="p-5">
+        <LewForm
+          ref="typeFormRef"
+          v-model="typeForm"
+          label-width="72px"
+          :options="[
+            {
+              field: 'name',
+              label: '字典名称',
+              as: 'input',
+              rule: 'Yup.string().required()',
+              props: { placeholder: '如 用户性别', clearable: true },
+            },
+            {
+              field: 'type',
+              label: '类型标识',
+              as: 'input',
+              rule: 'Yup.string().required()',
+              props: { placeholder: '小写字母/数字/:-_', clearable: true },
+            },
+            { field: 'status', label: '状态', as: 'select', props: { options: statusOptions } },
+            {
+              field: 'remark',
+              label: '备注',
+              as: 'textarea',
+              props: { placeholder: '选填', rows: 2 },
+            },
+          ]"
+        />
+      </div>
     </LewModal>
 
     <!-- 字典数据弹窗 -->
@@ -369,46 +389,66 @@ function handleDataDelete(row: DictData) {
       v-model:visible="dataModalVisible"
       :title="dataEditingId === null ? '新增字典数据' : '编辑字典数据'"
       width="440px"
+      :footer-buttons="[
+        {
+          props: {
+            type: 'text',
+            color: 'gray',
+            size: 'small',
+            text: '取消',
+            request: () => {
+              dataModalVisible = false;
+            },
+          },
+        },
+        {
+          props: {
+            type: 'fill',
+            color: 'primary',
+            size: 'small',
+            text: '保存',
+            request: handleDataSubmit,
+          },
+        },
+      ]"
     >
-      <LewForm
-        ref="dataFormRef"
-        v-model="dataForm"
-        label-width="72px"
-        :options="[
-          {
-            field: 'label',
-            label: '标签',
-            as: 'input',
-            rule: 'Yup.string().required()',
-            props: { placeholder: '如 男', clearable: true },
-          },
-          {
-            field: 'value',
-            label: '键值',
-            as: 'input',
-            rule: 'Yup.string().required()',
-            props: { placeholder: '如 1', clearable: true },
-          },
-          { field: 'sort', label: '排序', as: 'input-number', props: { min: 0 } },
-          { field: 'status', label: '状态', as: 'select', props: { options: statusOptions } },
-          {
-            field: 'cssClass',
-            label: '样式类名',
-            as: 'input',
-            props: { placeholder: '选填', clearable: true },
-          },
-          {
-            field: 'listClass',
-            label: '列表样式',
-            as: 'input',
-            props: { placeholder: '选填', clearable: true },
-          },
-        ]"
-      />
-      <template #footer>
-        <LewButton type="light" @click="dataModalVisible = false">取消</LewButton>
-        <LewButton type="fill" @click="handleDataSubmit">保存</LewButton>
-      </template>
+      <div class="p-5">
+        <LewForm
+          ref="dataFormRef"
+          v-model="dataForm"
+          label-width="72px"
+          :options="[
+            {
+              field: 'label',
+              label: '标签',
+              as: 'input',
+              rule: 'Yup.string().required()',
+              props: { placeholder: '如 男', clearable: true },
+            },
+            {
+              field: 'value',
+              label: '键值',
+              as: 'input',
+              rule: 'Yup.string().required()',
+              props: { placeholder: '如 1', clearable: true },
+            },
+            { field: 'sort', label: '排序', as: 'input-number', props: { min: 0 } },
+            { field: 'status', label: '状态', as: 'select', props: { options: statusOptions } },
+            {
+              field: 'cssClass',
+              label: '样式类名',
+              as: 'input',
+              props: { placeholder: '选填', clearable: true },
+            },
+            {
+              field: 'listClass',
+              label: '列表样式',
+              as: 'input',
+              props: { placeholder: '选填', clearable: true },
+            },
+          ]"
+        />
+      </div>
     </LewModal>
   </div>
 </template>

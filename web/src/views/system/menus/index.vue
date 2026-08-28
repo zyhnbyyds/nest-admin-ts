@@ -286,66 +286,91 @@ function handleDelete(row: Menu) {
       v-model:visible="modalVisible"
       :title="editingId === null ? '新增菜单' : '编辑菜单'"
       width="520px"
+      :footer-buttons="[
+        {
+          props: {
+            type: 'text',
+            color: 'gray',
+            size: 'small',
+            text: '取消',
+            request: () => {
+              modalVisible = false;
+            },
+          },
+        },
+        {
+          props: {
+            type: 'fill',
+            color: 'primary',
+            size: 'small',
+            text: '保存',
+            request: handleSubmit,
+          },
+        },
+      ]"
     >
-      <LewForm
-        ref="formRef"
-        v-model="form"
-        label-width="80px"
-        :options="[
-          { field: 'parentId', label: '上级菜单', as: 'select', props: { options: parentOptions } },
-          {
-            field: 'type',
-            label: '类型',
-            as: 'select',
-            rule: 'Yup.string().required()',
-            props: { options: typeOptions },
-          },
-          {
-            field: 'name',
-            label: '路由名称',
-            as: 'input',
-            rule: 'Yup.string().required()',
-            props: { placeholder: '如 system', clearable: true },
-          },
-          {
-            field: 'title',
-            label: '菜单标题',
-            as: 'input',
-            rule: 'Yup.string().required()',
-            props: { placeholder: '如 系统管理', clearable: true },
-          },
-          {
-            field: 'path',
-            label: '路由路径',
-            as: 'input',
-            props: { placeholder: '如 /system', clearable: true },
-          },
-          {
-            field: 'component',
-            label: '组件路径',
-            as: 'input',
-            props: { placeholder: '如 system/users/index', clearable: true },
-          },
-          {
-            field: 'permission',
-            label: '权限标识',
-            as: 'input',
-            props: { placeholder: '如 system:user:list', clearable: true },
-          },
-          {
-            field: 'icon',
-            label: '图标',
-            as: 'input',
-            props: { placeholder: '图标名（lucide）', clearable: true },
-          },
-          { field: 'sort', label: '排序', as: 'input-number', props: { min: 0 } },
-          { field: 'status', label: '状态', as: 'select', props: { options: statusOptions } },
-        ]"
-      />
-      <template #footer>
-        <LewButton type="light" @click="modalVisible = false">取消</LewButton>
-        <LewButton type="fill" @click="handleSubmit">保存</LewButton>
-      </template>
+      <div class="p-5">
+        <LewForm
+          ref="formRef"
+          v-model="form"
+          label-width="80px"
+          :options="[
+            {
+              field: 'parentId',
+              label: '上级菜单',
+              as: 'select',
+              props: { options: parentOptions },
+            },
+            {
+              field: 'type',
+              label: '类型',
+              as: 'select',
+              rule: 'Yup.string().required()',
+              props: { options: typeOptions },
+            },
+            {
+              field: 'name',
+              label: '路由名称',
+              as: 'input',
+              rule: 'Yup.string().required()',
+              props: { placeholder: '如 system', clearable: true },
+            },
+            {
+              field: 'title',
+              label: '菜单标题',
+              as: 'input',
+              rule: 'Yup.string().required()',
+              props: { placeholder: '如 系统管理', clearable: true },
+            },
+            {
+              field: 'path',
+              label: '路由路径',
+              as: 'input',
+              props: { placeholder: '如 /system', clearable: true },
+            },
+            {
+              field: 'component',
+              label: '组件路径',
+              as: 'input',
+              props: { placeholder: '如 system/users/index', clearable: true },
+            },
+            {
+              field: 'permission',
+              label: '权限标识',
+              as: 'input',
+              props: { placeholder: '如 system:user:list', clearable: true },
+            },
+            {
+              field: 'icon',
+              label: '图标',
+              as: 'input',
+              props: { placeholder: '图标名（lucide）', clearable: true },
+            },
+            { field: 'sort', label: '排序', as: 'input-number', props: { min: 0 } },
+            { field: 'status', label: '状态', as: 'select', props: { options: statusOptions } },
+          ]"
+        />
+      </div>
     </LewModal>
   </div>
 </template>
