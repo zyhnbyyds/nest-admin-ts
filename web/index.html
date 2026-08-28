@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Nest Admin</title>
+    <script>
+      // 首屏防闪烁：在应用挂载前同步应用暗色模式
+      (function () {
+        var mode = localStorage.getItem("nest-admin:color-mode") || "auto";
+        var dark;
+        if (mode === "dark") dark = true;
+        else if (mode === "light") dark = false;
+        else dark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+        if (dark) document.documentElement.classList.add("lew-dark");
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="app"></div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
