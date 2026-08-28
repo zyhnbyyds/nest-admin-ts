@@ -14,21 +14,21 @@ const userStore = useUserStore();
 
 const loading = ref(false);
 const formRef = ref();
-const form = ref({ username: "admin", password: "" });
+const form = ref({ username: "admin", password: "admin123456" });
 
 const options: LewFormOption[] = [
   {
     field: "username",
     label: "用户名",
     as: "input",
-    rule: "required",
+    rule: "Yup.string().required()",
     props: { placeholder: "请输入用户名", clearable: true },
   },
   {
     field: "password",
     label: "密码",
     as: "input",
-    rule: "required",
+    rule: "Yup.string().required()",
     props: { type: "password", placeholder: "请输入密码", clearable: true, showPassword: true },
   },
 ];

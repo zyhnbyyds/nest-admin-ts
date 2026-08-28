@@ -34,7 +34,11 @@ const columns: LewTableColumn[] = [
           },
           [h(ChevronUp, { size: 14 })],
         ),
-        h("span", { class: "text-12.5px text-[var(--app-text-secondary)] w-16px text-center" }, String(menu.sort)),
+        h(
+          "span",
+          { class: "text-12.5px text-[var(--app-text-secondary)] w-16px text-center" },
+          String(menu.sort),
+        ),
         h(
           "button",
           {
@@ -71,15 +75,10 @@ void fetchList();
 const movingId = ref<number | null>(null);
 
 /** 扁平化树为带层级路径的列表 */
-function flattenWithPath(
-  list: Menu[],
-  path: number[] = [],
-): { menu: Menu; path: number[] }[] {
+function flattenWithPath(list: Menu[], path: number[] = []): { menu: Menu; path: number[] }[] {
   return list.flatMap((menu, index) => {
     const current = [...path, index];
-    const children = menu.children?.length
-      ? flattenWithPath(menu.children, current)
-      : [];
+    const children = menu.children?.length ? flattenWithPath(menu.children, current) : [];
     return [{ menu, path: current }, ...children];
   });
 }
@@ -297,21 +296,21 @@ function handleDelete(row: Menu) {
             field: 'type',
             label: '类型',
             as: 'select',
-            rule: 'required',
+            rule: 'Yup.string().required()',
             props: { options: typeOptions },
           },
           {
             field: 'name',
             label: '路由名称',
             as: 'input',
-            rule: 'required',
+            rule: 'Yup.string().required()',
             props: { placeholder: '如 system', clearable: true },
           },
           {
             field: 'title',
             label: '菜单标题',
             as: 'input',
-            rule: 'required',
+            rule: 'Yup.string().required()',
             props: { placeholder: '如 系统管理', clearable: true },
           },
           {

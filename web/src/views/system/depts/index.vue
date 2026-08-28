@@ -198,7 +198,7 @@ function handleDelete(row: Dept) {
             field: 'name',
             label: '部门名称',
             as: 'input',
-            rule: 'required',
+            rule: 'Yup.string().required()',
             props: { placeholder: '请输入部门名称', clearable: true },
           },
           { field: 'sort', label: '排序', as: 'input-number', props: { min: 0 } },
