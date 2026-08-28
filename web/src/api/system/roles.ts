@@ -16,7 +16,10 @@ export function assignRoleMenus(id: number, body: AssignRoleMenusBody) {
   return post<void>(`/system/roles/${id}/menus`, body);
 }
 
-/** 查询角色已分配的菜单 ID（走兼容层接口） */
-export function getRoleMenuIds(roleId: number) {
-  return post<number[]>("/role/auth/list", { roleId });
+/** 查询角色已分配的菜单 ID（走兼容层接口，返回 { code, data, message } 包裹格式） */
+export async function getRoleMenuIds(roleId: number) {
+  const res = await post<{ code: number; data: number[]; message: string }>("/role/auth/list", {
+    roleId,
+  });
+  return res.data;
 }

@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { ref } from "vue";
 import { KeyRound, Plus, Trash2 } from "lucide-vue-next";
-import { LewButton, LewForm, LewMessage, LewModal, LewTable } from "lew-ui";
-import type { LewFormOption } from "lew-ui";
+import { LewButton, LewForm, LewMessage, LewModal, LewTable, LewTree } from "lew-ui";
+import type { LewFormOption, LewTreeDataSource } from "lew-ui";
 import type { LewTableColumn } from "lew-ui";
 import { assignRoleMenus, createRole, getRoleMenuIds, listRoles } from "~/api/system/roles";
 import { listMenus } from "~/api/system/menus";
@@ -33,6 +33,7 @@ const columns: LewTableColumn[] = [
     width: 170,
     customRender: ({ row }) => formatDateTime((row as unknown as Role).createdAt),
   },
+  { title: "操作", field: "operation", width: 100, fixed: "right" },
 ];
 
 async function fetchList() {
@@ -92,20 +93,33 @@ async function handleSubmit() {
 // ---------- 分配菜单权限 ----------
 const authVisible = ref(false);
 const authRole = ref<Role | null>(null);
-const menuTree = ref<Menu[]>([]);
-const checkedKeys = ref<number[]>([]);
+const menuTree = ref<LewTreeDataSource[]>([]);
+const checkedKeys = ref<string[]>([]);
+
+/** Menu[] → LewTreeDataSource[]（key 用菜单 id 字符串） */
+function toTreeData(list: Menu[]): LewTreeDataSource[] {
+  return list.map((menu) => ({
+    label: menu.title,
+    key: String(menu.id),
+    level: 0,
+    allNodeValues: [],
+    leafNodeValues: [],
+    children: menu.children?.length ? toTreeData(menu.children) : undefined,
+  }));
+}
 
 async function openAuth(role: Role) {
   authRole.value = role;
-  authVisible.value = true;
+  // 先加载数据，再打开弹窗（LewTree 只在挂载时读取 dataSource，不会响应后续变化）
   const [menus, ids] = await Promise.all([listMenus(), getRoleMenuIds(role.id)]);
-  menuTree.value = menus;
-  checkedKeys.value = ids;
+  menuTree.value = toTreeData(menus);
+  checkedKeys.value = ids.map(String);
+  authVisible.value = true;
 }
 
 async function handleAuthSubmit() {
   if (!authRole.value) return;
-  await assignRoleMenus(authRole.value.id, { menuIds: checkedKeys.value });
+  await assignRoleMenus(authRole.value.id, { menuIds: checkedKeys.value.map(Number) });
   LewMessage.success("权限已更新");
   authVisible.value = false;
 }
@@ -174,7 +188,7 @@ function handleDelete(_row: Role) {
         <p class="text-13px text-[var(--app-text-muted)] m-0 mb-2">
           勾选菜单后保存（按钮权限随其父菜单自动关联）
         </p>
-        <LewTree v-model:checked-keys="checkedKeys" checkable expand-all :data-source="menuTree" />
+        <LewTree v-model="checkedKeys" checkable expand-all :data-source="menuTree" />
       </div>
       <template #footer>
         <LewButton type="light" @click="authVisible = false">取消</LewButton>
