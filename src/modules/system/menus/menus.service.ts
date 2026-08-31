@@ -118,7 +118,7 @@ export class MenusService {
       .from(menus)
       .where(and(eq(menus.id, id), isNull(menus.deletedAt)))
       .limit(1);
-    if (!menu) throw new NotFoundException('Menu not found');
+    if (!menu) throw new NotFoundException('菜单不存在');
     return menu;
   }
 
@@ -153,7 +153,7 @@ export class MenusService {
       const descendants = await this.descendantIds(id);
       if (descendants.includes(merged.parentId))
         throw new BadRequestException(
-          'Cannot move a menu under its own descendant',
+          '不能将菜单移动到自己的下级菜单下',
         );
     }
     if (patch.permission)
@@ -172,7 +172,7 @@ export class MenusService {
       .where(and(eq(menus.parentId, id), isNull(menus.deletedAt)))
       .limit(1);
     if (child)
-      throw new BadRequestException('Menu has children and cannot be deleted');
+      throw new BadRequestException('存在子菜单，无法删除');
     await this.database.db.transaction(async (tx) => {
       await tx.delete(roleMenus).where(eq(roleMenus.menuId, id));
       await tx
@@ -217,7 +217,7 @@ export class MenusService {
       .from(menus)
       .where(and(eq(menus.id, parentId), isNull(menus.deletedAt)))
       .limit(1);
-    if (!parent) throw new NotFoundException('Parent menu not found');
+    if (!parent) throw new NotFoundException('上级菜单不存在');
   }
 
   private async assertPermissionUnique(
@@ -235,7 +235,7 @@ export class MenusService {
       .where(and(...conditions))
       .limit(1);
     if (duplicate)
-      throw new ConflictException('Menu permission already exists');
+      throw new ConflictException('菜单权限标识已存在');
   }
 
   private async descendantIds(id: number): Promise<number[]> {
@@ -269,12 +269,12 @@ export class MenusService {
   }): void {
     if (input.type !== 'F' && !input.path)
       throw new BadRequestException(
-        'Path is required for directories and menus',
+        '目录和菜单必须填写路由路径',
       );
     if (input.type === 'C' && !input.component)
-      throw new BadRequestException('Component is required for menus');
+      throw new BadRequestException('菜单必须填写组件路径');
     if (input.type === 'F' && !input.permission)
-      throw new BadRequestException('Permission is required for buttons');
+      throw new BadRequestException('按钮必须填写权限标识');
   }
 }
 

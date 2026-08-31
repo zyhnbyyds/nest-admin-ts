@@ -49,7 +49,7 @@ export class DeptsService {
       .from(departments)
       .where(and(eq(departments.id, id), isNull(departments.deletedAt)))
       .limit(1);
-    if (!dept) throw new NotFoundException('Department not found');
+    if (!dept) throw new NotFoundException('部门不存在');
     return dept;
   }
 
@@ -79,14 +79,12 @@ export class DeptsService {
     const parentId = patch.parentId ?? existing.parentId;
     if (parentId !== 0) {
       if (parentId === id)
-        throw new BadRequestException(
-          'Cannot set a department as its own parent',
-        );
+        throw new BadRequestException('不能将部门设置为自己的上级');
       await this.assertParentExists(parentId);
       const descendants = await this.descendantIds(id);
       if (descendants.includes(parentId))
         throw new BadRequestException(
-          'Cannot move a department under its own descendant',
+          '不能将部门移动到自己的下级部门下',
         );
     }
     await this.database.db
@@ -104,18 +102,14 @@ export class DeptsService {
       .where(and(eq(departments.parentId, id), isNull(departments.deletedAt)))
       .limit(1);
     if (child)
-      throw new BadRequestException(
-        'Department has children and cannot be deleted',
-      );
+      throw new BadRequestException('存在子部门，无法删除');
     const [assigned] = await this.database.db
       .select({ id: users.id })
       .from(users)
       .where(and(eq(users.deptId, id), isNull(users.deletedAt)))
       .limit(1);
     if (assigned)
-      throw new BadRequestException(
-        'Department has assigned users and cannot be deleted',
-      );
+      throw new BadRequestException('部门下存在用户，无法删除');
     await this.database.db
       .update(departments)
       .set({ deletedAt: new Date(), updatedBy: actorId })
@@ -129,7 +123,7 @@ export class DeptsService {
       .from(departments)
       .where(and(eq(departments.id, parentId), isNull(departments.deletedAt)))
       .limit(1);
-    if (!parent) throw new NotFoundException('Parent department not found');
+    if (!parent) throw new NotFoundException('上级部门不存在');
     return `${parent.ancestors},${parentId}`;
   }
 
@@ -139,7 +133,7 @@ export class DeptsService {
       .from(departments)
       .where(and(eq(departments.id, parentId), isNull(departments.deletedAt)))
       .limit(1);
-    if (!parent) throw new NotFoundException('Parent department not found');
+    if (!parent) throw new NotFoundException('上级部门不存在');
   }
 
   private async descendantIds(id: number): Promise<number[]> {

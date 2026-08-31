@@ -56,7 +56,7 @@ export class RolesService {
       .from(roles)
       .where(eq(roles.key, input.key))
       .limit(1);
-    if (exists) throw new ConflictException('Role key already exists');
+    if (exists) throw new ConflictException('角色标识已存在');
     const { menuIds = [], ...role } = input;
     const result = await this.database.db
       .insert(roles)
@@ -71,7 +71,7 @@ export class RolesService {
       .from(roles)
       .where(and(eq(roles.id, roleId), isNull(roles.deletedAt)))
       .limit(1);
-    if (!role) throw new NotFoundException('Role not found');
+    if (!role) throw new NotFoundException('角色不存在');
     const uniqueIds = [...new Set(menuIds)];
     if (uniqueIds.length) {
       const found = await this.database.db
@@ -79,7 +79,7 @@ export class RolesService {
         .from(menus)
         .where(inArray(menus.id, uniqueIds));
       if (found.length !== uniqueIds.length)
-        throw new NotFoundException('One or more menus were not found');
+        throw new NotFoundException('部分菜单不存在');
     }
     await this.database.db.transaction(async (tx) => {
       await tx.delete(roleMenus).where(eq(roleMenus.roleId, roleId));
@@ -106,7 +106,7 @@ export class RolesService {
       .from(roles)
       .where(and(eq(roles.id, id), isNull(roles.deletedAt)))
       .limit(1);
-    if (!role) throw new NotFoundException('Role not found');
+    if (!role) throw new NotFoundException('角色不存在');
     const patch = withoutUndefined(input);
     if (patch.key) {
       const [duplicate] = await this.database.db
@@ -120,7 +120,7 @@ export class RolesService {
           ),
         )
         .limit(1);
-      if (duplicate) throw new ConflictException('Role key already exists');
+      if (duplicate) throw new ConflictException('角色标识已存在');
     }
     await this.database.db
       .update(roles)
@@ -133,7 +133,7 @@ export class RolesService {
       .from(roles)
       .where(and(eq(roles.id, id), isNull(roles.deletedAt)))
       .limit(1);
-    if (!role) throw new NotFoundException('Role not found');
+    if (!role) throw new NotFoundException('角色不存在');
     await this.database.db.transaction(async (tx) => {
       await tx.delete(roleMenus).where(eq(roleMenus.roleId, id));
       await tx.delete(userRoles).where(eq(userRoles.roleId, id));

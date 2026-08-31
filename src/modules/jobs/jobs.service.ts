@@ -98,7 +98,7 @@ export class JobsService implements OnModuleInit, OnModuleDestroy {
       .from(jobs)
       .where(and(eq(jobs.id, id), isNull(jobs.deletedAt)))
       .limit(1);
-    if (!job) throw new NotFoundException('Job not found');
+    if (!job) throw new NotFoundException('定时任务不存在');
     return job;
   }
 
@@ -151,7 +151,7 @@ export class JobsService implements OnModuleInit, OnModuleDestroy {
   async runNow(id: number): Promise<{ success: true }> {
     const job = await this.findOne(id);
     const handler = this.handlers.get(job.handler);
-    if (!handler) throw new BadRequestException('Unknown job handler');
+    if (!handler) throw new BadRequestException('未知的任务处理器');
     await this.execute(job, handler);
     return { success: true };
   }
@@ -246,14 +246,14 @@ export class JobsService implements OnModuleInit, OnModuleDestroy {
 
   private assertHandler(handler: string): void {
     if (!this.handlers.has(handler))
-      throw new BadRequestException(`Unknown job handler: ${handler}`);
+      throw new BadRequestException(`未知的任务处理器：${handler}`);
   }
 
   private assertCron(cron: string): void {
     try {
       new CronJob(cron, () => {});
     } catch {
-      throw new BadRequestException('Invalid cron expression');
+      throw new BadRequestException('Cron 表达式无效');
     }
   }
 
@@ -268,7 +268,7 @@ export class JobsService implements OnModuleInit, OnModuleDestroy {
       .from(jobs)
       .where(and(...conditions))
       .limit(1);
-    if (duplicate) throw new ConflictException('Job handler already exists');
+    if (duplicate) throw new ConflictException('任务处理器已存在');
   }
 }
 

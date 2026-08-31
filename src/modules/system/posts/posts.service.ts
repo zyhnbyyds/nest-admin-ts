@@ -44,7 +44,7 @@ export class PostsService {
       .from(posts)
       .where(and(eq(posts.id, id), isNull(posts.deletedAt)))
       .limit(1);
-    if (!post) throw new NotFoundException('Post not found');
+    if (!post) throw new NotFoundException('岗位不存在');
     return post;
   }
 
@@ -73,7 +73,7 @@ export class PostsService {
       .update(posts)
       .set({ ...patch, updatedBy: actorId })
       .where(and(eq(posts.id, id), isNull(posts.deletedAt)));
-    if (!result[0].affectedRows) throw new NotFoundException('Post not found');
+    if (!result[0].affectedRows) throw new NotFoundException('岗位不存在');
   }
 
   async remove(id: number, actorId: number): Promise<void> {
@@ -98,7 +98,7 @@ export class PostsService {
       .from(posts)
       .where(and(...conditions))
       .limit(1);
-    if (duplicate) throw new ConflictException('Post key already exists');
+    if (duplicate) throw new ConflictException('岗位标识已存在');
   }
 }
 

@@ -41,7 +41,7 @@ export class DictTypesService {
       .from(dictTypes)
       .where(and(eq(dictTypes.id, id), isNull(dictTypes.deletedAt)))
       .limit(1);
-    if (!dictType) throw new NotFoundException('Dictionary type not found');
+    if (!dictType) throw new NotFoundException('字典类型不存在');
     return dictType;
   }
 
@@ -71,7 +71,7 @@ export class DictTypesService {
       .set({ ...patch, updatedBy: actorId })
       .where(and(eq(dictTypes.id, id), isNull(dictTypes.deletedAt)));
     if (!result[0].affectedRows)
-      throw new NotFoundException('Dictionary type not found');
+      throw new NotFoundException('字典类型不存在');
   }
 
   async remove(id: number, actorId: number): Promise<void> {
@@ -105,7 +105,7 @@ export class DictTypesService {
       .where(and(...conditions))
       .limit(1);
     if (duplicate)
-      throw new ConflictException('Dictionary type already exists');
+      throw new ConflictException('字典类型标识已存在');
   }
 }
 

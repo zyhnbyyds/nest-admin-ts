@@ -74,7 +74,7 @@ export class DictDataService {
       .from(dictionaries)
       .where(and(eq(dictionaries.id, id), isNull(dictionaries.deletedAt)))
       .limit(1);
-    if (!item) throw new NotFoundException('Dictionary data not found');
+    if (!item) throw new NotFoundException('字典数据不存在');
     return item;
   }
 
@@ -109,7 +109,7 @@ export class DictDataService {
       .set({ ...patch, updatedBy: actorId })
       .where(and(eq(dictionaries.id, id), isNull(dictionaries.deletedAt)));
     if (!result[0].affectedRows)
-      throw new NotFoundException('Dictionary data not found');
+      throw new NotFoundException('字典数据不存在');
   }
 
   async remove(id: number, actorId: number): Promise<void> {
@@ -118,7 +118,7 @@ export class DictDataService {
       .set({ deletedAt: new Date(), updatedBy: actorId })
       .where(and(eq(dictionaries.id, id), isNull(dictionaries.deletedAt)));
     if (!result[0].affectedRows)
-      throw new NotFoundException('Dictionary data not found');
+      throw new NotFoundException('字典数据不存在');
   }
 
   private async assertTypeExists(type: string): Promise<void> {
@@ -128,7 +128,7 @@ export class DictDataService {
       .where(and(eq(dictTypes.type, type), isNull(dictTypes.deletedAt)))
       .limit(1);
     if (!dictType)
-      throw new BadRequestException('Dictionary type does not exist');
+      throw new BadRequestException('字典类型不存在');
   }
 
   private async assertValueUnique(
@@ -150,7 +150,7 @@ export class DictDataService {
       .limit(1);
     if (duplicate)
       throw new ConflictException(
-        'Dictionary value already exists for this type',
+        '该字典类型下已存在相同的键值',
       );
   }
 }

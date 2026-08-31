@@ -44,7 +44,7 @@ export class ConfigsService {
       .from(configs)
       .where(and(eq(configs.id, id), isNull(configs.deletedAt)))
       .limit(1);
-    if (!config) throw new NotFoundException('Config not found');
+    if (!config) throw new NotFoundException('参数配置不存在');
     return config;
   }
 
@@ -54,7 +54,7 @@ export class ConfigsService {
       .from(configs)
       .where(and(eq(configs.key, key), isNull(configs.deletedAt)))
       .limit(1);
-    if (!config) throw new NotFoundException('Config not found');
+    if (!config) throw new NotFoundException('参数配置不存在');
     return config;
   }
 
@@ -84,19 +84,19 @@ export class ConfigsService {
       .set({ ...patch, updatedBy: actorId })
       .where(and(eq(configs.id, id), isNull(configs.deletedAt)));
     if (!result[0].affectedRows)
-      throw new NotFoundException('Config not found');
+      throw new NotFoundException('参数配置不存在');
   }
 
   async remove(id: number, actorId: number): Promise<void> {
     const config = await this.findOne(id);
     if (config.builtin)
-      throw new BadRequestException('Built-in config cannot be deleted');
+      throw new BadRequestException('内置参数不能删除');
     const result = await this.database.db
       .update(configs)
       .set({ deletedAt: new Date(), updatedBy: actorId })
       .where(and(eq(configs.id, id), isNull(configs.deletedAt)));
     if (!result[0].affectedRows)
-      throw new NotFoundException('Config not found');
+      throw new NotFoundException('参数配置不存在');
   }
 
   private async assertKeyUnique(
@@ -110,7 +110,7 @@ export class ConfigsService {
       .from(configs)
       .where(and(...conditions))
       .limit(1);
-    if (duplicate) throw new ConflictException('Config key already exists');
+    if (duplicate) throw new ConflictException('参数键名已存在');
   }
 }
 

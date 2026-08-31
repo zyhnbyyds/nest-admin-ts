@@ -78,13 +78,11 @@ export class FilesService {
     const originalName = sanitizeFilename(part.filename);
     const ext = path.extname(originalName).toLowerCase();
     if (!ALLOWED_EXTENSIONS.has(ext))
-      throw new BadRequestException('File type is not allowed');
+      throw new BadRequestException('不允许的文件类型');
     const buffer = await part.toBuffer();
-    if (buffer.length === 0) throw new BadRequestException('File is empty');
+    if (buffer.length === 0) throw new BadRequestException('文件内容为空');
     if (buffer.length > MAX_FILE_SIZE)
-      throw new PayloadTooLargeException(
-        'File exceeds the maximum allowed size',
-      );
+      throw new PayloadTooLargeException('文件超过允许的最大大小');
     const name = `${randomUUID()}${ext}`;
     const dir = path.resolve(this.config.uploadDir);
     await mkdir(dir, { recursive: true });
@@ -142,7 +140,7 @@ export class FilesService {
       .from(files)
       .where(and(eq(files.id, id)))
       .limit(1);
-    if (!file) throw new NotFoundException('File not found');
+    if (!file) throw new NotFoundException('文件不存在');
     return file;
   }
 

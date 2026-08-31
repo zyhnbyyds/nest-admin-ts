@@ -42,7 +42,7 @@ export class FilesController {
   @ApiBearerAuth('access-token')
   async upload(@Req() request: UploadRequest) {
     const file = await request.file();
-    if (!file) throw new BadRequestException('No file uploaded');
+    if (!file) throw new BadRequestException('未选择文件');
     return this.files.save(file, request.user?.id);
   }
   @Get()

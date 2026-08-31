@@ -49,7 +49,7 @@ export class LegacyRoleController {
     @Body() body: LegacyRoleBody,
     @Req() request: AuthRequest,
   ) {
-    if (!body.id) throw new BadRequestException('id is required');
+    if (!body.id) throw new BadRequestException('缺少 id 参数');
     await this.roles.update(
       body.id,
       {

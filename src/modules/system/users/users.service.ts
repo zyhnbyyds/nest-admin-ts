@@ -65,7 +65,7 @@ export class UsersService {
       .from(users)
       .where(eq(users.username, input.username))
       .limit(1);
-    if (existing) throw new ConflictException('Username already exists');
+    if (existing) throw new ConflictException('用户名已存在');
     const passwordHash = await argon2.hash(input.password, {
       type: argon2.argon2id,
     });
@@ -94,7 +94,7 @@ export class UsersService {
       .update(users)
       .set({ ...patch, updatedBy: actorId })
       .where(and(eq(users.id, id), isNull(users.deletedAt)));
-    if (!result[0].affectedRows) throw new NotFoundException('User not found');
+    if (!result[0].affectedRows) throw new NotFoundException('用户不存在');
     return { id, success: true };
   }
   async remove(id: number, actorId: number) {
@@ -102,7 +102,7 @@ export class UsersService {
       .update(users)
       .set({ deletedAt: new Date(), updatedBy: actorId })
       .where(and(eq(users.id, id), isNull(users.deletedAt)));
-    if (!result[0].affectedRows) throw new NotFoundException('User not found');
+    if (!result[0].affectedRows) throw new NotFoundException('用户不存在');
   }
   async assignRole(userId: number, roleId: number) {
     await this.assignRoles(userId, [roleId]);

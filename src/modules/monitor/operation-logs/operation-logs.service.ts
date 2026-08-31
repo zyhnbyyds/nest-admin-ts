@@ -32,7 +32,7 @@ export class OperationLogsService {
       .from(operationLogs)
       .where(eq(operationLogs.id, id))
       .limit(1);
-    if (!item) throw new NotFoundException('Operation log not found');
+    if (!item) throw new NotFoundException('操作日志不存在');
     return item;
   }
 
@@ -41,7 +41,7 @@ export class OperationLogsService {
       .delete(operationLogs)
       .where(eq(operationLogs.id, id));
     if (!result[0].affectedRows)
-      throw new NotFoundException('Operation log not found');
+      throw new NotFoundException('操作日志不存在');
   }
 
   async clear(): Promise<void> {

@@ -92,14 +92,14 @@ const formOptions: LewFormOption[] = [
     field: "username",
     label: "用户名",
     as: "input",
-    rule: "Yup.string().required()",
+    rule: "Yup.string().required('不能为空')",
     props: { placeholder: "3-64 个字符", clearable: true },
   },
   {
     field: "displayName",
     label: "显示名称",
     as: "input",
-    rule: "Yup.string().required()",
+    rule: "Yup.string().required('不能为空')",
     props: { placeholder: "请输入显示名称", clearable: true },
   },
   {

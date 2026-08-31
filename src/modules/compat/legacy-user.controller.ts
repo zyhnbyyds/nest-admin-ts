@@ -63,7 +63,7 @@ export class LegacyUserController {
     @Body() body: LegacyUserBody,
     @Req() request: AuthRequest,
   ) {
-    if (!body.id) throw new BadRequestException('id is required');
+    if (!body.id) throw new BadRequestException('缺少 id 参数');
     await this.users.update(
       body.id,
       {

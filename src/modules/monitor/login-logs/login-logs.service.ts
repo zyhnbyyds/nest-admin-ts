@@ -37,7 +37,7 @@ export class LoginLogsService {
       .from(loginLogs)
       .where(eq(loginLogs.id, id))
       .limit(1);
-    if (!item) throw new NotFoundException('Login log not found');
+    if (!item) throw new NotFoundException('登录日志不存在');
     return item;
   }
 
@@ -46,7 +46,7 @@ export class LoginLogsService {
       .delete(loginLogs)
       .where(eq(loginLogs.id, id));
     if (!result[0].affectedRows)
-      throw new NotFoundException('Login log not found');
+      throw new NotFoundException('登录日志不存在');
   }
 
   async clear(): Promise<void> {

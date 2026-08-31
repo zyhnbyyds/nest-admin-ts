@@ -186,7 +186,7 @@ export class AuthController {
         refreshSchema.parse(body).refreshToken,
       );
     } catch {
-      throw new UnauthorizedException('Refresh token is invalid or expired');
+      throw new UnauthorizedException('刷新令牌无效或已过期');
     }
   }
 

@@ -79,7 +79,7 @@ export class AccessTokenGuard implements CanActivate {
             request.user?.permissions.includes('*:*:*'),
         )
       )
-        throw new UnauthorizedException('Insufficient permission');
+        throw new UnauthorizedException('权限不足');
       return true;
     } catch (error) {
       if (error instanceof UnauthorizedException) throw error;

@@ -120,7 +120,7 @@ describe('AuthController', () => {
     it('throws UnauthorizedException when refresh fails', async () => {
       const authService = mockAuthService();
       (authService.refresh as ReturnType<typeof vi.fn>).mockRejectedValue(
-        new UnauthorizedException('Refresh token is invalid or expired'),
+        new UnauthorizedException('刷新令牌无效或已过期'),
       );
       const controller = new AuthController(authService as AuthService);
       await expect(

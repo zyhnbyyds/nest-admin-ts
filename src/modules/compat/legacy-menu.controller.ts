@@ -54,7 +54,7 @@ export class LegacyMenuController {
     @Body() body: LegacyMenuBody,
     @Req() request: AuthRequest,
   ) {
-    if (!body.id) throw new BadRequestException('id is required');
+    if (!body.id) throw new BadRequestException('缺少 id 参数');
     await this.menus.update(body.id, this.map(body), request.user.id);
     return legacy(null, '修改成功');
   }

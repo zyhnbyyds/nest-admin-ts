@@ -68,6 +68,7 @@ function refreshOnce(): Promise<string> {
         userStore.reset();
         // 跳转登录页（避免循环依赖 router，用事件解耦）
         window.dispatchEvent(new CustomEvent("auth:logout"));
+        LewMessage.error("登录已过期，请重新登录");
         throw error;
       })
       .finally(() => {
@@ -77,40 +78,60 @@ function refreshOnce(): Promise<string> {
   return refreshing;
 }
 
+// ---------- 错误信息归一化 ----------
+/** 把后端/网络层的各种错误形态转成一句可读的中文提示 */
+function formatMessage(error: AxiosError): string {
+  const status = error.response?.status;
+  const raw = (error.response?.data as { message?: unknown } | undefined)
+    ?.message;
+
+  // 后端校验失败会返回字段提示数组，如 ["name：不能为空"]
+  if (Array.isArray(raw) && raw.length > 0) {
+    return raw.filter((m): m is string => typeof m === "string").join("；");
+  }
+  if (typeof raw === "string" && raw) return raw;
+
+  // 网络层错误
+  if (error.code === "ECONNABORTED" || /timeout/i.test(error.message ?? "")) {
+    return "请求超时，请稍后重试";
+  }
+  if (!error.response) return "网络异常，请检查网络连接";
+
+  if (status === 401) return "未登录或登录已过期";
+  if (status === 403) return "没有操作权限";
+  if (status === 404) return "资源不存在";
+  if (status && status >= 500) return "服务器开小差了，请稍后重试";
+  return error.message || "请求失败";
+}
+
 // ---------- 响应拦截器：统一错误 + 401 刷新重放 ----------
+/** 登录/注册/刷新等认证接口不做 401 自动刷新，直接把后端提示展示给用户 */
+const NO_REFRESH_URLS = ["/auth/login", "/auth/refresh", "/auth/register"];
+
 request.interceptors.response.use(
   (response) => response,
   async (error: AxiosError) => {
     const config = error.config as (AxiosRequestConfig & { _retried?: boolean }) | undefined;
     const status = error.response?.status;
+    const skipRefresh = NO_REFRESH_URLS.some(
+      (url) => typeof config?.url === "string" && config.url.includes(url),
+    );
 
-    // 401：尝试刷新并重放一次
-    if (status === 401 && config && !config._retried) {
+    // 401：尝试刷新并重放一次（认证接口重放无意义，直接报错提示）
+    if (status === 401 && config && !config._retried && !skipRefresh) {
       config._retried = true;
       try {
         const token = refreshing ? await refreshing : await refreshOnce();
         config.headers = { ...config.headers, Authorization: `Bearer ${token}` };
         return request(config);
       } catch {
+        // 刷新失败已在 refreshOnce 内提示并广播退出登录，这里不再重复提示
         return Promise.reject(new ApiError(401, "登录已过期，请重新登录"));
       }
     }
 
-    const message =
-      (error.response?.data as { message?: string } | undefined)?.message ??
-      (status === 403
-        ? "没有操作权限"
-        : status === 404
-          ? "资源不存在"
-          : status && status >= 500
-            ? "服务器开小差了，请稍后重试"
-            : error.message) ??
-      "请求失败";
-
-    // 401 已在上面处理过重试，这里兜底提示
-    if (status !== 401) {
-      LewMessage.error(message);
-    }
+    const message = formatMessage(error);
+    LewMessage.error(message);
     return Promise.reject(new ApiError(status ?? 0, message));
   },
 );

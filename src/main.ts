@@ -9,14 +9,21 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import helmet from '@fastify/helmet';
 import rateLimit from '@fastify/rate-limit';
 import multipart from '@fastify/multipart';
+import { z } from 'zod';
+import { zhCN } from 'zod/v4/locales';
 import { AppModule } from './app.module';
 import { AppConfigService } from './config/app-config.service';
+import { GlobalExceptionFilter } from './common/filters/global-exception.filter';
+
+// 全局启用 zod 中文校验提示（需在任意 schema 解析前生效）
+z.config(zhCN());
 
 async function bootstrap(): Promise<void> {
   const app = await NestFactory.create<NestFastifyApplication>(
     AppModule,
     new FastifyAdapter({ logger: true }),
   );
+  app.useGlobalFilters(new GlobalExceptionFilter());
   const config = app.get(AppConfigService);
   await app.register(helmet);
   await app.register(rateLimit, { max: 100, timeWindow: '1 minute' });

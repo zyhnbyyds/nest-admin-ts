@@ -68,7 +68,7 @@ export class AuthService {
       .from(users)
       .where(eq(users.username, input.username))
       .limit(1);
-    if (existing) throw new ConflictException('Username already exists');
+    if (existing) throw new ConflictException('用户名已存在');
 
     const passwordHash = await argon2.hash(input.password, {
       type: argon2.argon2id,
@@ -124,7 +124,7 @@ export class AuthService {
       .from(users)
       .where(and(eq(users.id, userId), isNull(users.deletedAt)))
       .limit(1);
-    if (!user) throw new UnauthorizedException('User not found');
+    if (!user) throw new UnauthorizedException('用户不存在');
     await this.database.db
       .update(users)
       .set({ ...withoutUndefined(input), updatedBy: userId })
@@ -142,7 +142,7 @@ export class AuthService {
       .where(and(eq(users.id, userId), isNull(users.deletedAt)))
       .limit(1);
     if (!user || !(await argon2.verify(user.passwordHash, input.oldPassword)))
-      throw new UnauthorizedException('Old password is incorrect');
+      throw new UnauthorizedException('原密码不正确');
     const passwordHash = await argon2.hash(input.newPassword, {
       type: argon2.argon2id,
     });
@@ -181,9 +181,9 @@ export class AuthService {
         ip: meta.ip,
         userAgent: meta.userAgent,
         status: 'failure',
-        message: 'Invalid username or password',
+        message: '用户名或密码错误',
       });
-      throw new UnauthorizedException('Invalid username or password');
+      throw new UnauthorizedException('用户名或密码错误');
     }
     await this.recordLogin({
       userId: user.id,
