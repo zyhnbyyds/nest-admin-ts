@@ -1,60 +1,155 @@
 <script setup lang="ts">
-import { LewDrawer } from "lew-ui";
-import { THEME_COLORS, useSettingsStore } from "~/store/settings";
-import type { ColorMode } from "~/types/app";
+import { computed } from "vue";
+import { LewColorPicker, LewDrawer, LewMessage, LewTabs } from "lew-ui";
+import type { LewTabsOption } from "lew-ui";
+import { RotateCcw } from "lucide-vue-next";
+import { RADIUS_LEVELS, THEME_COLORS, useSettingsStore } from "~/store/settings";
+import type { ColorMode, RadiusLevel } from "~/types/app";
 
 const visible = defineModel<boolean>("visible", { default: false });
 const settings = useSettingsStore();
 
-const modes: { label: string; value: ColorMode }[] = [
+const modeOptions: LewTabsOption[] = [
   { label: "浅色", value: "light" },
   { label: "深色", value: "dark" },
   { label: "跟随系统", value: "auto" },
 ];
+
+const radiusOptions: LewTabsOption[] = RADIUS_LEVELS.map((r) => ({
+  label: r.label,
+  value: r.value,
+}));
+
+/** 当前主色是否来自预设色板（用于高亮） */
+const isPreset = computed(() =>
+  THEME_COLORS.some((c) => c.value.toLowerCase() === settings.primaryColor.toLowerCase()),
+);
+
+/** 外观模式双向绑定（v-model 驱动 setMode 持久化） */
+const modeModel = computed({
+  get: () => settings.mode,
+  set: (value: string) => settings.setMode(value as ColorMode),
+});
+
+/** 圆角双向绑定 */
+const radiusModel = computed({
+  get: () => settings.radius,
+  set: (value: string) => settings.setRadius(value as RadiusLevel),
+});
+
+function handleReset() {
+  settings.resetTheme();
+  LewMessage.success("已恢复默认主题");
+}
 </script>
 
 <template>
   <LewDrawer v-model:visible="visible" title="主题设置" width="360px">
-    <div class="py-1">
-      <!-- 模式 -->
+    <div class="p-5">
+      <!-- 外观模式 -->
       <section class="mb-6">
         <h4 class="m-0 mb-3 text-13px font-600 text-[var(--app-text-secondary)]">外观模式</h4>
-        <div class="flex gap-2">
-          <button
-            v-for="mode in modes"
-            :key="mode.value"
-            class="flex-1 py-2 border rounded-8px bg-[var(--app-bg-card)] text-[var(--app-text-secondary)] text-13px cursor-pointer transition-all duration-200 hover:border-[var(--lew-color-primary)]"
-            :class="
-              settings.mode === mode.value
-                ? 'border-[var(--lew-color-primary)] bg-[var(--lew-color-primary-light)] text-[var(--lew-color-primary)] font-600'
-                : 'border-[var(--app-border)]'
-            "
-            @click="settings.setMode(mode.value)"
-          >
-            {{ mode.label }}
-          </button>
-        </div>
+        <LewTabs
+          class="inline-block"
+          v-model="modeModel"
+          :options="modeOptions"
+          type="block"
+          round
+        />
       </section>
 
       <!-- 主题色 -->
       <section class="mb-6">
         <h4 class="m-0 mb-3 text-13px font-600 text-[var(--app-text-secondary)]">主题色</h4>
-        <div class="flex gap-2.5">
+        <!-- 圆形 tabs 色板 -->
+        <div class="flex items-center gap-2.5">
           <button
             v-for="color in THEME_COLORS"
             :key="color.value"
-            class="w-28px h-28px border-2 rounded-full cursor-pointer transition-all duration-200 hover:scale-1.12"
+            class="relative w-30px h-30px rounded-full cursor-pointer transition-all duration-200 hover:scale-1.12"
             :style="{ background: color.value }"
             :class="
-              settings.primaryColor === color.value
-                ? 'border-[var(--app-text-primary)] scale-1.12'
-                : 'border-transparent'
+              settings.primaryColor.toLowerCase() === color.value.toLowerCase()
+                ? 'ring-2 ring-[var(--lew-color-primary)] ring-offset-2 ring-offset-[var(--app-bg-card)] scale-1.12'
+                : 'ring-1 ring-[var(--app-border)]'
             "
             :title="color.label"
             @click="settings.setPrimaryColor(color.value)"
+          ></button>
+          <!-- 自定义取色器 -->
+          <LewColorPicker
+            :model-value="settings.primaryColor"
+            width="30px"
+            size="small"
+            class="!w-30px !h-30px"
+            @change="(v?: string) => v && settings.setPrimaryColor(v)"
           />
         </div>
+        <p class="m-0 mt-2.5 text-12px text-[var(--app-text-muted)]">
+          当前色值：<span class="font-mono">{{ settings.primaryColor }}</span>
+          <template v-if="!isPreset">（自定义）</template>
+        </p>
       </section>
+
+      <!-- 圆角 -->
+      <section class="mb-6">
+        <h4 class="m-0 mb-3 text-13px font-600 text-[var(--app-text-secondary)]">圆角风格</h4>
+        <LewTabs v-model="radiusModel" :options="radiusOptions" type="block" round width="100%" />
+      </section>
+
+      <!-- 实时预览 -->
+      <section class="mb-6">
+        <h4 class="m-0 mb-3 text-13px font-600 text-[var(--app-text-secondary)]">预览</h4>
+        <div
+          class="p-4 rounded-[var(--app-radius)] border border-[var(--app-border)] bg-[var(--app-bg-card)]"
+        >
+          <div class="flex items-center gap-2 mb-3">
+            <span
+              class="inline-flex items-center justify-center w-26px h-26px rounded-full text-white text-12px font-700"
+              style="background: var(--lew-color-primary)"
+            >
+              A
+            </span>
+            <span class="text-13px font-600 text-[var(--app-text-primary)]">主题预览</span>
+            <span class="ml-auto text-11px text-[var(--app-text-muted)]">实时生效</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <button
+              class="px-3 py-1.5 rounded-[var(--lew-border-radius-small)] text-white text-12px border-none cursor-pointer"
+              style="background: var(--lew-color-primary)"
+            >
+              主按钮
+            </button>
+            <button
+              class="px-3 py-1.5 rounded-[var(--lew-border-radius-small)] text-12px border-none cursor-pointer"
+              style="
+                background: var(--lew-color-primary-light);
+                color: var(--lew-color-primary-light-text);
+              "
+            >
+              浅色按钮
+            </button>
+            <span
+              class="px-2 py-1 rounded-[var(--lew-border-radius-mini)] text-11px"
+              style="
+                background: var(--lew-color-primary-light);
+                color: var(--lew-color-primary-light-text);
+              "
+            >
+              标签
+            </span>
+          </div>
+        </div>
+      </section>
+
+      <!-- 重置 -->
+      <button
+        class="w-full flex items-center justify-center gap-1.5 py-2 border rounded-8px text-13px cursor-pointer transition-colors duration-200 border-[var(--app-border)] text-[var(--app-text-secondary)] hover:border-[var(--lew-color-primary)] hover:text-[var(--lew-color-primary)]"
+        @click="handleReset"
+      >
+        <RotateCcw :size="14" />
+        恢复默认主题
+      </button>
     </div>
   </LewDrawer>
 </template>
