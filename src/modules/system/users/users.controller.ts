@@ -89,15 +89,10 @@ const updateSchema = createSchema
       .enum(['active', 'disabled'])
       .optional()
       .openapi({ example: 'active', description: '状态' }),
-    password: z
-      .string()
-      .min(12)
-      .max(128)
-      .optional()
-      .openapi({
-        example: 'newpassword123',
-        description: '新密码（选填，不填则不修改）',
-      }),
+    password: z.string().min(12).max(128).optional().openapi({
+      example: 'newpassword123',
+      description: '新密码（选填，不填则不修改）',
+    }),
     roleIds: z
       .array(z.number().int().positive())
       .max(100)
