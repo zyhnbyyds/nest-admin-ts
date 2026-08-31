@@ -44,7 +44,14 @@ function handleReset() {
 </script>
 
 <template>
-  <LewDrawer v-model:visible="visible" title="主题设置" width="360px">
+  <LewDrawer
+    closeOnClickOverlay
+    closeByEsc
+    hideFooter
+    v-model:visible="visible"
+    title="主题设置"
+    width="360px"
+  >
     <div class="p-5">
       <!-- 外观模式 -->
       <section class="mb-6">
@@ -66,11 +73,11 @@ function handleReset() {
           <button
             v-for="color in THEME_COLORS"
             :key="color.value"
-            class="relative w-30px h-30px rounded-full cursor-pointer transition-all duration-200 hover:scale-1.12"
+            class="relative w-30px h-30px rounded-full cursor-pointer transition-all duration-200 hover:scale-112"
             :style="{ background: color.value }"
             :class="
               settings.primaryColor.toLowerCase() === color.value.toLowerCase()
-                ? 'ring-2 ring-[var(--lew-color-primary)] ring-offset-2 ring-offset-[var(--app-bg-card)] scale-1.12'
+                ? 'ring-2 ring-[var(--lew-color-primary)] ring-offset-2 ring-offset-[var(--app-bg-card)] scale-112'
                 : 'ring-1 ring-[var(--app-border)]'
             "
             :title="color.label"
@@ -94,52 +101,7 @@ function handleReset() {
       <!-- 圆角 -->
       <section class="mb-6">
         <h4 class="m-0 mb-3 text-13px font-600 text-[var(--app-text-secondary)]">圆角风格</h4>
-        <LewTabs v-model="radiusModel" :options="radiusOptions" type="block" round width="100%" />
-      </section>
-
-      <!-- 实时预览 -->
-      <section class="mb-6">
-        <h4 class="m-0 mb-3 text-13px font-600 text-[var(--app-text-secondary)]">预览</h4>
-        <div
-          class="p-4 rounded-[var(--app-radius)] border border-[var(--app-border)] bg-[var(--app-bg-card)]"
-        >
-          <div class="flex items-center gap-2 mb-3">
-            <span
-              class="inline-flex items-center justify-center w-26px h-26px rounded-full text-white text-12px font-700"
-              style="background: var(--lew-color-primary)"
-            >
-              A
-            </span>
-            <span class="text-13px font-600 text-[var(--app-text-primary)]">主题预览</span>
-            <span class="ml-auto text-11px text-[var(--app-text-muted)]">实时生效</span>
-          </div>
-          <div class="flex items-center gap-2">
-            <button
-              class="px-3 py-1.5 rounded-[var(--lew-border-radius-small)] text-white text-12px border-none cursor-pointer"
-              style="background: var(--lew-color-primary)"
-            >
-              主按钮
-            </button>
-            <button
-              class="px-3 py-1.5 rounded-[var(--lew-border-radius-small)] text-12px border-none cursor-pointer"
-              style="
-                background: var(--lew-color-primary-light);
-                color: var(--lew-color-primary-light-text);
-              "
-            >
-              浅色按钮
-            </button>
-            <span
-              class="px-2 py-1 rounded-[var(--lew-border-radius-mini)] text-11px"
-              style="
-                background: var(--lew-color-primary-light);
-                color: var(--lew-color-primary-light-text);
-              "
-            >
-              标签
-            </span>
-          </div>
-        </div>
+        <LewTabs v-model="radiusModel" :options="radiusOptions" type="block" round />
       </section>
 
       <!-- 重置 -->

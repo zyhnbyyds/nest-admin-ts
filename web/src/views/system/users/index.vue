@@ -184,7 +184,13 @@ function handleDelete(row: User) {
 
     <!-- 表格 -->
     <div class="app-card overflow-hidden">
-      <LewTable :columns="columns" :data-source="items" :loading="loading" size="small">
+      <LewTable
+        :columns="columns"
+        :focusable="false"
+        :data-source="items"
+        :loading="loading"
+        size="small"
+      >
         <template #operation="{ row }">
           <div class="flex items-center gap-1">
             <LewButton

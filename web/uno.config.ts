@@ -8,7 +8,8 @@ export default defineConfig({
   ],
   shortcuts: {
     // 卡片：细边框 + 极浅阴影
-    "app-card": "rounded-10px bg-[var(--app-bg-card)] border border-[var(--app-border)]",
+    "app-card":
+      "rounded-10px bg-[var(--app-bg-card)] border border-[var(--app-border)] shadow-[var(--app-shadow)] transition-shadow duration-200",
     // 页面容器
     "page-container":
       "p-5 flex flex-col gap-4 rounded-10px bg-[var(--app-bg-card)] border border-[var(--app-border)] shadow-[var(--app-shadow)]",
