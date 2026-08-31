@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { h, ref } from "vue";
-import { ChevronDown, ChevronUp, Pencil, Plus, Trash2 } from "lucide-vue-next";
+import { computed, h, ref } from "vue";
+import { ChevronDown, ChevronUp, CornerDownRight, Pencil, Plus, Trash2 } from "lucide-vue-next";
 import { LewButton, LewDialog, LewForm, LewMessage, LewModal, LewTable } from "lew-ui";
 import type { LewTableColumn } from "lew-ui";
 import { createMenu, deleteMenu, listMenus, updateMenu } from "~/api/system/menus";
@@ -11,18 +11,79 @@ import { renderStatus } from "~/utils/render";
 const menus = ref<Menu[]>([]);
 const loading = ref(false);
 
+/** 扁平化树为带层级深度的列表（供 LewTable 渲染，LewTable 不支持树形数据） */
+type FlatMenu = { menu: Menu; depth: number };
+
+const flatMenus = computed<FlatMenu[]>(() => {
+  const result: FlatMenu[] = [];
+  const walk = (list: Menu[], depth: number) => {
+    for (const menu of list) {
+      result.push({ menu, depth });
+      if (menu.children?.length) walk(menu.children, depth + 1);
+    }
+  };
+  walk(menus.value, 0);
+  return result;
+});
+
 const columns: LewTableColumn[] = [
-  { title: "名称", field: "title", width: 200 },
-  { title: "类型", field: "type", width: 90 },
-  { title: "路由路径", field: "path", width: 180 },
-  { title: "组件", field: "component", width: 200 },
-  { title: "权限标识", field: "permission", width: 200 },
+  {
+    title: "名称",
+    field: "title",
+    width: 240,
+    customRender: ({ row }) => {
+      const { menu, depth } = row as unknown as FlatMenu;
+      return h("span", { class: "inline-flex items-center gap-1" }, [
+        depth > 0
+          ? h(CornerDownRight, {
+              size: 13,
+              style: `margin-left: ${(depth - 1) * 20}px; color: var(--app-text-muted)`,
+            })
+          : null,
+        h(
+          "span",
+          {
+            class: depth > 0 ? "text-12.5px" : "text-13px font-600",
+          },
+          menu.title,
+        ),
+      ]);
+    },
+  },
+  {
+    title: "类型",
+    field: "type",
+    width: 90,
+    customRender: ({ row }) => {
+      const { menu } = row as unknown as FlatMenu;
+      const map: Record<MenuType, string> = { M: "目录", C: "菜单", F: "按钮" };
+      return h("span", {}, map[menu.type]);
+    },
+  },
+  {
+    title: "路由路径",
+    field: "path",
+    width: 180,
+    customRender: ({ row }) => h("span", {}, (row as unknown as FlatMenu).menu.path ?? "-"),
+  },
+  {
+    title: "组件",
+    field: "component",
+    width: 200,
+    customRender: ({ row }) => h("span", {}, (row as unknown as FlatMenu).menu.component ?? "-"),
+  },
+  {
+    title: "权限标识",
+    field: "permission",
+    width: 200,
+    customRender: ({ row }) => h("span", {}, (row as unknown as FlatMenu).menu.permission ?? "-"),
+  },
   {
     title: "排序",
     field: "sort",
     width: 120,
     customRender: ({ row }) => {
-      const menu = row as unknown as Menu;
+      const { menu } = row as unknown as FlatMenu;
       return h("div", { class: "flex items-center gap-1" }, [
         h(
           "button",
@@ -56,7 +117,7 @@ const columns: LewTableColumn[] = [
     title: "状态",
     field: "status",
     width: 90,
-    customRender: ({ row }) => renderStatus((row as { status: string }).status),
+    customRender: ({ row }) => renderStatus((row as unknown as FlatMenu).menu.status),
   },
   { title: "操作", field: "operation", width: 120, fixed: "right" },
 ];
@@ -247,7 +308,13 @@ function handleDelete(row: Menu) {
 
     <!-- 树形表格 -->
     <div class="app-card overflow-hidden">
-      <LewTable :columns="columns" :data-source="menus" :loading="loading" size="small">
+      <LewTable
+        :columns="columns"
+        :data-source="flatMenus"
+        :loading="loading"
+        size="small"
+        row-key="menu.id"
+      >
         <template #operation="{ row }">
           <div class="flex items-center gap-1">
             <LewButton
@@ -255,7 +322,7 @@ function handleDelete(row: Menu) {
               type="text"
               size="small"
               title="添加子菜单"
-              @click="openCreate((row as unknown as Menu).id)"
+              @click="openCreate((row as unknown as FlatMenu).menu.id)"
             >
               <Plus :size="14" />
             </LewButton>
@@ -263,7 +330,7 @@ function handleDelete(row: Menu) {
               v-permission="'system:menu:update'"
               type="text"
               size="small"
-              @click="openEdit(row as unknown as Menu)"
+              @click="openEdit((row as unknown as FlatMenu).menu)"
             >
               <Pencil :size="14" />
             </LewButton>
@@ -272,7 +339,7 @@ function handleDelete(row: Menu) {
               type="text"
               size="small"
               color="error"
-              @click="handleDelete(row as unknown as Menu)"
+              @click="handleDelete((row as unknown as FlatMenu).menu)"
             >
               <Trash2 :size="14" />
             </LewButton>
