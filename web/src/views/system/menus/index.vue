@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import { computed, h, nextTick, reactive, ref } from "vue";
 import { ChevronDown, ChevronUp, CornerDownRight, Pencil, Plus, Trash2 } from "lucide-vue-next";
-import { LewButton, LewDialog, LewForm, LewMessage, LewModal, LewTable } from "lew-ui";
+import { LewButton, LewForm, LewMessage, LewModal, LewTable } from "lew-ui";
 import type { LewTableColumn } from "lew-ui";
 import { createMenu, deleteMenu, listMenus, updateMenu } from "~/api/system/menus";
 import type { Menu, MenuType } from "~/types/api";
 import { renderStatus } from "~/utils/render";
+import { confirmDanger } from "~/utils/confirm";
 
 // ---------- 菜单树 ----------
 const menus = ref<Menu[]>([]);
@@ -300,10 +301,10 @@ async function handleSubmit() {
 
 // ---------- 删除 ----------
 function handleDelete(row: Menu) {
-  LewDialog.warning({
+  confirmDanger({
     title: "删除确认",
     content: `确定删除菜单「${row.title}」吗？`,
-    onOk: async () => {
+    onConfirm: async () => {
       await deleteMenu(row.id);
       LewMessage.success("删除成功");
       void fetchList();

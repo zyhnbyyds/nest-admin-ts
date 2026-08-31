@@ -3,7 +3,6 @@ import { nextTick, ref } from "vue";
 import { Pencil, Plus, Trash2 } from "lucide-vue-next";
 import {
   LewButton,
-  LewDialog,
   LewForm,
   LewMessage,
   LewModal,
@@ -15,6 +14,7 @@ import { createConfig, deleteConfig, updateConfig } from "~/api/system/configs";
 import { useTable } from "~/composables/useTable";
 import { formatDateTime } from "~/composables/useFormat";
 import type { Config } from "~/types/api";
+import { confirmDanger } from "~/utils/confirm";
 
 // ---------- 列表 ----------
 const { items, loading, currentPage, pageSize, total, search, refresh, handleChange } =
@@ -99,10 +99,10 @@ async function handleSubmit() {
 
 // ---------- 删除 ----------
 function handleDelete(row: Config) {
-  LewDialog.warning({
+  confirmDanger({
     title: "删除确认",
     content: `确定删除参数「${row.name}」吗？`,
-    onOk: async () => {
+    onConfirm: async () => {
       await deleteConfig(row.id);
       LewMessage.success("删除成功");
       void refresh();

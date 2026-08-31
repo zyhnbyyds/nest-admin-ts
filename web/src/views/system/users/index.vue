@@ -3,7 +3,6 @@ import { h, nextTick, reactive, ref } from "vue";
 import { Pencil, Plus, Trash2 } from "lucide-vue-next";
 import {
   LewButton,
-  LewDialog,
   LewForm,
   LewInput,
   LewMessage,
@@ -19,6 +18,7 @@ import { useTable } from "~/composables/useTable";
 import { formatDateTime } from "~/composables/useFormat";
 import type { User } from "~/types/api";
 import { renderStatus } from "~/utils/render";
+import { confirmDanger } from "~/utils/confirm";
 
 // ---------- 列表 ----------
 const query = ref<{ status?: string }>({});
@@ -201,10 +201,10 @@ async function handleSubmit() {
 
 // ---------- 删除 ----------
 function handleDelete(row: User) {
-  LewDialog.warning({
+  confirmDanger({
     title: "删除确认",
     content: `确定删除用户「${row.displayName}」吗？此操作不可恢复。`,
-    onOk: async () => {
+    onConfirm: async () => {
       await deleteUser(row.id);
       LewMessage.success("删除成功");
       void refresh();

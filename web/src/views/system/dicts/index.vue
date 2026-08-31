@@ -1,15 +1,7 @@
 <script setup lang="ts">
 import { nextTick, ref } from "vue";
 import { Pencil, Plus, Trash2 } from "lucide-vue-next";
-import {
-  LewButton,
-  LewDialog,
-  LewForm,
-  LewMessage,
-  LewModal,
-  LewPagination,
-  LewTable,
-} from "lew-ui";
+import { LewButton, LewForm, LewMessage, LewModal, LewPagination, LewTable, LewTag } from "lew-ui";
 import type { LewTableColumn } from "lew-ui";
 import {
   createDictData,
@@ -23,6 +15,7 @@ import { clearDictCache } from "~/composables/useDict";
 import { useTable } from "~/composables/useTable";
 import type { DictData, DictType } from "~/types/api";
 import { renderStatus } from "~/utils/render";
+import { confirmDanger } from "~/utils/confirm";
 
 // ---------- 左侧：字典类型 ----------
 const typeTable = useTable<DictType>({ url: "/system/dict-types", defaultPageSize: 20 });
@@ -43,6 +36,7 @@ const typeColumns: LewTableColumn[] = [
 const selectedType = ref<DictType | null>(null);
 
 function selectType(row: DictType) {
+  console.log(1);
   selectedType.value = row;
   void dataSearch();
 }
@@ -133,10 +127,10 @@ async function handleTypeSubmit() {
 }
 
 function handleTypeDelete(row: DictType) {
-  LewDialog.warning({
+  confirmDanger({
     title: "删除确认",
     content: `确定删除字典类型「${row.name}」吗？其下所有字典数据将无法使用。`,
-    onOk: async () => {
+    onConfirm: async () => {
       await deleteDictType(row.id);
       LewMessage.success("删除成功");
       clearDictCache();
@@ -228,10 +222,10 @@ async function handleDataSubmit() {
 }
 
 function handleDataDelete(row: DictData) {
-  LewDialog.warning({
+  confirmDanger({
     title: "删除确认",
     content: `确定删除字典数据「${row.label}」吗？`,
-    onOk: async () => {
+    onConfirm: async () => {
       await deleteDictData(row.id);
       LewMessage.success("删除成功");
       clearDictCache(row.type);
@@ -267,9 +261,9 @@ function handleDataDelete(row: DictData) {
           :columns="typeColumns"
           :data-source="typeTable.items.value"
           :loading="typeTable.loading.value"
-          :focusable="false"
           size="small"
-          @row-click="selectType"
+          checkable
+          @selectChange="selectType"
         >
           <template #operation="{ row }">
             <div class="flex items-center gap-1">

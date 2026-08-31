@@ -3,7 +3,6 @@ import { ref } from "vue";
 import { Trash2 } from "lucide-vue-next";
 import {
   LewButton,
-  LewDialog,
   LewInput,
   LewMessage,
   LewPagination,
@@ -14,6 +13,7 @@ import type { LewTableColumn } from "lew-ui";
 import { clearLoginLogs, deleteLoginLog } from "~/api/monitor";
 import { useTable } from "~/composables/useTable";
 import { formatDateTime } from "~/composables/useFormat";
+import { confirmDanger } from "~/utils/confirm";
 import { renderTag } from "~/utils/render";
 import type { LoginLog } from "~/types/api";
 
@@ -58,10 +58,10 @@ const statusOptions = [
 
 // ---------- 删除/清空 ----------
 function handleDelete(row: LoginLog) {
-  LewDialog.warning({
+  confirmDanger({
     title: "删除确认",
     content: `确定删除该条登录日志吗？`,
-    onOk: async () => {
+    onConfirm: async () => {
       await deleteLoginLog(row.id);
       LewMessage.success("删除成功");
       void refresh();
@@ -70,10 +70,11 @@ function handleDelete(row: LoginLog) {
 }
 
 function handleClear() {
-  LewDialog.warning({
+  confirmDanger({
     title: "清空确认",
     content: "确定清空所有登录日志吗？此操作不可恢复。",
-    onOk: async () => {
+    confirmText: "清空",
+    onConfirm: async () => {
       await clearLoginLogs();
       LewMessage.success("已清空");
       void refresh();

@@ -3,7 +3,6 @@ import { nextTick, ref } from "vue";
 import { FileClock, Pencil, Play, Plus, Trash2 } from "lucide-vue-next";
 import {
   LewButton,
-  LewDialog,
   LewForm,
   LewMessage,
   LewModal,
@@ -16,6 +15,7 @@ import { useTable } from "~/composables/useTable";
 
 import type { Job, JobLog } from "~/types/api";
 import { renderStatus } from "~/utils/render";
+import { confirmDanger } from "~/utils/confirm";
 
 // ---------- 任务列表 ----------
 const { items, loading, currentPage, pageSize, total, search, refresh, handleChange } =
@@ -121,10 +121,13 @@ async function handleSubmit() {
 
 // ---------- 手动执行 ----------
 function handleRun(row: Job) {
-  LewDialog.normal({
+  confirmDanger({
+    type: "normal",
     title: "手动执行",
     content: `确定立即执行任务「${row.name}」吗？`,
-    onOk: async () => {
+    confirmText: "执行",
+    confirmColor: "primary",
+    onConfirm: async () => {
       await runJob(row.id);
       LewMessage.success("已触发执行");
     },
@@ -133,10 +136,10 @@ function handleRun(row: Job) {
 
 // ---------- 删除 ----------
 function handleDelete(row: Job) {
-  LewDialog.warning({
+  confirmDanger({
     title: "删除确认",
     content: `确定删除任务「${row.name}」吗？`,
-    onOk: async () => {
+    onConfirm: async () => {
       await deleteJob(row.id);
       LewMessage.success("删除成功");
       void refresh();
@@ -163,10 +166,11 @@ async function openLogs(row: Job) {
 }
 
 async function handleClearLogs() {
-  LewDialog.warning({
+  confirmDanger({
     title: "清空确认",
     content: "确定清空所有任务执行日志吗？",
-    onOk: async () => {
+    confirmText: "清空",
+    onConfirm: async () => {
       await clearJobLogs();
       LewMessage.success("已清空");
       if (logsJob.value) await openLogs(logsJob.value);

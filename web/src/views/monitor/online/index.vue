@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import { onMounted, ref } from "vue";
 import { LogOut } from "lucide-vue-next";
-import { LewButton, LewDialog, LewMessage, LewTable } from "lew-ui";
+import { LewButton, LewMessage, LewTable } from "lew-ui";
 import type { LewTableColumn } from "lew-ui";
 import { forceLogout, listOnlineUsers } from "~/api/monitor";
 import { formatDateTime } from "~/composables/useFormat";
 import type { OnlineSession } from "~/types/api";
+import { confirmDanger } from "~/utils/confirm";
 
 const sessions = ref<OnlineSession[]>([]);
 const loading = ref(false);
@@ -36,10 +37,11 @@ async function fetchList() {
 void onMounted(fetchList);
 
 function handleForceLogout(row: OnlineSession) {
-  LewDialog.warning({
+  confirmDanger({
     title: "强制下线",
     content: `确定将用户「${row.username}」强制下线吗？`,
-    onOk: async () => {
+    confirmText: "下线",
+    onConfirm: async () => {
       await forceLogout(row.userId);
       LewMessage.success("已强制下线");
       void fetchList();

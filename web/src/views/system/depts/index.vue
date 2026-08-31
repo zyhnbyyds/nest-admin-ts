@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import { nextTick, reactive, ref } from "vue";
 import { Pencil, Plus, Trash2 } from "lucide-vue-next";
-import { LewButton, LewDialog, LewForm, LewMessage, LewModal, LewTable } from "lew-ui";
+import { LewButton, LewForm, LewMessage, LewModal, LewTable } from "lew-ui";
 import type { LewTableColumn } from "lew-ui";
 import { createDept, deleteDept, listDepts, updateDept } from "~/api/system/depts";
 import type { Dept } from "~/types/api";
 import { renderStatus } from "~/utils/render";
+import { confirmDanger } from "~/utils/confirm";
 
 // ---------- 部门树 ----------
 const depts = ref<Dept[]>([]);
@@ -141,10 +142,10 @@ async function handleSubmit() {
 
 // ---------- 删除 ----------
 function handleDelete(row: Dept) {
-  LewDialog.warning({
+  confirmDanger({
     title: "删除确认",
     content: `确定删除部门「${row.name}」吗？`,
-    onOk: async () => {
+    onConfirm: async () => {
       await deleteDept(row.id);
       LewMessage.success("删除成功");
       void fetchList();

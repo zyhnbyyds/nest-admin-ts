@@ -1,12 +1,13 @@
 <script setup lang="ts">
 import { ref } from "vue";
 import { Download, Trash2, Upload } from "lucide-vue-next";
-import { LewButton, LewDialog, LewMessage, LewPagination, LewTable } from "lew-ui";
+import { LewButton, LewMessage, LewPagination, LewTable } from "lew-ui";
 import type { LewTableColumn } from "lew-ui";
 import { deleteFile, fileDownloadUrl, uploadFile } from "~/api/files";
 import { useTable } from "~/composables/useTable";
 import { formatDateTime, formatSize } from "~/composables/useFormat";
 import type { FileItem } from "~/types/api";
+import { confirmDanger } from "~/utils/confirm";
 
 // ---------- 列表 ----------
 const { items, loading, currentPage, pageSize, total, refresh, handleChange } = useTable<FileItem>({
@@ -64,10 +65,10 @@ function handleDownload(row: FileItem) {
 
 // ---------- 删除 ----------
 function handleDelete(row: FileItem) {
-  LewDialog.warning({
+  confirmDanger({
     title: "删除确认",
     content: `确定删除文件「${row.originalName}」吗？`,
-    onOk: async () => {
+    onConfirm: async () => {
       await deleteFile(row.id);
       LewMessage.success("删除成功");
       void refresh();

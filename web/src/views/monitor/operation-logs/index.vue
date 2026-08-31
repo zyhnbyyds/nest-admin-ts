@@ -3,7 +3,6 @@ import { ref } from "vue";
 import { Trash2 } from "lucide-vue-next";
 import {
   LewButton,
-  LewDialog,
   LewInput,
   LewMessage,
   LewPagination,
@@ -15,6 +14,7 @@ import { clearOperationLogs, deleteOperationLog } from "~/api/monitor";
 import { useTable } from "~/composables/useTable";
 import { formatDateTime } from "~/composables/useFormat";
 import type { OperationLog } from "~/types/api";
+import { confirmDanger } from "~/utils/confirm";
 
 // ---------- 列表 ----------
 const query = ref<{ status?: string; userId?: string }>({});
@@ -55,10 +55,10 @@ const statusOptions = [
 
 // ---------- 删除/清空 ----------
 function handleDelete(row: OperationLog) {
-  LewDialog.warning({
+  confirmDanger({
     title: "删除确认",
     content: "确定删除该条操作日志吗？",
-    onOk: async () => {
+    onConfirm: async () => {
       await deleteOperationLog(row.id);
       LewMessage.success("删除成功");
       void refresh();
@@ -67,10 +67,11 @@ function handleDelete(row: OperationLog) {
 }
 
 function handleClear() {
-  LewDialog.warning({
+  confirmDanger({
     title: "清空确认",
     content: "确定清空所有操作日志吗？此操作不可恢复。",
-    onOk: async () => {
+    confirmText: "清空",
+    onConfirm: async () => {
       await clearOperationLogs();
       LewMessage.success("已清空");
       void refresh();

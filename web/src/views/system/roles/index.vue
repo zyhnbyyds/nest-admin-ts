@@ -167,11 +167,32 @@ function handleDelete(row: Role) {
   LewDialog.warning({
     title: "删除确认",
     content: `确定删除角色「${row.name}」吗？此操作不可恢复。`,
-    onOk: async () => {
-      await deleteRole(row.id);
-      LewMessage.success("删除成功");
-      void fetchList();
-    },
+    footerButtons: [
+      {
+        props: {
+          type: "text",
+          color: "gray",
+          size: "small",
+          text: "取消",
+          request: () => {
+            authVisible.value = false;
+          },
+        },
+      },
+      {
+        props: {
+          type: "fill",
+          color: "error",
+          size: "small",
+          text: "删除",
+          request: async () => {
+            await deleteRole(row.id);
+            LewMessage.success("删除成功");
+            void fetchList();
+          },
+        },
+      },
+    ],
   });
 }
 </script>
@@ -304,7 +325,7 @@ function handleDelete(row: Role) {
           <p class="text-13px text-[var(--app-text-muted)] m-0 mb-2">
             勾选菜单后保存（按钮权限随其父菜单自动关联）
           </p>
-          <LewTree v-model="checkedKeys" checkable expand-all :data-source="menuTree" />
+          <LewTree multiple v-model="checkedKeys" checkable :data-source="menuTree" />
         </div>
       </div>
     </LewModal>
