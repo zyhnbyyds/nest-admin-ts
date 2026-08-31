@@ -13,6 +13,7 @@ type LogRequest = {
   url?: string;
   ip?: string;
   body?: unknown;
+  headers?: Record<string, string | string[] | undefined>;
   user?: { id?: number };
 };
 type LogEntry = {
@@ -48,7 +49,7 @@ export class OperationLogInterceptor implements NestInterceptor {
       handler: context.getHandler().name,
       method,
       url,
-      ip: request.ip,
+      ip: resolveIp(request),
       requestBody: sanitize(request.body),
       responseBody: undefined,
       status: 'success',
@@ -103,6 +104,16 @@ function businessType(method: string): string {
   if (method === 'PATCH' || method === 'PUT') return 'update';
   if (method === 'DELETE') return 'delete';
   return 'other';
+}
+
+/** 解析真实客户端 IP：优先取 x-forwarded-for 最左侧地址（代理后 request.ip 是代理 IP） */
+function resolveIp(request: LogRequest): string | undefined {
+  const forwarded = request.headers?.['x-forwarded-for'];
+  if (typeof forwarded === 'string' && forwarded.trim()) {
+    const first = forwarded.split(',')[0]?.trim();
+    if (first) return first.slice(0, 45);
+  }
+  return request.ip;
 }
 
 function messageOf(error: unknown): string {

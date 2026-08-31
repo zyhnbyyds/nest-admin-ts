@@ -351,14 +351,21 @@ export interface LoginLog {
 export interface OperationLog {
   id: number;
   userId: number | null;
+  /** 操作人用户名（列表联查 users 返回） */
   username: string | null;
-  module: string;
-  action: string;
+  /** 模块.操作（如 UsersController.create） */
+  title: string;
+  businessType: "insert" | "update" | "delete" | "other";
   method: string;
-  path: string;
-  statusCode: number;
-  durationMs: number;
+  /** HTTP 方法 */
+  requestMethod: string;
+  url: string;
   ip: string | null;
+  requestBody: unknown | null;
+  responseBody: unknown | null;
+  status: "success" | "failure";
+  errorMessage: string | null;
+  durationMs: number;
   createdAt: string;
 }
 

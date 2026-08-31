@@ -7,18 +7,20 @@ function mockDb() {
 }
 
 function selectChain(result: unknown) {
-  return vi.fn().mockReturnValue({
-    from: vi.fn().mockReturnValue({
-      where: vi.fn().mockReturnValue({
-        orderBy: vi.fn().mockReturnValue({
-          limit: vi.fn().mockReturnValue({
-            offset: vi.fn().mockResolvedValue(result),
-          }),
-        }),
-        limit: vi.fn().mockResolvedValue(result),
+  const chain = {
+    from: vi.fn().mockReturnThis(),
+    leftJoin: vi.fn().mockReturnThis(),
+    where: vi.fn().mockReturnThis(),
+    orderBy: vi.fn().mockReturnThis(),
+    // findOne 直接 await limit(...)；list 走 limit(...).offset(...)
+    limit: vi.fn().mockImplementation(() =>
+      Object.assign(Promise.resolve(result), {
+        offset: vi.fn().mockResolvedValue(result),
       }),
-    }),
-  });
+    ),
+    offset: vi.fn().mockResolvedValue(result),
+  };
+  return vi.fn().mockReturnValue(chain);
 }
 
 describe('OperationLogsService', () => {
@@ -33,11 +35,20 @@ describe('OperationLogsService', () => {
       expect(result.items).toHaveLength(1);
     });
 
-    it('filters by status and userId', async () => {
+    it('joins users to expose operator username', async () => {
+      const { db } = mockDb();
+      const select = selectChain([{ id: 1, username: 'admin' }]);
+      db.select = select;
+      const service = new OperationLogsService({ db } as any);
+      await service.list(1, 20);
+      expect(select.mock.results[0].value.leftJoin).toHaveBeenCalled();
+    });
+
+    it('filters by status, userId and username', async () => {
       const { db } = mockDb();
       db.select = selectChain([]);
       const service = new OperationLogsService({ db } as any);
-      await service.list(1, 20, 'success', 1);
+      await service.list(1, 20, 'success', 1, 'admin');
       expect(db.select).toHaveBeenCalled();
     });
   });

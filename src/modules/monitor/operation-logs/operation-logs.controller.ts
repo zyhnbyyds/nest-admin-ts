@@ -29,6 +29,7 @@ export class OperationLogsController {
   @ApiQuery({ name: 'pageSize', required: false, description: '每页数量' })
   @ApiQuery({ name: 'status', required: false, description: '操作状态' })
   @ApiQuery({ name: 'userId', required: false, description: '操作用户ID' })
+  @ApiQuery({ name: 'username', required: false, description: '操作人用户名（模糊）' })
   @ApiResponse({ status: 200, description: '成功' })
   @ApiBearerAuth('access-token')
   list(
@@ -36,6 +37,7 @@ export class OperationLogsController {
     @Query('pageSize') rawPageSize?: string,
     @Query('status') status?: string,
     @Query('userId') rawUserId?: string,
+    @Query('username') username?: string,
     @Req() request?: { user?: { id: number; roles: string[]; permissions: string[] } },
   ) {
     const page = Math.max(Number(rawPage) || 1, 1);
@@ -49,6 +51,7 @@ export class OperationLogsController {
       pageSize,
       status,
       Number.isNaN(userId) ? undefined : userId,
+      username || undefined,
       request?.user,
     );
   }

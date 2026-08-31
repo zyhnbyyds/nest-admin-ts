@@ -16,14 +16,21 @@ describe('OperationLogsController', () => {
     const s = mockService();
     const c = new OperationLogsController(s as OperationLogsService);
     await c.list('1', '20', 'success', '1');
-    expect(s.list).toHaveBeenCalledWith(1, 20, 'success', 1, undefined);
+    expect(s.list).toHaveBeenCalledWith(1, 20, 'success', 1, undefined, undefined);
   });
 
   it('list handles undefined userId', async () => {
     const s = mockService();
     const c = new OperationLogsController(s as OperationLogsService);
     await c.list('1', '20', undefined, '');
-    expect(s.list).toHaveBeenCalledWith(1, 20, undefined, undefined, undefined);
+    expect(s.list).toHaveBeenCalledWith(1, 20, undefined, undefined, undefined, undefined);
+  });
+
+  it('list forwards username filter', async () => {
+    const s = mockService();
+    const c = new OperationLogsController(s as OperationLogsService);
+    await c.list('1', '20', undefined, undefined, 'admin');
+    expect(s.list).toHaveBeenCalledWith(1, 20, undefined, undefined, 'admin', undefined);
   });
 
   it('findOne returns a log', async () => {
