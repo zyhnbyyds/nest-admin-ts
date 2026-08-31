@@ -58,7 +58,13 @@ function handleForceLogout(row: OnlineSession) {
 
     <!-- 表格 -->
     <div class="app-card overflow-hidden">
-      <LewTable :columns="columns" :data-source="sessions" :loading="loading" size="small">
+      <LewTable
+        :columns="columns"
+        :data-source="sessions"
+        :loading="loading"
+        :focusable="false"
+        size="small"
+      >
         <template #operation="{ row }">
           <LewButton
             v-permission="'monitor:online:delete'"

@@ -123,7 +123,13 @@ async function handleGenerate() {
 
     <!-- 表列表 -->
     <div class="app-card overflow-hidden">
-      <LewTable :columns="columns" :data-source="tables" :loading="loading" size="small">
+      <LewTable
+        :columns="columns"
+        :data-source="tables"
+        :loading="loading"
+        :focusable="false"
+        size="small"
+      >
         <template #operation="{ row }">
           <LewButton type="text" size="small" @click="openColumns(row as unknown as TableInfo)">
             查看字段
@@ -138,6 +144,7 @@ async function handleGenerate() {
         <LewTable
           :data-source="tableColumns"
           :loading="columnsLoading"
+          :focusable="false"
           size="small"
           :columns="[
             { title: '字段名', field: 'name', width: 160 },

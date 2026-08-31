@@ -62,7 +62,13 @@ void onMounted(fetchInfo);
 
     <!-- 详情表 -->
     <div class="app-card overflow-hidden">
-      <LewTable :columns="columns" :data-source="rows" :loading="loading" size="small" />
+      <LewTable
+        :columns="columns"
+        :data-source="rows"
+        :loading="loading"
+        :focusable="false"
+        size="small"
+      />
     </div>
   </div>
 </template>

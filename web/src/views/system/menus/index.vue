@@ -312,6 +312,7 @@ function handleDelete(row: Menu) {
         :columns="columns"
         :data-source="flatMenus"
         :loading="loading"
+        :focusable="false"
         size="small"
         row-key="menu.id"
       >

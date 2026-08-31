@@ -121,7 +121,13 @@ function handleClear() {
 
     <!-- 表格 -->
     <div class="app-card overflow-hidden">
-      <LewTable :columns="columns" :data-source="items" :loading="loading" size="small">
+      <LewTable
+        :columns="columns"
+        :data-source="items"
+        :loading="loading"
+        :focusable="false"
+        size="small"
+      >
         <template #operation="{ row }">
           <LewButton
             v-permission="'monitor:loginlog:delete'"

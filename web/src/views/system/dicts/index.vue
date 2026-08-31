@@ -237,6 +237,7 @@ function handleDataDelete(row: DictData) {
           :columns="typeColumns"
           :data-source="typeTable.items.value"
           :loading="typeTable.loading.value"
+          :focusable="false"
           size="small"
           @row-click="selectType"
         >
@@ -294,6 +295,7 @@ function handleDataDelete(row: DictData) {
           :columns="dataColumns"
           :data-source="dataItems"
           :loading="dataLoading"
+          :focusable="false"
           size="small"
         >
           <template #operation="{ row }">

@@ -184,7 +184,13 @@ async function handleClearLogs() {
 
     <!-- 表格 -->
     <div class="app-card overflow-hidden">
-      <LewTable :columns="columns" :data-source="items" :loading="loading" size="small">
+      <LewTable
+        :columns="columns"
+        :data-source="items"
+        :loading="loading"
+        :focusable="false"
+        size="small"
+      >
         <template #operation="{ row }">
           <div class="flex items-center gap-1">
             <LewButton
@@ -314,6 +320,7 @@ async function handleClearLogs() {
         <LewTable
           :data-source="logs"
           :loading="logsLoading"
+          :focusable="false"
           size="small"
           :columns="[
             { title: 'ID', field: 'id', width: 70 },

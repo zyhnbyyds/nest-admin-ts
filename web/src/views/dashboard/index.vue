@@ -180,6 +180,7 @@ onMounted(async () => {
       <LewTable
         :data-source="recentLogins"
         size="small"
+        :focusable="false"
         :columns="[
           { title: '用户名', field: 'username' },
           { title: 'IP', field: 'ip' },
