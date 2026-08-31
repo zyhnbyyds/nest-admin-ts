@@ -6,7 +6,7 @@ import {
 import * as argon2 from 'argon2';
 import { and, eq, isNull } from 'drizzle-orm';
 import { SignJWT, jwtVerify } from 'jose';
-import { createHash } from 'node:crypto';
+import { createHash, randomUUID } from 'node:crypto';
 import { AppConfigService } from '../../config/app-config.service';
 import { DatabaseService } from '../../database/database.service';
 import {
@@ -310,7 +310,9 @@ export class AuthService {
       this.config.jwt.JWT_ACCESS_TTL,
     );
     const refreshToken = await this.sign(
-      { sub: claims.sub },
+      // jti 随机化：HS256 且 iat 秒级时，同一用户同一秒内连续登录会签发完全相同的
+      // refresh token，导致 sys_refresh_token.token_hash 唯一索引冲突
+      { sub: claims.sub, jti: randomUUID() },
       this.config.jwt.JWT_REFRESH_SECRET,
       this.config.jwt.JWT_REFRESH_TTL,
     );
