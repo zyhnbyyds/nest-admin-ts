@@ -71,7 +71,14 @@ function toggleDark() {
         <button
           class="flex items-center gap-2 py-1 pr-2.5 pl-1 border-none rounded-full bg-transparent cursor-pointer transition-colors duration-200 hover:bg-[var(--app-bg-hover)]"
         >
+          <img
+            v-if="userStore.avatar"
+            :src="userStore.avatar"
+            alt="avatar"
+            class="w-26px h-26px rounded-full object-cover"
+          />
           <span
+            v-else
             class="flex items-center justify-center w-26px h-26px rounded-full bg-[var(--lew-color-primary)] text-white text-12px font-700"
           >
             {{ userStore.username.slice(0, 1).toUpperCase() }}

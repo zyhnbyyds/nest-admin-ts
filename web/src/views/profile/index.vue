@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { onMounted, ref } from "vue";
 import { Lock } from "lucide-vue-next";
 import { LewButton, LewForm, LewMessage } from "lew-ui";
 import type { LewFormOption } from "lew-ui";
-import { changePassword, updateProfile } from "~/api/auth";
+import { changePassword, getProfile, updateProfile } from "~/api/auth";
+import { uploadFile } from "~/api/files";
 import { useUserStore } from "~/store/user";
 
 const userStore = useUserStore();
@@ -14,6 +15,7 @@ const profile = ref({
   displayName: userStore.username,
   email: "",
   phone: "",
+  avatar: "",
 });
 
 const profileOptions: LewFormOption[] = [
@@ -40,17 +42,68 @@ const profileOptions: LewFormOption[] = [
   },
 ];
 
+async function loadProfile() {
+  const data = await getProfile();
+  profile.value = {
+    displayName: data.displayName || userStore.username,
+    email: data.email ?? "",
+    phone: data.phone ?? "",
+    avatar: data.avatar ?? "",
+  };
+  // 同步到 store，顶栏头像随之更新
+  userStore.setProfile({
+    displayName: data.displayName,
+    email: data.email,
+    phone: data.phone,
+    avatar: data.avatar,
+  });
+}
+void onMounted(loadProfile);
+
 async function handleSaveProfile() {
   const valid = await profileRef.value?.validate();
   if (!valid) return;
   // 用 getForm 读取表单当前值，确保拿到用户真实输入
   const values = (profileRef.value?.getForm?.() ?? profile.value) as typeof profile.value;
+  const avatar = profile.value.avatar || null;
   await updateProfile({
     displayName: values.displayName || userStore.username,
     email: values.email || null,
     phone: values.phone || null,
+    avatar,
   });
+  userStore.setProfile({ ...values, avatar });
   LewMessage.success("资料已更新");
+}
+
+// ---------- 头像上传 ----------
+const avatarInput = ref<HTMLInputElement | null>(null);
+
+function triggerAvatarSelect() {
+  avatarInput.value?.click();
+}
+
+async function handleAvatarChange(event: Event) {
+  const input = event.target as HTMLInputElement;
+  const file = input.files?.[0];
+  input.value = ""; // 允许重复选择同一文件
+  if (!file) return;
+  if (!file.type.startsWith("image/")) {
+    LewMessage.error("请选择图片文件");
+    return;
+  }
+  if (file.size > 2 * 1024 * 1024) {
+    LewMessage.error("头像图片不能超过 2MB");
+    return;
+  }
+  const result = await uploadFile(file);
+  profile.value.avatar = result.url;
+  LewMessage.success("头像已上传，保存资料后生效");
+}
+
+function removeAvatar() {
+  profile.value.avatar = "";
+  LewMessage.success("头像已移除，保存资料后生效");
 }
 
 // ---------- 改密码 ----------
@@ -111,17 +164,44 @@ async function handleChangePassword() {
       <!-- 资料 -->
       <div class="app-card p-6">
         <h3 class="mt-0 mb-4 text-15px font-600">个人资料</h3>
-        <div class="flex items-center gap-3 mb-5">
+        <div class="flex items-center gap-4 mb-5">
+          <img
+            v-if="profile.avatar"
+            :src="profile.avatar"
+            alt="avatar"
+            class="w-64px h-64px rounded-full object-cover border border-[var(--app-border)]"
+          />
           <span
-            class="flex items-center justify-center w-48px h-48px rounded-full bg-[var(--lew-color-primary)] text-white text-20px font-700"
+            v-else
+            class="flex items-center justify-center w-64px h-64px rounded-full bg-[var(--lew-color-primary)] text-white text-24px font-700"
           >
             {{ userStore.username.slice(0, 1).toUpperCase() }}
           </span>
-          <div>
+          <div class="flex-1">
             <div class="text-15px font-600">{{ userStore.username }}</div>
-            <div class="text-12.5px text-[var(--app-text-muted)]">
+            <div class="mb-2 text-12.5px text-[var(--app-text-muted)]">
               角色：{{ userStore.roles.join(", ") || "-" }}
             </div>
+            <div class="flex items-center gap-2">
+              <LewButton type="light" size="small" @click="triggerAvatarSelect">更换头像</LewButton>
+              <LewButton
+                v-if="profile.avatar"
+                type="text"
+                size="small"
+                color="error"
+                @click="removeAvatar"
+              >
+                移除
+              </LewButton>
+            </div>
+            <!-- 隐藏的文件选择框，仅用于触发上传 -->
+            <input
+              ref="avatarInput"
+              type="file"
+              accept="image/*"
+              class="hidden"
+              @change="handleAvatarChange"
+            />
           </div>
         </div>
         <LewForm ref="profileRef" v-model="profile" :options="profileOptions" label-width="72px" />

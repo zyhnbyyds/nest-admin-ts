@@ -35,6 +35,8 @@ export function setupGuard(router: Router) {
         const records = await permissionStore.generateRoutes();
         records.forEach((record) => router.addRoute("layout", record));
         dynamicRoutesAdded = true;
+        // 拉取当前用户完整资料（头像等 JWT 之外的信息），失败不阻塞导航
+        void userStore.fetchProfile().catch(() => undefined);
         // 重新进入目标路由（此时动态路由已注册）
         return { ...to, replace: true };
       } catch {

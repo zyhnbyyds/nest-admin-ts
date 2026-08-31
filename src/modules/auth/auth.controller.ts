@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Get,
   HttpCode,
   Patch,
   Post,
@@ -82,6 +83,22 @@ const updateProfileSchema = z.object({
     .nullable()
     .optional()
     .openapi({ example: '13800138000', description: '手机号' }),
+  avatar: z
+    .string()
+    .max(500)
+    .nullable()
+    .optional()
+    .refine(
+      (value) =>
+        value === null ||
+        value === undefined ||
+        /^(\/(?!\/)|https?:\/\/)/i.test(value),
+      '头像地址需为站内相对路径或 http(s) 链接',
+    )
+    .openapi({
+      example: '/api/v1/files/1/download',
+      description: '头像地址（站内文件相对路径或 http(s) 链接）',
+    }),
 });
 const changePasswordSchema = z.object({
   oldPassword: z
@@ -144,6 +161,14 @@ export class AuthController {
       ip: request.ip,
       userAgent: typeof userAgent === 'string' ? userAgent : undefined,
     });
+  }
+
+  @Get('profile')
+  @ApiBearerAuth('access-token')
+  @ApiOperation({ summary: '获取当前用户资料' })
+  @ApiResponse({ status: 200, description: '成功' })
+  async getProfile(@Req() request: AuthRequest) {
+    return this.authService.getProfile(request.user?.id ?? 0);
   }
 
   @Patch('profile')

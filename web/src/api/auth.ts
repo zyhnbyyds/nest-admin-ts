@@ -2,6 +2,7 @@ import type {
   ChangePasswordBody,
   LoginBody,
   LoginResult,
+  Profile,
   RegisterBody,
   UpdateProfileBody,
 } from "~/types/api";
@@ -16,6 +17,11 @@ export function login(body: LoginBody) {
 /** 注册（注册成功后直接返回令牌） */
 export function register(body: RegisterBody) {
   return post<LoginResult>("/auth/register", body);
+}
+
+/** 获取当前用户资料（含头像） */
+export function getProfile() {
+  return get<Profile>("/auth/profile");
 }
 
 /** 更新当前用户资料 */

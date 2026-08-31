@@ -56,6 +56,20 @@ const { items, loading, currentPage, pageSize, total, search, refresh, handleCha
 const columns: LewTableColumn[] = [
   { title: "ID", field: "id", width: 70 },
   { title: "用户名", field: "username", width: 130 },
+  {
+    title: "头像",
+    field: "avatar",
+    width: 80,
+    customRender: ({ row }) => {
+      const avatar = (row as unknown as User).avatar;
+      if (!avatar) return h("span", { class: "text-[var(--app-text-muted)]" }, "-");
+      return h("img", {
+        src: avatar,
+        alt: "avatar",
+        class: "w-28px h-28px rounded-full object-cover",
+      });
+    },
+  },
   { title: "显示名称", field: "displayName", width: 130 },
   {
     title: "部门",

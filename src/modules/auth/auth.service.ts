@@ -32,6 +32,8 @@ type UpdateProfileInput = {
   displayName?: string | undefined;
   email?: string | null | undefined;
   phone?: string | null | undefined;
+  /** 头像地址（站内文件下载相对路径，如 /api/v1/files/1/download） */
+  avatar?: string | null | undefined;
 };
 type ChangePasswordInput = {
   oldPassword: string;
@@ -112,6 +114,27 @@ export class AuthService {
       durationSeconds(this.config.jwt.JWT_REFRESH_TTL),
     );
     return tokens;
+  }
+
+  /** 获取当前登录用户的完整资料（含头像，供个人中心回显） */
+  async getProfile(userId: number) {
+    const [user] = await this.database.db
+      .select({
+        id: users.id,
+        username: users.username,
+        displayName: users.displayName,
+        email: users.email,
+        phone: users.phone,
+        avatar: users.avatar,
+        deptId: users.deptId,
+        createdAt: users.createdAt,
+        loginAt: users.loginAt,
+      })
+      .from(users)
+      .where(and(eq(users.id, userId), isNull(users.deletedAt)))
+      .limit(1);
+    if (!user) throw new UnauthorizedException('用户不存在');
+    return user;
   }
 
   /** 更新当前登录用户的个人资料 */

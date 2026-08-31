@@ -32,6 +32,17 @@ function mockAuthService(): Partial<AuthService> {
       expiresIn: '15m',
     }),
     logout: vi.fn().mockResolvedValue(undefined),
+    getProfile: vi.fn().mockResolvedValue({
+      id: 7,
+      username: 'admin',
+      displayName: 'Admin',
+      email: null,
+      phone: null,
+      avatar: null,
+      deptId: null,
+      createdAt: '2026-01-01T00:00:00.000Z',
+      loginAt: null,
+    }),
     updateProfile: vi.fn().mockResolvedValue(undefined),
     changePassword: vi.fn().mockResolvedValue(undefined),
   };
@@ -141,6 +152,15 @@ describe('AuthController', () => {
     });
   });
 
+  describe('getProfile', () => {
+    it('returns current user profile', async () => {
+      const authService = mockAuthService();
+      const controller = new AuthController(authService as AuthService);
+      await controller.getProfile({ user: { id: 7 } } as never);
+      expect(authService.getProfile).toHaveBeenCalledWith(7);
+    });
+  });
+
   describe('updateProfile', () => {
     it('updates profile and returns success', async () => {
       const authService = mockAuthService();
@@ -153,6 +173,30 @@ describe('AuthController', () => {
       expect(authService.updateProfile).toHaveBeenCalledWith(7, {
         displayName: '张三',
       });
+    });
+
+    it('forwards avatar to profile update', async () => {
+      const authService = mockAuthService();
+      const controller = new AuthController(authService as AuthService);
+      await controller.updateProfile(
+        { avatar: '/api/v1/files/1/download' },
+        { user: { id: 7 } },
+      );
+      expect(authService.updateProfile).toHaveBeenCalledWith(7, {
+        avatar: '/api/v1/files/1/download',
+      });
+    });
+
+    it('rejects unsafe avatar urls', async () => {
+      const authService = mockAuthService();
+      const controller = new AuthController(authService as AuthService);
+      await expect(
+        controller.updateProfile(
+          { avatar: 'javascript:alert(1)' } as never,
+          { user: { id: 7 } },
+        ),
+      ).rejects.toThrow();
+      expect(authService.updateProfile).not.toHaveBeenCalled();
     });
   });
 

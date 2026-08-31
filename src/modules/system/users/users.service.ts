@@ -69,6 +69,7 @@ export class UsersService {
         status: users.status,
         deptId: users.deptId,
         deptName: departments.name,
+        avatar: users.avatar,
         createdAt: users.createdAt,
         loginAt: users.loginAt,
       })

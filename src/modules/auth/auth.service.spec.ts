@@ -203,6 +203,39 @@ describe('AuthService', () => {
     });
   });
 
+  describe('getProfile', () => {
+    it('returns current user profile including avatar', async () => {
+      const { db } = mockDb();
+      db.select = selectWithLimit([
+        { ...fakeUser(), avatar: '/api/v1/files/1/download' },
+      ]);
+      const service = new AuthService(
+        { db } as any,
+        buildConfig() as any,
+        buildOnline() as any,
+      );
+      const result = await service.getProfile(1);
+      expect(result).toMatchObject({
+        id: 1,
+        username: 'admin',
+        avatar: '/api/v1/files/1/download',
+      });
+    });
+
+    it('throws UnauthorizedException when user not found', async () => {
+      const { db } = mockDb();
+      db.select = selectWithLimit([]);
+      const service = new AuthService(
+        { db } as any,
+        buildConfig() as any,
+        buildOnline() as any,
+      );
+      await expect(service.getProfile(999)).rejects.toThrow(
+        UnauthorizedException,
+      );
+    });
+  });
+
   describe('updateProfile', () => {
     it('updates profile of existing user', async () => {
       const { db } = mockDb();
@@ -214,6 +247,20 @@ describe('AuthService', () => {
       );
       await expect(
         service.updateProfile(1, { displayName: '张三' }),
+      ).resolves.toBeUndefined();
+      expect(db.update).toHaveBeenCalled();
+    });
+
+    it('updates avatar when provided', async () => {
+      const { db } = mockDb();
+      db.select = selectWithLimit([{ id: 1 }]);
+      const service = new AuthService(
+        { db } as any,
+        buildConfig() as any,
+        buildOnline() as any,
+      );
+      await expect(
+        service.updateProfile(1, { avatar: '/api/v1/files/1/download' }),
       ).resolves.toBeUndefined();
       expect(db.update).toHaveBeenCalled();
     });

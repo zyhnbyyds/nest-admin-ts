@@ -20,6 +20,7 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { RequirePermissions } from '../../common/auth/permissions.decorator';
+import { Public } from '../../common/auth/public.decorator';
 import { FilesService } from './files.service';
 
 type UploadRequest = {
@@ -35,8 +36,8 @@ type DownloadReply = {
 @Controller('files')
 export class FilesController {
   constructor(private readonly files: FilesService) {}
+  // 上传仅需登录（用户自定义头像需要普通用户也能上传，不限定 system:file:upload）
   @Post('upload')
-  @RequirePermissions('system:file:upload')
   @ApiOperation({ summary: '上传文件' })
   @ApiResponse({ status: 201, description: '成功' })
   @ApiBearerAuth('access-token')
@@ -61,7 +62,9 @@ export class FilesController {
     return this.files.list(page, pageSize);
   }
   @Get(':id/download')
-  @RequirePermissions('system:file:list')
+  // 公开下载：头像 <img> 无法携带 Authorization，且文件名是随机 UUID 不可枚举
+  // （对齐若依静态上传资源公开访问的设计）
+  @Public()
   @ApiOperation({ summary: '下载文件' })
   @ApiParam({ name: 'id', description: '文件ID' })
   @ApiResponse({ status: 200, description: '成功' })

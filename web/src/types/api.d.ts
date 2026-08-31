@@ -38,6 +38,8 @@ export interface UpdateProfileBody {
   displayName?: string;
   email?: string | null;
   phone?: string | null;
+  /** 头像地址；传 null 表示移除头像 */
+  avatar?: string | null;
 }
 
 export interface ChangePasswordBody {
@@ -76,10 +78,25 @@ export interface User {
   deptId: number | null;
   /** 部门名称（列表查询时联查返回） */
   deptName?: string | null;
+  /** 头像地址（站内文件相对路径或 http(s) 链接） */
+  avatar?: string | null;
   createdAt: string;
   loginAt: string | null;
   roleIds?: number[];
   roleNames?: string[];
+}
+
+/** GET /auth/profile 返回的当前用户资料 */
+export interface Profile {
+  id: number;
+  username: string;
+  displayName: string;
+  email: string | null;
+  phone: string | null;
+  avatar: string | null;
+  deptId: number | null;
+  createdAt: string;
+  loginAt: string | null;
 }
 
 export interface CreateUserBody {
