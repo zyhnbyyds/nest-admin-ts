@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { nextTick, ref } from "vue";
 import { Pencil, Plus, Trash2 } from "lucide-vue-next";
 import {
   LewButton,
@@ -48,34 +48,43 @@ const modalVisible = ref(false);
 const editingId = ref<number | null>(null);
 const formRef = ref();
 const form = ref({ name: "", key: "", value: "", builtin: false, remark: "" });
+/** 表单 key：每次打开弹窗自增，强制重建 LewForm 以回填数据 */
+const formKey = ref(0);
 
 function openCreate() {
   editingId.value = null;
-  form.value = { name: "", key: "", value: "", builtin: false, remark: "" };
+  formKey.value += 1;
   modalVisible.value = true;
+  void nextTick(() => {
+    formRef.value?.setForm?.({ name: "", key: "", value: "", builtin: false, remark: "" });
+  });
 }
 
 function openEdit(row: Config) {
   editingId.value = row.id;
-  form.value = {
-    name: row.name,
-    key: row.key,
-    value: row.value,
-    builtin: row.builtin,
-    remark: row.remark ?? "",
-  };
+  formKey.value += 1;
   modalVisible.value = true;
+  void nextTick(() => {
+    formRef.value?.setForm?.({
+      name: row.name,
+      key: row.key,
+      value: row.value,
+      builtin: row.builtin,
+      remark: row.remark ?? "",
+    });
+  });
 }
 
 async function handleSubmit() {
   const valid = await formRef.value?.validate();
   if (!valid) return;
+  const values = (formRef.value?.getForm?.() ?? form.value) as typeof form.value;
   const body = {
-    name: form.value.name,
-    key: form.value.key,
-    value: form.value.value,
-    builtin: form.value.builtin,
-    remark: form.value.remark || undefined,
+    name: values.name,
+    key: values.key,
+    value: values.value,
+    builtin: values.builtin,
+    remark: values.remark || undefined,
   };
   if (editingId.value === null) {
     await createConfig(body);
@@ -187,6 +196,7 @@ function handleDelete(row: Config) {
     >
       <div class="p-5">
         <LewForm
+          :key="formKey"
           ref="formRef"
           v-model="form"
           label-width="72px"

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { nextTick, ref } from "vue";
 import { Pencil, Plus, Trash2 } from "lucide-vue-next";
 import {
   LewButton,
@@ -84,27 +84,41 @@ const typeModalVisible = ref(false);
 const typeEditingId = ref<number | null>(null);
 const typeFormRef = ref();
 const typeForm = ref({ name: "", type: "", status: "active", remark: "" });
+/** 类型表单 key：每次打开自增，强制重建 LewForm 回填数据 */
+const typeFormKey = ref(0);
 
 function openTypeCreate() {
   typeEditingId.value = null;
-  typeForm.value = { name: "", type: "", status: "active", remark: "" };
+  typeFormKey.value += 1;
   typeModalVisible.value = true;
+  void nextTick(() => {
+    typeFormRef.value?.setForm?.({ name: "", type: "", status: "active", remark: "" });
+  });
 }
 
 function openTypeEdit(row: DictType) {
   typeEditingId.value = row.id;
-  typeForm.value = { name: row.name, type: row.type, status: row.status, remark: row.remark ?? "" };
+  typeFormKey.value += 1;
   typeModalVisible.value = true;
+  void nextTick(() => {
+    typeFormRef.value?.setForm?.({
+      name: row.name,
+      type: row.type,
+      status: row.status,
+      remark: row.remark ?? "",
+    });
+  });
 }
 
 async function handleTypeSubmit() {
   const valid = await typeFormRef.value?.validate();
   if (!valid) return;
+  const values = (typeFormRef.value?.getForm?.() ?? typeForm.value) as typeof typeForm.value;
   const body = {
-    name: typeForm.value.name,
-    type: typeForm.value.type,
-    status: typeForm.value.status as "active" | "disabled",
-    remark: typeForm.value.remark || undefined,
+    name: values.name,
+    type: values.type,
+    status: values.status as "active" | "disabled",
+    remark: values.remark || undefined,
   };
   if (typeEditingId.value === null) {
     await createDictType(body);
@@ -144,6 +158,8 @@ const dataForm = ref({
   cssClass: "",
   listClass: "",
 });
+/** 数据表单 key：每次打开自增，强制重建 LewForm 回填数据 */
+const dataFormKey = ref(0);
 
 const statusOptions = [
   { label: "启用", value: "active" },
@@ -152,21 +168,34 @@ const statusOptions = [
 
 function openDataCreate() {
   dataEditingId.value = null;
-  dataForm.value = { label: "", value: "", sort: 0, status: "active", cssClass: "", listClass: "" };
+  dataFormKey.value += 1;
   dataModalVisible.value = true;
+  void nextTick(() => {
+    dataFormRef.value?.setForm?.({
+      label: "",
+      value: "",
+      sort: 0,
+      status: "active",
+      cssClass: "",
+      listClass: "",
+    });
+  });
 }
 
 function openDataEdit(row: DictData) {
   dataEditingId.value = row.id;
-  dataForm.value = {
-    label: row.label,
-    value: row.value,
-    sort: row.sort,
-    status: row.status,
-    cssClass: row.cssClass ?? "",
-    listClass: row.listClass ?? "",
-  };
+  dataFormKey.value += 1;
   dataModalVisible.value = true;
+  void nextTick(() => {
+    dataFormRef.value?.setForm?.({
+      label: row.label,
+      value: row.value,
+      sort: row.sort,
+      status: row.status,
+      cssClass: row.cssClass ?? "",
+      listClass: row.listClass ?? "",
+    });
+  });
 }
 
 async function handleDataSubmit() {
@@ -176,14 +205,15 @@ async function handleDataSubmit() {
     LewMessage.warning("请先选择左侧字典类型");
     return;
   }
+  const values = (dataFormRef.value?.getForm?.() ?? dataForm.value) as typeof dataForm.value;
   const body = {
     type: selectedType.value.type,
-    label: dataForm.value.label,
-    value: dataForm.value.value,
-    sort: dataForm.value.sort,
-    status: dataForm.value.status as "active" | "disabled",
-    cssClass: dataForm.value.cssClass || undefined,
-    listClass: dataForm.value.listClass || undefined,
+    label: values.label,
+    value: values.value,
+    sort: values.sort,
+    status: values.status as "active" | "disabled",
+    cssClass: values.cssClass || undefined,
+    listClass: values.listClass || undefined,
   };
   if (dataEditingId.value === null) {
     await createDictData(body);
@@ -356,6 +386,7 @@ function handleDataDelete(row: DictData) {
     >
       <div class="p-5">
         <LewForm
+          :key="typeFormKey"
           ref="typeFormRef"
           v-model="typeForm"
           label-width="72px"
@@ -416,6 +447,7 @@ function handleDataDelete(row: DictData) {
     >
       <div class="p-5">
         <LewForm
+          :key="dataFormKey"
           ref="dataFormRef"
           v-model="dataForm"
           label-width="72px"

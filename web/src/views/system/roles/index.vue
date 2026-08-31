@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { ref } from "vue";
-import { KeyRound, Plus, Trash2 } from "lucide-vue-next";
+import { nextTick, ref } from "vue";
+import { KeyRound, Pencil, Plus, Trash2 } from "lucide-vue-next";
 import { LewButton, LewDialog, LewForm, LewMessage, LewModal, LewTable, LewTree } from "lew-ui";
 import type { LewFormOption, LewTreeDataSource } from "lew-ui";
 import type { LewTableColumn } from "lew-ui";
@@ -10,6 +10,7 @@ import {
   deleteRole,
   getRoleMenuIds,
   listRoles,
+  updateRole,
 } from "~/api/system/roles";
 import { listMenus } from "~/api/system/menus";
 import { formatDateTime } from "~/composables/useFormat";
@@ -39,7 +40,7 @@ const columns: LewTableColumn[] = [
     width: 170,
     customRender: ({ row }) => formatDateTime((row as unknown as Role).createdAt),
   },
-  { title: "操作", field: "operation", width: 100, fixed: "right" },
+  { title: "操作", field: "operation", width: 140, fixed: "right" },
 ];
 
 async function fetchList() {
@@ -53,10 +54,13 @@ async function fetchList() {
 
 void fetchList();
 
-// ---------- 新增弹窗 ----------
+// ---------- 新增/编辑弹窗 ----------
 const modalVisible = ref(false);
+const editingId = ref<number | null>(null);
 const formRef = ref();
 const form = ref({ name: "", key: "", sort: 0, remark: "" });
+/** 表单 key：每次打开弹窗自增，强制重建 LewForm 以回填数据 */
+const formKey = ref(0);
 
 const formOptions: LewFormOption[] = [
   {
@@ -78,20 +82,48 @@ const formOptions: LewFormOption[] = [
 ];
 
 function openCreate() {
-  form.value = { name: "", key: "", sort: 0, remark: "" };
+  editingId.value = null;
+  formKey.value += 1;
   modalVisible.value = true;
+  // LewForm 为受控组件，需在挂载后通过 setForm 填充
+  void nextTick(() => {
+    formRef.value?.setForm?.({ name: "", key: "", sort: 0, remark: "" });
+  });
+}
+
+function openEdit(row: Role) {
+  editingId.value = row.id;
+  formKey.value += 1;
+  modalVisible.value = true;
+  // LewForm 为受控组件，需在挂载后通过 setForm 回填现有数据
+  void nextTick(() => {
+    formRef.value?.setForm?.({
+      name: row.name,
+      key: row.key,
+      sort: row.sort,
+      remark: row.remark ?? "",
+    });
+  });
 }
 
 async function handleSubmit() {
   const valid = await formRef.value?.validate();
   if (!valid) return;
-  await createRole({
-    name: form.value.name,
-    key: form.value.key,
-    sort: form.value.sort,
-    remark: form.value.remark || undefined,
-  });
-  LewMessage.success("创建成功");
+  // 用 getForm 读取表单当前值，确保拿到用户真实输入
+  const values = (formRef.value?.getForm?.() ?? form.value) as typeof form.value;
+  const body = {
+    name: values.name,
+    key: values.key,
+    sort: values.sort,
+    remark: values.remark || undefined,
+  };
+  if (editingId.value === null) {
+    await createRole(body);
+    LewMessage.success("创建成功");
+  } else {
+    await updateRole(editingId.value, body);
+    LewMessage.success("更新成功");
+  }
   modalVisible.value = false;
   void fetchList();
 }
@@ -172,6 +204,16 @@ function handleDelete(row: Role) {
               v-permission="'system:role:update'"
               type="text"
               size="small"
+              title="编辑角色"
+              @click="openEdit(row as unknown as Role)"
+            >
+              <Pencil :size="14" />
+            </LewButton>
+            <LewButton
+              v-permission="'system:role:update'"
+              type="text"
+              size="small"
+              title="分配菜单权限"
               @click="openAuth(row as unknown as Role)"
             >
               <KeyRound :size="14" />
@@ -180,6 +222,7 @@ function handleDelete(row: Role) {
               type="text"
               size="small"
               color="error"
+              title="删除角色"
               @click="handleDelete(row as unknown as Role)"
             >
               <Trash2 :size="14" />
@@ -189,10 +232,10 @@ function handleDelete(row: Role) {
       </LewTable>
     </div>
 
-    <!-- 新增弹窗 -->
+    <!-- 新增/编辑弹窗 -->
     <LewModal
       v-model:visible="modalVisible"
-      title="新增角色"
+      :title="editingId === null ? '新增角色' : '编辑角色'"
       width="480px"
       :footer-buttons="[
         {
@@ -211,14 +254,20 @@ function handleDelete(row: Role) {
             type: 'fill',
             color: 'primary',
             size: 'small',
-            text: '创建',
+            text: editingId === null ? '创建' : '保存',
             request: handleSubmit,
           },
         },
       ]"
     >
       <div class="p-5">
-        <LewForm ref="formRef" v-model="form" :options="formOptions" label-width="72px" />
+        <LewForm
+          :key="formKey"
+          ref="formRef"
+          v-model="form"
+          :options="formOptions"
+          label-width="72px"
+        />
       </div>
     </LewModal>
 

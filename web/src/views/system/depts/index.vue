@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { nextTick, ref } from "vue";
 import { Pencil, Plus, Trash2 } from "lucide-vue-next";
 import { LewButton, LewDialog, LewForm, LewMessage, LewModal, LewTable } from "lew-ui";
 import type { LewTableColumn } from "lew-ui";
@@ -50,6 +50,8 @@ const form = ref({
   email: "",
   status: "active",
 });
+/** 表单 key：每次打开弹窗自增，强制重建 LewForm 以回填数据 */
+const formKey = ref(0);
 
 const statusOptions = [
   { label: "启用", value: "active" },
@@ -70,44 +72,51 @@ const parentOptions = ref<{ label: string; value: number }[]>([]);
 function openCreate(parentId = 0) {
   editingId.value = null;
   parentOptions.value = [{ label: "根部门", value: 0 }, ...flattenDepts(depts.value)];
-  form.value = {
-    parentId,
-    name: "",
-    sort: 0,
-    leaderUserId: undefined,
-    phone: "",
-    email: "",
-    status: "active",
-  };
+  formKey.value += 1;
   modalVisible.value = true;
+  void nextTick(() => {
+    formRef.value?.setForm?.({
+      parentId,
+      name: "",
+      sort: 0,
+      leaderUserId: undefined,
+      phone: "",
+      email: "",
+      status: "active",
+    });
+  });
 }
 
 function openEdit(row: Dept) {
   editingId.value = row.id;
   parentOptions.value = [{ label: "根部门", value: 0 }, ...flattenDepts(depts.value)];
-  form.value = {
-    parentId: row.parentId,
-    name: row.name,
-    sort: row.sort,
-    leaderUserId: row.leaderUserId ?? undefined,
-    phone: row.phone ?? "",
-    email: row.email ?? "",
-    status: row.status,
-  };
+  formKey.value += 1;
   modalVisible.value = true;
+  void nextTick(() => {
+    formRef.value?.setForm?.({
+      parentId: row.parentId,
+      name: row.name,
+      sort: row.sort,
+      leaderUserId: row.leaderUserId ?? undefined,
+      phone: row.phone ?? "",
+      email: row.email ?? "",
+      status: row.status,
+    });
+  });
 }
 
 async function handleSubmit() {
   const valid = await formRef.value?.validate();
   if (!valid) return;
+  const values = (formRef.value?.getForm?.() ?? form.value) as typeof form.value;
   const body = {
-    parentId: form.value.parentId,
-    name: form.value.name,
-    sort: form.value.sort,
-    leaderUserId: form.value.leaderUserId,
-    phone: form.value.phone || undefined,
-    email: form.value.email || undefined,
-    status: form.value.status as "active" | "disabled",
+    parentId: values.parentId,
+    name: values.name,
+    sort: values.sort,
+    leaderUserId: values.leaderUserId,
+    phone: values.phone || undefined,
+    email: values.email || undefined,
+    status: values.status as "active" | "disabled",
   };
   if (editingId.value === null) {
     await createDept(body);
@@ -219,6 +228,7 @@ function handleDelete(row: Dept) {
     >
       <div class="p-5">
         <LewForm
+          :key="formKey"
           ref="formRef"
           v-model="form"
           label-width="80px"

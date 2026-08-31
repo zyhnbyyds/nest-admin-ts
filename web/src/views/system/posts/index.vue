@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { nextTick, ref } from "vue";
 import { Pencil, Plus, Trash2 } from "lucide-vue-next";
 import {
   LewButton,
@@ -49,6 +49,8 @@ const modalVisible = ref(false);
 const editingId = ref<number | null>(null);
 const formRef = ref();
 const form = ref({ name: "", key: "", sort: 0, status: "active", remark: "" });
+/** 表单 key：每次打开弹窗自增，强制重建 LewForm 以回填数据 */
+const formKey = ref(0);
 
 const statusOptions = [
   { label: "启用", value: "active" },
@@ -57,31 +59,38 @@ const statusOptions = [
 
 function openCreate() {
   editingId.value = null;
-  form.value = { name: "", key: "", sort: 0, status: "active", remark: "" };
+  formKey.value += 1;
   modalVisible.value = true;
+  void nextTick(() => {
+    formRef.value?.setForm?.({ name: "", key: "", sort: 0, status: "active", remark: "" });
+  });
 }
 
 function openEdit(row: Post) {
   editingId.value = row.id;
-  form.value = {
-    name: row.name,
-    key: row.key,
-    sort: row.sort,
-    status: row.status,
-    remark: row.remark ?? "",
-  };
+  formKey.value += 1;
   modalVisible.value = true;
+  void nextTick(() => {
+    formRef.value?.setForm?.({
+      name: row.name,
+      key: row.key,
+      sort: row.sort,
+      status: row.status,
+      remark: row.remark ?? "",
+    });
+  });
 }
 
 async function handleSubmit() {
   const valid = await formRef.value?.validate();
   if (!valid) return;
+  const values = (formRef.value?.getForm?.() ?? form.value) as typeof form.value;
   const body = {
-    name: form.value.name,
-    key: form.value.key,
-    sort: form.value.sort,
-    status: form.value.status as "active" | "disabled",
-    remark: form.value.remark || undefined,
+    name: values.name,
+    key: values.key,
+    sort: values.sort,
+    status: values.status as "active" | "disabled",
+    remark: values.remark || undefined,
   };
   if (editingId.value === null) {
     await createPost(body);
@@ -193,6 +202,7 @@ function handleDelete(row: Post) {
     >
       <div class="p-5">
         <LewForm
+          :key="formKey"
           ref="formRef"
           v-model="form"
           label-width="72px"

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { nextTick, ref } from "vue";
 import { Pencil, Plus, Trash2 } from "lucide-vue-next";
 import {
   LewButton,
@@ -65,6 +65,8 @@ const form = ref({
   phone: "",
   status: "active",
 });
+/** 表单 key：每次打开弹窗自增，强制重建 LewForm 以回填数据 */
+const formKey = ref(0);
 
 const formOptions: LewFormOption[] = [
   {
@@ -94,48 +96,58 @@ const formOptions: LewFormOption[] = [
 
 function openCreate() {
   editingId.value = null;
-  form.value = {
-    username: "",
-    displayName: "",
-    password: "",
-    email: "",
-    phone: "",
-    status: "active",
-  };
+  formKey.value += 1;
   modalVisible.value = true;
+  // LewForm 为受控组件，需在挂载后通过 setForm 填充
+  void nextTick(() => {
+    formRef.value?.setForm?.({
+      username: "",
+      displayName: "",
+      password: "",
+      email: "",
+      phone: "",
+      status: "active",
+    });
+  });
 }
 
 function openEdit(row: User) {
   editingId.value = row.id;
-  form.value = {
-    username: row.username,
-    displayName: row.displayName,
-    password: "",
-    email: row.email ?? "",
-    phone: row.phone ?? "",
-    status: row.status,
-  };
+  formKey.value += 1;
   modalVisible.value = true;
+  // LewForm 为受控组件，需在挂载后通过 setForm 回填现有数据
+  void nextTick(() => {
+    formRef.value?.setForm?.({
+      username: row.username,
+      displayName: row.displayName,
+      password: "",
+      email: row.email ?? "",
+      phone: row.phone ?? "",
+      status: row.status,
+    });
+  });
 }
 
 async function handleSubmit() {
   const valid = await formRef.value?.validate();
   if (!valid) return;
+  // LewForm 为受控组件，用 getForm 读取用户真实输入
+  const values = (formRef.value?.getForm?.() ?? form.value) as typeof form.value;
   if (editingId.value === null) {
     await createUser({
-      username: form.value.username,
-      displayName: form.value.displayName,
-      password: form.value.password,
-      email: form.value.email || undefined,
-      phone: form.value.phone || undefined,
+      username: values.username,
+      displayName: values.displayName,
+      password: values.password,
+      email: values.email || undefined,
+      phone: values.phone || undefined,
     });
     LewMessage.success("创建成功");
   } else {
     await updateUser(editingId.value, {
-      displayName: form.value.displayName,
-      email: form.value.email || null,
-      phone: form.value.phone || null,
-      status: form.value.status as "active" | "disabled",
+      displayName: values.displayName,
+      email: values.email || null,
+      phone: values.phone || null,
+      status: values.status as "active" | "disabled",
     });
     LewMessage.success("更新成功");
   }
@@ -254,7 +266,13 @@ function handleDelete(row: User) {
       ]"
     >
       <div class="p-5">
-        <LewForm ref="formRef" v-model="form" :options="formOptions" label-width="72px" />
+        <LewForm
+          :key="formKey"
+          ref="formRef"
+          v-model="form"
+          :options="formOptions"
+          label-width="72px"
+        />
       </div>
     </LewModal>
   </div>

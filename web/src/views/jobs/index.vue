@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { nextTick, ref } from "vue";
 import { FileClock, Pencil, Play, Plus, Trash2 } from "lucide-vue-next";
 import {
   LewButton,
@@ -56,6 +56,8 @@ const form = ref({
   concurrent: false,
   remark: "",
 });
+/** 表单 key：每次打开弹窗自增，强制重建 LewForm 以回填数据 */
+const formKey = ref(0);
 
 const statusOptions = [
   { label: "启用", value: "active" },
@@ -64,33 +66,47 @@ const statusOptions = [
 
 function openCreate() {
   editingId.value = null;
-  form.value = { name: "", handler: "", cron: "", status: "active", concurrent: false, remark: "" };
+  formKey.value += 1;
   modalVisible.value = true;
+  void nextTick(() => {
+    formRef.value?.setForm?.({
+      name: "",
+      handler: "",
+      cron: "",
+      status: "active",
+      concurrent: false,
+      remark: "",
+    });
+  });
 }
 
 function openEdit(row: Job) {
   editingId.value = row.id;
-  form.value = {
-    name: row.name,
-    handler: row.handler,
-    cron: row.cron,
-    status: row.status,
-    concurrent: row.concurrent,
-    remark: row.remark ?? "",
-  };
+  formKey.value += 1;
   modalVisible.value = true;
+  void nextTick(() => {
+    formRef.value?.setForm?.({
+      name: row.name,
+      handler: row.handler,
+      cron: row.cron,
+      status: row.status,
+      concurrent: row.concurrent,
+      remark: row.remark ?? "",
+    });
+  });
 }
 
 async function handleSubmit() {
   const valid = await formRef.value?.validate();
   if (!valid) return;
+  const values = (formRef.value?.getForm?.() ?? form.value) as typeof form.value;
   const body = {
-    name: form.value.name,
-    handler: form.value.handler,
-    cron: form.value.cron,
-    status: form.value.status as "active" | "disabled",
-    concurrent: form.value.concurrent,
-    remark: form.value.remark || undefined,
+    name: values.name,
+    handler: values.handler,
+    cron: values.cron,
+    status: values.status as "active" | "disabled",
+    concurrent: values.concurrent,
+    remark: values.remark || undefined,
   };
   if (editingId.value === null) {
     await createJob(body);
@@ -271,6 +287,7 @@ async function handleClearLogs() {
     >
       <div class="p-5">
         <LewForm
+          :key="formKey"
           ref="formRef"
           v-model="form"
           label-width="80px"

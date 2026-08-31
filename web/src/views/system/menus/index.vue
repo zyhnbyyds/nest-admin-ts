@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, h, ref } from "vue";
+import { computed, h, nextTick, ref } from "vue";
 import { ChevronDown, ChevronUp, CornerDownRight, Pencil, Plus, Trash2 } from "lucide-vue-next";
 import { LewButton, LewDialog, LewForm, LewMessage, LewModal, LewTable } from "lew-ui";
 import type { LewTableColumn } from "lew-ui";
@@ -193,6 +193,8 @@ const form = ref({
   sort: 0,
   status: "active",
 });
+/** 表单 key：每次打开弹窗自增，强制重建 LewForm 以回填数据 */
+const formKey = ref(0);
 
 const typeOptions = [
   { label: "目录", value: "M" },
@@ -220,53 +222,60 @@ const parentOptions = ref<{ label: string; value: number }[]>([]);
 function openCreate(parentId = 0) {
   editingId.value = null;
   parentOptions.value = [{ label: "根目录", value: 0 }, ...flattenMenus(menus.value)];
-  form.value = {
-    parentId,
-    name: "",
-    title: "",
-    type: "M",
-    path: "",
-    component: "",
-    permission: "",
-    icon: "",
-    sort: 0,
-    status: "active",
-  };
+  formKey.value += 1;
   modalVisible.value = true;
+  void nextTick(() => {
+    formRef.value?.setForm?.({
+      parentId,
+      name: "",
+      title: "",
+      type: "M",
+      path: "",
+      component: "",
+      permission: "",
+      icon: "",
+      sort: 0,
+      status: "active",
+    });
+  });
 }
 
 function openEdit(row: Menu) {
   editingId.value = row.id;
   parentOptions.value = [{ label: "根目录", value: 0 }, ...flattenMenus(menus.value)];
-  form.value = {
-    parentId: row.parentId,
-    name: row.name,
-    title: row.title,
-    type: row.type,
-    path: row.path ?? "",
-    component: row.component ?? "",
-    permission: row.permission ?? "",
-    icon: row.icon ?? "",
-    sort: row.sort,
-    status: row.status,
-  };
+  formKey.value += 1;
   modalVisible.value = true;
+  void nextTick(() => {
+    formRef.value?.setForm?.({
+      parentId: row.parentId,
+      name: row.name,
+      title: row.title,
+      type: row.type,
+      path: row.path ?? "",
+      component: row.component ?? "",
+      permission: row.permission ?? "",
+      icon: row.icon ?? "",
+      sort: row.sort,
+      status: row.status,
+    });
+  });
 }
 
 async function handleSubmit() {
   const valid = await formRef.value?.validate();
   if (!valid) return;
+  const values = (formRef.value?.getForm?.() ?? form.value) as typeof form.value;
   const body = {
-    parentId: form.value.parentId,
-    name: form.value.name,
-    title: form.value.title,
-    type: form.value.type,
-    path: form.value.path || undefined,
-    component: form.value.component || undefined,
-    permission: form.value.permission || undefined,
-    icon: form.value.icon || undefined,
-    sort: form.value.sort,
-    status: form.value.status as "active" | "disabled",
+    parentId: values.parentId,
+    name: values.name,
+    title: values.title,
+    type: values.type,
+    path: values.path || undefined,
+    component: values.component || undefined,
+    permission: values.permission || undefined,
+    icon: values.icon || undefined,
+    sort: values.sort,
+    status: values.status as "active" | "disabled",
   };
   if (editingId.value === null) {
     await createMenu(body);
@@ -379,6 +388,7 @@ function handleDelete(row: Menu) {
     >
       <div class="p-5">
         <LewForm
+          :key="formKey"
           ref="formRef"
           v-model="form"
           label-width="80px"

@@ -1,5 +1,5 @@
-import type { AssignRoleMenusBody, CreateRoleBody, Role } from "~/types/api";
-import { del, get, post } from "~/request";
+import type { AssignRoleMenusBody, CreateRoleBody, Role, UpdateRoleBody } from "~/types/api";
+import { del, get, patch, post } from "~/request";
 
 /** 角色列表（全量） */
 export function listRoles() {
@@ -9,6 +9,11 @@ export function listRoles() {
 /** 新增角色 */
 export function createRole(body: CreateRoleBody) {
   return post<{ id: number }>("/system/roles", body);
+}
+
+/** 修改角色 */
+export function updateRole(id: number, body: UpdateRoleBody) {
+  return patch<void>(`/system/roles/${id}`, body);
 }
 
 /** 删除角色 */

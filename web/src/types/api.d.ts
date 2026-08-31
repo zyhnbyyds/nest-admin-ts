@@ -120,6 +120,15 @@ export interface CreateRoleBody {
   remark?: string;
 }
 
+export interface UpdateRoleBody {
+  name?: string;
+  key?: string;
+  sort?: number;
+  dataScope?: DataScope;
+  status?: EntityStatus;
+  remark?: string | null;
+}
+
 export interface AssignRoleMenusBody {
   menuIds: number[];
 }

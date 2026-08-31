@@ -118,7 +118,9 @@ async function handleLogin() {
   if (!valid) return;
   loading.value = true;
   try {
-    const result = await login(form.value);
+    // LewForm 为受控组件，用 getForm 读取用户真实输入
+    const values = (formRef.value?.getForm?.() ?? form.value) as typeof form.value;
+    const result = await login(values);
     userStore.setTokens(result.accessToken, result.refreshToken);
     resetRouteFlag();
     LewMessage.success("登录成功");
@@ -132,18 +134,20 @@ async function handleLogin() {
 async function handleRegister() {
   const valid = await formRef.value?.validate();
   if (!valid) return;
-  if (registerForm.value.password !== registerForm.value.confirmPassword) {
+  // LewForm 为受控组件，用 getForm 读取用户真实输入
+  const values = (formRef.value?.getForm?.() ?? registerForm.value) as typeof registerForm.value;
+  if (values.password !== values.confirmPassword) {
     LewMessage.error("两次输入的密码不一致");
     return;
   }
   loading.value = true;
   try {
     const result = await register({
-      username: registerForm.value.username,
-      displayName: registerForm.value.displayName,
-      password: registerForm.value.password,
-      email: registerForm.value.email || undefined,
-      phone: registerForm.value.phone || undefined,
+      username: values.username,
+      displayName: values.displayName,
+      password: values.password,
+      email: values.email || undefined,
+      phone: values.phone || undefined,
     });
     userStore.setTokens(result.accessToken, result.refreshToken);
     resetRouteFlag();

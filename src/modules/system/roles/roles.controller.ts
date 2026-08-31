@@ -5,6 +5,7 @@ import {
   Get,
   Param,
   ParseIntPipe,
+  Patch,
   Post,
   Req,
 } from '@nestjs/common';
@@ -55,8 +56,44 @@ const menuSchema = z.object({
     .max(500)
     .openapi({ example: [1, 2, 3], description: '菜单ID集合' }),
 });
+const updateSchema = z.object({
+  name: z
+    .string()
+    .min(1)
+    .max(50)
+    .optional()
+    .openapi({ example: '管理员', description: '角色名称' }),
+  key: z
+    .string()
+    .min(2)
+    .max(100)
+    .regex(/^[a-z0-9:_-]+$/)
+    .optional()
+    .openapi({ example: 'admin', description: '角色标识' }),
+  sort: z
+    .number()
+    .int()
+    .min(0)
+    .optional()
+    .openapi({ example: 1, description: '排序' }),
+  dataScope: z
+    .enum(['all', 'custom', 'dept', 'dept_and_children', 'self'])
+    .optional()
+    .openapi({ example: 'all', description: '数据权限范围' }),
+  status: z
+    .enum(['active', 'disabled'])
+    .optional()
+    .openapi({ example: 'active', description: '状态' }),
+  remark: z
+    .string()
+    .max(500)
+    .nullable()
+    .optional()
+    .openapi({ example: '备注', description: '备注' }),
+});
 
 registerComponent('CreateRoleRequest', createSchema);
+registerComponent('UpdateRoleRequest', updateSchema);
 registerComponent('SetRoleMenusRequest', menuSchema);
 type AuthRequest = { user: { id: number } };
 
@@ -79,6 +116,19 @@ export class RolesController {
   @ApiResponse({ status: 200, description: '成功' })
   create(@Body() body: unknown, @Req() request: AuthRequest) {
     return this.roles.create(createSchema.parse(body), request.user.id);
+  }
+  @Patch(':id')
+  @RequirePermissions('system:role:update')
+  @ApiOperation({ summary: '修改角色' })
+  @ApiParam({ name: 'id', description: '角色ID' })
+  @ApiBody({ schema: { $ref: '#/components/schemas/UpdateRoleRequest' } })
+  @ApiResponse({ status: 200, description: '成功' })
+  update(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() body: unknown,
+    @Req() request: AuthRequest,
+  ) {
+    return this.roles.update(id, updateSchema.parse(body), request.user.id);
   }
   @Post(':id/menus')
   @RequirePermissions('system:role:update')
