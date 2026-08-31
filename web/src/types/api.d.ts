@@ -74,6 +74,8 @@ export interface User {
   phone: string | null;
   status: EntityStatus;
   deptId: number | null;
+  /** 部门名称（列表查询时联查返回） */
+  deptName?: string | null;
   createdAt: string;
   loginAt: string | null;
   roleIds?: number[];
@@ -110,6 +112,8 @@ export interface Role {
   key: string;
   sort: number;
   dataScope: DataScope;
+  /** 自定义数据范围（dataScope=custom）时可见的部门ID集合 */
+  deptIds?: number[];
   isSystem: boolean;
   status: EntityStatus;
   remark: string | null;
@@ -122,6 +126,7 @@ export interface CreateRoleBody {
   sort?: number;
   dataScope?: DataScope;
   menuIds?: number[];
+  deptIds?: number[];
   remark?: string;
 }
 
@@ -132,6 +137,7 @@ export interface UpdateRoleBody {
   dataScope?: DataScope;
   status?: EntityStatus;
   remark?: string | null;
+  deptIds?: number[];
 }
 
 export interface AssignRoleMenusBody {

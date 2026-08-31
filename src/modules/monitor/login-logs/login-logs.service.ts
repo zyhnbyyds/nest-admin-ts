@@ -1,7 +1,11 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { and, desc, eq, like } from 'drizzle-orm';
+import { and, desc, eq, inArray, isNull, like, sql } from 'drizzle-orm';
 import { DatabaseService } from '../../../database/database.service';
-import { loginLogs } from '../../../database/schema/index';
+import { loginLogs, users } from '../../../database/schema/index';
+import {
+  resolveDataScope,
+  type RequestActor,
+} from '../../../common/data-scope/data-scope';
 
 @Injectable()
 export class LoginLogsService {
@@ -12,19 +16,41 @@ export class LoginLogsService {
     pageSize: number,
     username?: string,
     status?: string,
+    actor?: RequestActor,
   ) {
-    const conditions = [
+    const conditions: unknown[] = [
       username ? like(loginLogs.username, `%${username}%`) : undefined,
       status === 'success' || status === 'failure'
         ? eq(loginLogs.status, status)
         : undefined,
-    ].filter(
-      (item): item is Exclude<typeof item, undefined> => item !== undefined,
-    );
+    ];
+    if (actor) {
+      const scope = await resolveDataScope(this.database.db, actor);
+      if (scope.kind === 'self') {
+        conditions.push(eq(loginLogs.userId, actor.id));
+      } else if (scope.kind === 'deptIds') {
+        conditions.push(
+          scope.ids.length
+            ? inArray(
+                loginLogs.userId,
+                this.database.db
+                  .select({ id: users.id })
+                  .from(users)
+                  .where(
+                    and(
+                      inArray(users.deptId, scope.ids),
+                      isNull(users.deletedAt),
+                    ),
+                  ),
+              )
+            : sql`1 = 0`,
+        );
+      }
+    }
     const items = await this.database.db
       .select()
       .from(loginLogs)
-      .where(conditions.length ? and(...conditions) : undefined)
+      .where(conditions.length ? and(...(conditions as never[])) : undefined)
       .orderBy(desc(loginLogs.id))
       .limit(pageSize)
       .offset((page - 1) * pageSize);

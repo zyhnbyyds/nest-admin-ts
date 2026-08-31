@@ -86,7 +86,7 @@ const updateSchema = createSchema.partial().extend({
 registerComponent('CreateDeptRequest', createSchema);
 registerComponent('UpdateDeptRequest', updateSchema);
 
-type AuthRequest = { user: { id: number } };
+type AuthRequest = { user: { id: number; roles: string[]; permissions: string[] } };
 
 @ApiTags('部门管理')
 @ApiBearerAuth('access-token')
@@ -97,8 +97,8 @@ export class DeptsController {
   @RequirePermissions('system:dept:list')
   @ApiOperation({ summary: '获取部门树' })
   @ApiResponse({ status: 200, description: '成功' })
-  list() {
-    return this.depts.list();
+  list(@Req() request?: AuthRequest) {
+    return this.depts.list(request?.user);
   }
   @Get(':id')
   @RequirePermissions('system:dept:list')

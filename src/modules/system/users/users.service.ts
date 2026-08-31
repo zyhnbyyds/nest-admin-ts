@@ -4,9 +4,13 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import * as argon2 from 'argon2';
-import { and, desc, eq, inArray, isNull } from 'drizzle-orm';
+import { and, desc, eq, inArray, isNull, sql } from 'drizzle-orm';
 import { DatabaseService } from '../../../database/database.service';
-import { roles, userRoles, users } from '../../../database/schema/index';
+import { departments, roles, userRoles, users } from '../../../database/schema/index';
+import {
+  resolveDataScope,
+  type RequestActor,
+} from '../../../common/data-scope/data-scope';
 
 export type CreateUserInput = {
   username: string;
@@ -26,11 +30,35 @@ export type UpdateUserInput = {
   password?: string | undefined;
   roleIds?: number[] | undefined;
 };
+export type UserListOptions = {
+  status?: 'active' | 'disabled' | undefined;
+  deptId?: number | undefined;
+  /** 传入操作人时按数据权限过滤列表（若依数据范围） */
+  actor?: RequestActor | undefined;
+};
 
 @Injectable()
 export class UsersService {
   constructor(private readonly database: DatabaseService) {}
-  async list(page: number, pageSize: number) {
+  async list(page: number, pageSize: number, options: UserListOptions = {}) {
+    const conditions: (ReturnType<typeof isNull> | ReturnType<typeof eq> | ReturnType<typeof inArray> | ReturnType<typeof sql>)[] =
+      [isNull(users.deletedAt)];
+    if (options.status === 'active' || options.status === 'disabled') {
+      conditions.push(eq(users.status, options.status));
+    }
+    if (options.deptId !== undefined) {
+      conditions.push(eq(users.deptId, options.deptId));
+    }
+    if (options.actor) {
+      const scope = await resolveDataScope(this.database.db, options.actor);
+      if (scope.kind === 'self') {
+        conditions.push(eq(users.id, options.actor.id));
+      } else if (scope.kind === 'deptIds') {
+        conditions.push(
+          scope.ids.length ? inArray(users.deptId, scope.ids) : sql`1 = 0`,
+        );
+      }
+    }
     const items = await this.database.db
       .select({
         id: users.id,
@@ -40,11 +68,13 @@ export class UsersService {
         phone: users.phone,
         status: users.status,
         deptId: users.deptId,
+        deptName: departments.name,
         createdAt: users.createdAt,
         loginAt: users.loginAt,
       })
       .from(users)
-      .where(isNull(users.deletedAt))
+      .leftJoin(departments, eq(users.deptId, departments.id))
+      .where(and(...conditions))
       .orderBy(desc(users.id))
       .limit(pageSize)
       .offset((page - 1) * pageSize);

@@ -5,6 +5,7 @@ import {
   Param,
   ParseIntPipe,
   Query,
+  Req,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
@@ -35,10 +36,11 @@ export class LoginLogsController {
     @Query('pageSize') rawPageSize?: string,
     @Query('username') username?: string,
     @Query('status') status?: string,
+    @Req() request?: { user?: { id: number; roles: string[]; permissions: string[] } },
   ) {
     const page = Math.max(Number(rawPage) || 1, 1);
     const pageSize = Math.min(Math.max(Number(rawPageSize) || 20, 1), 100);
-    return this.loginLogs.list(page, pageSize, username, status);
+    return this.loginLogs.list(page, pageSize, username, status, request?.user);
   }
   @Get(':id')
   @RequirePermissions('monitor:loginlog:list')

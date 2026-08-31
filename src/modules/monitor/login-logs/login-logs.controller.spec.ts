@@ -16,7 +16,7 @@ describe('LoginLogsController', () => {
     const s = mockService();
     const c = new LoginLogsController(s as LoginLogsService);
     await c.list('1', '20', 'admin', 'success');
-    expect(s.list).toHaveBeenCalledWith(1, 20, 'admin', 'success');
+    expect(s.list).toHaveBeenCalledWith(1, 20, 'admin', 'success', undefined);
   });
 
   it('findOne returns a log', async () => {

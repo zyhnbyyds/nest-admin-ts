@@ -148,6 +148,29 @@ export const userRoles = mysqlTable(
     }).onDelete('cascade'),
   ],
 );
+
+/** 角色-部门（自定义数据权限范围时指定可见部门） */
+export const roleDepts = mysqlTable(
+  'sys_role_dept',
+  {
+    roleId: int('role_id', { unsigned: true }).notNull(),
+    deptId: int('dept_id', { unsigned: true }).notNull(),
+  },
+  (table) => [
+    uniqueIndex('uq_role_dept').on(table.roleId, table.deptId),
+    index('idx_role_dept_dept').on(table.deptId),
+    foreignKey({
+      columns: [table.roleId],
+      foreignColumns: [roles.id],
+      name: 'fk_role_dept_role',
+    }).onDelete('cascade'),
+    foreignKey({
+      columns: [table.deptId],
+      foreignColumns: [departments.id],
+      name: 'fk_role_dept_dept',
+    }).onDelete('cascade'),
+  ],
+);
 export const roleMenus = mysqlTable(
   'sys_role_menu',
   {
@@ -389,6 +412,7 @@ export const relations = defineRelations(
     menus,
     userRoles,
     roleMenus,
+    roleDepts,
     posts,
     userPosts,
     refreshTokens,
@@ -408,6 +432,7 @@ export const relations = defineRelations(
     menus,
     userRoles,
     roleMenus,
+    roleDepts,
     posts,
     userPosts,
     refreshTokens,
@@ -437,6 +462,10 @@ export const relations = defineRelations(
         from: roles.id,
         to: roleMenus.roleId,
       }),
+      deptAssignments: many.roleDepts({
+        from: roles.id,
+        to: roleDepts.roleId,
+      }),
     },
     userRoles: {
       user: one.users({ from: userRoles.userId, to: users.id }),
@@ -445,6 +474,13 @@ export const relations = defineRelations(
     roleMenus: {
       role: one.roles({ from: roleMenus.roleId, to: roles.id }),
       menu: one.menus({ from: roleMenus.menuId, to: menus.id }),
+    },
+    roleDepts: {
+      role: one.roles({ from: roleDepts.roleId, to: roles.id }),
+      department: one.departments({
+        from: roleDepts.deptId,
+        to: departments.id,
+      }),
     },
     posts: {
       assignments: many.userPosts({

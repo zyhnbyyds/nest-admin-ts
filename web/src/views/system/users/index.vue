@@ -4,24 +4,52 @@ import { Pencil, Plus, Trash2 } from "lucide-vue-next";
 import {
   LewButton,
   LewForm,
-  LewInput,
   LewMessage,
   LewModal,
   LewPagination,
+  LewSelect,
   LewTable,
 } from "lew-ui";
 import type { LewFormOption } from "lew-ui";
 import type { LewTableColumn } from "lew-ui";
 import { createUser, deleteUser, updateUser } from "~/api/system/users";
+import { listDepts } from "~/api/system/depts";
 import { listRoles } from "~/api/system/roles";
 import { useTable } from "~/composables/useTable";
 import { formatDateTime } from "~/composables/useFormat";
-import type { User } from "~/types/api";
+import type { Dept, User } from "~/types/api";
 import { renderStatus } from "~/utils/render";
 import { confirmDanger } from "~/utils/confirm";
 
 // ---------- 列表 ----------
-const query = ref<{ status?: string }>({});
+const statusFilters = [
+  { label: "启用", value: "active" },
+  { label: "禁用", value: "disabled" },
+];
+/** 部门下拉开平（带层级前缀）；lew-ui 下拉框 value 约定为字符串 */
+function flattenDepts(list: Dept[], prefix = ""): { label: string; value: string }[] {
+  return list.flatMap((dept) => {
+    const label = `${prefix}${dept.name}`;
+    const self = { label, value: String(dept.id) };
+    const children = dept.children?.length ? flattenDepts(dept.children, `${label} / `) : [];
+    return [self, ...children];
+  });
+}
+const deptFilterOptions = reactive<{ label: string; value: string }[]>([]);
+const deptFormOptions = reactive<{ label: string; value: number }[]>([]);
+async function loadDeptOptions() {
+  const depts = await listDepts();
+  const options = flattenDepts(depts);
+  deptFilterOptions.splice(0, deptFilterOptions.length, ...options);
+  deptFormOptions.splice(
+    0,
+    deptFormOptions.length,
+    ...options.map((option) => ({ label: option.label, value: Number(option.value) })),
+  );
+}
+void loadDeptOptions();
+
+const query = ref<{ status?: string; deptId?: string }>({});
 const { items, loading, currentPage, pageSize, total, search, refresh, handleChange } =
   useTable<User>({ url: "/system/users", query: () => query.value });
 
@@ -29,6 +57,13 @@ const columns: LewTableColumn[] = [
   { title: "ID", field: "id", width: 70 },
   { title: "用户名", field: "username", width: 130 },
   { title: "显示名称", field: "displayName", width: 130 },
+  {
+    title: "部门",
+    field: "deptName",
+    width: 130,
+    customRender: ({ row }) =>
+      (row as unknown as User).deptName ?? "-",
+  },
   {
     title: "角色",
     field: "roleNames",
@@ -82,6 +117,7 @@ const form = ref({
   email: "",
   phone: "",
   status: "active",
+  deptId: undefined as number | undefined,
   roleIds: [] as number[],
 });
 /** 表单 key：每次打开弹窗自增，强制重建 LewForm 以回填数据 */
@@ -103,6 +139,12 @@ const formOptions: LewFormOption[] = [
     props: { placeholder: "请输入显示名称", clearable: true },
   },
   {
+    field: "deptId",
+    label: "部门",
+    as: "select",
+    props: { options: deptFormOptions, placeholder: "请选择部门", clearable: true },
+  },
+  {
     field: "password",
     label: "密码",
     as: "input",
@@ -116,6 +158,12 @@ const formOptions: LewFormOption[] = [
   },
   { field: "email", label: "邮箱", as: "input", props: { placeholder: "选填", clearable: true } },
   { field: "phone", label: "手机号", as: "input", props: { placeholder: "选填", clearable: true } },
+  {
+    field: "status",
+    label: "状态",
+    as: "select",
+    props: { options: statusFilters, placeholder: "请选择状态" },
+  },
   {
     field: "roleIds",
     label: "角色",
@@ -138,6 +186,7 @@ function openCreate() {
       email: "",
       phone: "",
       status: "active",
+      deptId: undefined,
       roleIds: [],
     });
   });
@@ -156,6 +205,7 @@ function openEdit(row: User) {
       email: row.email ?? "",
       phone: row.phone ?? "",
       status: row.status,
+      deptId: row.deptId ?? undefined,
       roleIds: row.roleIds ?? [],
     });
   });
@@ -181,6 +231,7 @@ async function handleSubmit() {
       password: values.password,
       email: values.email || undefined,
       phone: values.phone || undefined,
+      deptId: values.deptId || undefined,
       roleIds: values.roleIds ?? [],
     });
     LewMessage.success("创建成功");
@@ -190,6 +241,7 @@ async function handleSubmit() {
       email: values.email || null,
       phone: values.phone || null,
       status: values.status as "active" | "disabled",
+      deptId: values.deptId ?? null,
       password: values.password || undefined,
       roleIds: values.roleIds ?? [],
     });
@@ -228,12 +280,19 @@ function handleDelete(row: User) {
 
     <!-- 搜索栏 -->
     <div class="app-card flex items-center gap-3 p-4">
-      <LewInput
+      <LewSelect
         v-model="query.status"
-        width="200px"
-        placeholder="按状态筛选（active/disabled）"
+        width="140px"
+        :options="statusFilters"
+        placeholder="全部状态"
         clearable
-        @keydown.enter="search()"
+      />
+      <LewSelect
+        v-model="query.deptId"
+        width="220px"
+        :options="deptFilterOptions"
+        placeholder="全部部门"
+        clearable
       />
       <LewButton type="light" :loading="loading" @click="search()">查询</LewButton>
     </div>

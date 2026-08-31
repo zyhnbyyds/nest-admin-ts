@@ -6,7 +6,9 @@ import {
 import { and, asc, eq, inArray, isNull, ne } from 'drizzle-orm';
 import { DatabaseService } from '../../../database/database.service';
 import {
+  departments,
   menus,
+  roleDepts,
   roleMenus,
   roles,
   userRoles,
@@ -24,6 +26,8 @@ export type CreateRoleInput = {
     | 'self'
     | undefined;
   menuIds?: number[] | undefined;
+  /** 自定义数据范围（dataScope=custom）时可见的部门ID集合 */
+  deptIds?: number[] | undefined;
 };
 export type UpdateRoleInput = {
   name?: string | undefined;
@@ -38,17 +42,23 @@ export type UpdateRoleInput = {
     | undefined;
   status?: 'active' | 'disabled' | undefined;
   remark?: string | null | undefined;
+  deptIds?: number[] | undefined;
 };
 
 @Injectable()
 export class RolesService {
   constructor(private readonly database: DatabaseService) {}
   async list() {
-    return this.database.db
+    const rows = await this.database.db
       .select()
       .from(roles)
       .where(isNull(roles.deletedAt))
       .orderBy(asc(roles.sort), asc(roles.id));
+    const deptMap = await this.fetchDeptMap(rows.map((row) => row.id));
+    return rows.map((row) => ({
+      ...row,
+      deptIds: deptMap.get(row.id) ?? [],
+    }));
   }
   async create(input: CreateRoleInput, actorId: number) {
     const [exists] = await this.database.db
@@ -57,12 +67,13 @@ export class RolesService {
       .where(eq(roles.key, input.key))
       .limit(1);
     if (exists) throw new ConflictException('角色标识已存在');
-    const { menuIds = [], ...role } = input;
+    const { deptIds = [], menuIds = [], ...role } = input;
     const result = await this.database.db
       .insert(roles)
       .values({ ...role, createdBy: actorId, updatedBy: actorId });
     const roleId = Number(result[0].insertId);
     if (menuIds.length) await this.setMenus(roleId, menuIds);
+    if (deptIds.length) await this.setDepts(roleId, deptIds);
     return { id: roleId };
   }
   async setMenus(roleId: number, menuIds: number[]) {
@@ -96,6 +107,48 @@ export class RolesService {
       .where(eq(roleMenus.roleId, roleId));
     return rows.map((row) => row.menuId);
   }
+  /** 设置角色自定义数据范围的部门集合（dataScope=custom） */
+  async setDepts(roleId: number, deptIds: number[]) {
+    const [role] = await this.database.db
+      .select({ id: roles.id })
+      .from(roles)
+      .where(and(eq(roles.id, roleId), isNull(roles.deletedAt)))
+      .limit(1);
+    if (!role) throw new NotFoundException('角色不存在');
+    const uniqueIds = [...new Set(deptIds)];
+    if (uniqueIds.length) {
+      const found = await this.database.db
+        .select({ id: departments.id })
+        .from(departments)
+        .where(inArray(departments.id, uniqueIds));
+      if (found.length !== uniqueIds.length)
+        throw new NotFoundException('部分部门不存在');
+    }
+    await this.database.db.transaction(async (tx) => {
+      await tx.delete(roleDepts).where(eq(roleDepts.roleId, roleId));
+      if (uniqueIds.length)
+        await tx
+          .insert(roleDepts)
+          .values(uniqueIds.map((deptId) => ({ roleId, deptId })));
+    });
+  }
+  /** 一次查询所有角色已配置的 custom 部门，按角色分组 */
+  private async fetchDeptMap(
+    roleIds: number[],
+  ): Promise<Map<number, number[]>> {
+    const map = new Map<number, number[]>();
+    if (!roleIds.length) return map;
+    const rows = await this.database.db
+      .select({ roleId: roleDepts.roleId, deptId: roleDepts.deptId })
+      .from(roleDepts)
+      .where(inArray(roleDepts.roleId, roleIds));
+    for (const row of rows) {
+      const list = map.get(row.roleId) ?? [];
+      list.push(row.deptId);
+      map.set(row.roleId, list);
+    }
+    return map;
+  }
   async update(
     id: number,
     input: UpdateRoleInput,
@@ -107,7 +160,8 @@ export class RolesService {
       .where(and(eq(roles.id, id), isNull(roles.deletedAt)))
       .limit(1);
     if (!role) throw new NotFoundException('角色不存在');
-    const patch = withoutUndefined(input);
+    const { deptIds, ...rest } = input;
+    const patch = withoutUndefined(rest);
     if (patch.key) {
       const [duplicate] = await this.database.db
         .select({ id: roles.id })
@@ -126,6 +180,8 @@ export class RolesService {
       .update(roles)
       .set({ ...patch, updatedBy: actorId })
       .where(and(eq(roles.id, id), isNull(roles.deletedAt)));
+    // 显式传 deptIds 时整体替换自定义数据范围部门（仅 dataScope=custom 时有意义）
+    if (deptIds) await this.setDepts(id, deptIds);
   }
   async remove(id: number, actorId: number): Promise<void> {
     const [role] = await this.database.db

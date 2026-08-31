@@ -1,25 +1,58 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { and, desc, eq } from 'drizzle-orm';
+import { and, desc, eq, inArray, isNull, sql } from 'drizzle-orm';
 import { DatabaseService } from '../../../database/database.service';
-import { operationLogs } from '../../../database/schema/index';
+import { operationLogs, users } from '../../../database/schema/index';
+import {
+  resolveDataScope,
+  type RequestActor,
+} from '../../../common/data-scope/data-scope';
 
 @Injectable()
 export class OperationLogsService {
   constructor(private readonly database: DatabaseService) {}
 
-  async list(page: number, pageSize: number, status?: string, userId?: number) {
-    const conditions = [
+  async list(
+    page: number,
+    pageSize: number,
+    status?: string,
+    userId?: number,
+    actor?: RequestActor,
+  ) {
+    const conditions: unknown[] = [
       status === 'success' || status === 'failure'
         ? eq(operationLogs.status, status)
         : undefined,
       userId !== undefined ? eq(operationLogs.userId, userId) : undefined,
-    ].filter(
-      (item): item is Exclude<typeof item, undefined> => item !== undefined,
-    );
+    ];
+    if (actor) {
+      const scope = await resolveDataScope(this.database.db, actor);
+      if (scope.kind === 'self') {
+        conditions.push(eq(operationLogs.userId, actor.id));
+      } else if (scope.kind === 'deptIds') {
+        conditions.push(
+          scope.ids.length
+            ? inArray(
+                operationLogs.userId,
+                this.database.db
+                  .select({ id: users.id })
+                  .from(users)
+                  .where(
+                    and(
+                      inArray(users.deptId, scope.ids),
+                      isNull(users.deletedAt),
+                    ),
+                  ),
+              )
+            : sql`1 = 0`,
+        );
+      }
+    }
     const items = await this.database.db
       .select()
       .from(operationLogs)
-      .where(conditions.length ? and(...conditions) : undefined)
+      .where(
+        conditions.length ? and(...(conditions as never[])) : undefined,
+      )
       .orderBy(desc(operationLogs.id))
       .limit(pageSize)
       .offset((page - 1) * pageSize);

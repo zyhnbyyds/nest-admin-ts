@@ -49,6 +49,11 @@ const createSchema = z.object({
     .max(500)
     .optional()
     .openapi({ example: [1, 2, 3], description: '菜单ID集合' }),
+  deptIds: z
+    .array(z.number().int().positive())
+    .max(500)
+    .optional()
+    .openapi({ example: [1, 2], description: '自定义数据范围部门ID集合' }),
 });
 const menuSchema = z.object({
   menuIds: z
@@ -90,6 +95,11 @@ const updateSchema = z.object({
     .nullable()
     .optional()
     .openapi({ example: '备注', description: '备注' }),
+  deptIds: z
+    .array(z.number().int().positive())
+    .max(500)
+    .optional()
+    .openapi({ example: [1, 2], description: '自定义数据范围部门ID集合' }),
 });
 
 registerComponent('CreateRoleRequest', createSchema);

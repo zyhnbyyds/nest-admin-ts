@@ -103,7 +103,7 @@ const updateSchema = createSchema
 registerComponent('CreateUserRequest', createSchema);
 registerComponent('UpdateUserRequest', updateSchema);
 
-type AuthRequest = { user: { id: number } };
+type AuthRequest = { user: { id: number; roles: string[]; permissions: string[] } };
 
 @ApiTags('用户管理')
 @ApiBearerAuth('access-token')
@@ -120,14 +120,27 @@ export class UsersController {
     description: '每页条数',
     example: 20,
   })
+  @ApiQuery({ name: 'status', required: false, description: '用户状态', example: 'active' })
+  @ApiQuery({ name: 'deptId', required: false, description: '部门ID', example: 1 })
   @ApiResponse({ status: 200, description: '成功' })
   list(
     @Query('page') rawPage?: string,
     @Query('pageSize') rawPageSize?: string,
+    @Query('status') status?: string,
+    @Query('deptId') rawDeptId?: string,
+    @Req() request?: AuthRequest,
   ) {
     const page = Math.max(Number(rawPage) || 1, 1);
     const pageSize = Math.min(Math.max(Number(rawPageSize) || 20, 1), 100);
-    return this.users.list(page, pageSize);
+    const deptId =
+      rawDeptId === undefined || rawDeptId === ''
+        ? undefined
+        : Number(rawDeptId);
+    return this.users.list(page, pageSize, {
+      status: status === 'active' || status === 'disabled' ? status : undefined,
+      deptId: Number.isNaN(deptId) ? undefined : deptId,
+      actor: request?.user,
+    });
   }
   @Post()
   @RequirePermissions('system:user:create')

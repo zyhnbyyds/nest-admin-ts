@@ -6,6 +6,10 @@ import {
 import { and, asc, eq, isNull } from 'drizzle-orm';
 import { DatabaseService } from '../../../database/database.service';
 import { departments, users } from '../../../database/schema/index';
+import {
+  resolveDataScope,
+  type RequestActor,
+} from '../../../common/data-scope/data-scope';
 
 export type CreateDeptInput = {
   parentId?: number | undefined;
@@ -34,13 +38,18 @@ type TreeNode<T> = T & { children: TreeNode<T>[] };
 export class DeptsService {
   constructor(private readonly database: DatabaseService) {}
 
-  async list(): Promise<TreeNode<DeptRow>[]> {
+  async list(actor?: RequestActor): Promise<TreeNode<DeptRow>[]> {
     const rows = await this.database.db
       .select()
       .from(departments)
       .where(isNull(departments.deletedAt))
       .orderBy(asc(departments.sort), asc(departments.id));
-    return buildTree(rows);
+    if (!actor) return buildTree(rows);
+    // 数据权限：非管理员只展示其数据范围内可见的部门（self 时无部门可见）
+    const scope = await resolveDataScope(this.database.db, actor);
+    if (scope.kind === 'all') return buildTree(rows);
+    const allowed = new Set(scope.kind === 'self' ? [] : scope.ids);
+    return buildTree(rows.filter((row) => allowed.has(row.id)));
   }
 
   async findOne(id: number): Promise<DeptRow> {

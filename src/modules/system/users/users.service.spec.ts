@@ -37,28 +37,31 @@ describe('UsersService', () => {
   describe('list', () => {
     it('returns paginated users with roles', async () => {
       const { db } = mockDbService();
-      // 第一次 select：用户列表
+      // 第一次 select：用户列表（leftJoin 部门联查）
       // 第二次 select：fetchRoleMap 查询角色（innerJoin 链）
       (db as any).select = vi
         .fn()
         .mockReturnValueOnce({
           from: vi.fn().mockReturnValue({
-            where: vi.fn().mockReturnValue({
-              orderBy: vi.fn().mockReturnValue({
-                limit: vi.fn().mockReturnValue({
-                  offset: vi.fn().mockResolvedValue([
-                    {
-                      id: 1,
-                      username: 'admin',
-                      displayName: 'Admin',
-                      email: null,
-                      phone: null,
-                      status: 'active',
-                      deptId: null,
-                      createdAt: new Date(),
-                      loginAt: null,
-                    },
-                  ]),
+            leftJoin: vi.fn().mockReturnValue({
+              where: vi.fn().mockReturnValue({
+                orderBy: vi.fn().mockReturnValue({
+                  limit: vi.fn().mockReturnValue({
+                    offset: vi.fn().mockResolvedValue([
+                      {
+                        id: 1,
+                        username: 'admin',
+                        displayName: 'Admin',
+                        email: null,
+                        phone: null,
+                        status: 'active',
+                        deptId: null,
+                        deptName: null,
+                        createdAt: new Date(),
+                        loginAt: null,
+                      },
+                    ]),
+                  }),
                 }),
               }),
             }),
@@ -81,6 +84,53 @@ describe('UsersService', () => {
         roleNames: ['admin'],
       });
       expect(result.page).toBe(1);
+    });
+
+    it('lists users with dept filter and super admin actor', async () => {
+      const { db } = mockDbService();
+      (db as any).select = vi
+        .fn()
+        .mockReturnValueOnce({
+          from: vi.fn().mockReturnValue({
+            leftJoin: vi.fn().mockReturnValue({
+              where: vi.fn().mockReturnValue({
+                orderBy: vi.fn().mockReturnValue({
+                  limit: vi.fn().mockReturnValue({
+                    offset: vi.fn().mockResolvedValue([
+                      {
+                        id: 2,
+                        username: 'editor',
+                        displayName: 'Editor',
+                        email: null,
+                        phone: null,
+                        status: 'active',
+                        deptId: 3,
+                        deptName: '研发部',
+                        createdAt: new Date(),
+                        loginAt: null,
+                      },
+                    ]),
+                  }),
+                }),
+              }),
+            }),
+          }),
+        })
+        .mockReturnValueOnce({
+          from: vi.fn().mockReturnValue({
+            innerJoin: vi.fn().mockReturnValue({
+              where: vi.fn().mockResolvedValue([
+                { userId: 2, id: 2, name: 'editor' },
+              ]),
+            }),
+          }),
+        });
+      const service = new UsersService({ db } as any);
+      const result = await service.list(1, 20, {
+        deptId: 3,
+        actor: { id: 9, roles: ['admin'], permissions: ['*:*:*'] },
+      });
+      expect(result.items[0]).toMatchObject({ deptName: '研发部', deptId: 3 });
     });
   });
 

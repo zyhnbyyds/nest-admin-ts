@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { nextTick, ref } from "vue";
+import { nextTick, reactive, ref } from "vue";
 import { KeyRound, Pencil, Plus, Trash2 } from "lucide-vue-next";
 import { LewButton, LewDialog, LewForm, LewMessage, LewModal, LewTable, LewTree } from "lew-ui";
 import type { LewFormOption, LewTreeDataSource } from "lew-ui";
@@ -13,9 +13,38 @@ import {
   updateRole,
 } from "~/api/system/roles";
 import { listMenus } from "~/api/system/menus";
+import { listDepts } from "~/api/system/depts";
 import { formatDateTime } from "~/composables/useFormat";
-import type { Menu, Role } from "~/types/api";
+import type { DataScope, Dept, Menu, Role } from "~/types/api";
 import { renderStatus } from "~/utils/render";
+
+// ---------- 数据范围 ----------
+const dataScopeOptions = [
+  { label: "全部数据权限", value: "all" },
+  { label: "自定义数据权限", value: "custom" },
+  { label: "本部门数据权限", value: "dept" },
+  { label: "本部门及以下数据权限", value: "dept_and_children" },
+  { label: "仅本人数据权限", value: "self" },
+];
+const dataScopeLabels = Object.fromEntries(
+  dataScopeOptions.map((option) => [option.value, option.label]),
+) as Record<string, string>;
+const deptTree = reactive<LewTreeDataSource[]>([]);
+/** Dept[] → LewTreeDataSource[]（key 用部门 id 字符串） */
+function toDeptTreeData(list: Dept[]): LewTreeDataSource[] {
+  return list.map((dept) => ({
+    label: dept.name,
+    key: String(dept.id),
+    level: 0,
+    allNodeValues: [],
+    leafNodeValues: [],
+    children: dept.children?.length ? toDeptTreeData(dept.children) : undefined,
+  }));
+}
+async function loadDeptTree() {
+  deptTree.splice(0, deptTree.length, ...toDeptTreeData(await listDepts()));
+}
+void loadDeptTree();
 
 // ---------- 列表 ----------
 const roles = ref<Role[]>([]);
@@ -26,7 +55,12 @@ const columns: LewTableColumn[] = [
   { title: "角色名称", field: "name", width: 160 },
   { title: "角色标识", field: "key", width: 160 },
   { title: "排序", field: "sort", width: 80 },
-  { title: "数据范围", field: "dataScope", width: 140 },
+  {
+    title: "数据范围",
+    field: "dataScope",
+    width: 150,
+    customRender: ({ row }) => dataScopeLabels[(row as { dataScope: string }).dataScope] ?? "-",
+  },
   {
     title: "状态",
     field: "status",
@@ -58,7 +92,14 @@ void fetchList();
 const modalVisible = ref(false);
 const editingId = ref<number | null>(null);
 const formRef = ref();
-const form = ref({ name: "", key: "", sort: 0, remark: "" });
+const form = ref<{
+  name: string;
+  key: string;
+  sort: number;
+  remark: string;
+  dataScope: DataScope;
+  deptIds: string[];
+}>({ name: "", key: "", sort: 0, remark: "", dataScope: "all", deptIds: [] });
 /** 表单 key：每次打开弹窗自增，强制重建 LewForm 以回填数据 */
 const formKey = ref(0);
 
@@ -78,6 +119,25 @@ const formOptions: LewFormOption[] = [
     props: { placeholder: "小写字母/数字/:-_", clearable: true },
   },
   { field: "sort", label: "排序", as: "input-number", props: { min: 0 } },
+  {
+    field: "dataScope",
+    label: "数据范围",
+    as: "select",
+    props: { options: dataScopeOptions, placeholder: "请选择数据范围" },
+  },
+  {
+    field: "deptIds",
+    label: "授权部门",
+    as: "tree-select",
+    rule: "Yup.array().nullable()",
+    visible: (formData: Record<string, unknown>) => formData.dataScope === "custom",
+    props: {
+      dataSource: deptTree,
+      multiple: true,
+      checkable: true,
+      placeholder: "请勾选可见部门（自定义数据权限时生效）",
+    },
+  },
   { field: "remark", label: "备注", as: "textarea", props: { placeholder: "选填", rows: 2 } },
 ];
 
@@ -87,7 +147,14 @@ function openCreate() {
   modalVisible.value = true;
   // LewForm 为受控组件，需在挂载后通过 setForm 填充
   void nextTick(() => {
-    formRef.value?.setForm?.({ name: "", key: "", sort: 0, remark: "" });
+    formRef.value?.setForm?.({
+      name: "",
+      key: "",
+      sort: 0,
+      remark: "",
+      dataScope: "all",
+      deptIds: [],
+    });
   });
 }
 
@@ -102,6 +169,8 @@ function openEdit(row: Role) {
       key: row.key,
       sort: row.sort,
       remark: row.remark ?? "",
+      dataScope: row.dataScope,
+      deptIds: (row.deptIds ?? []).map(String),
     });
   });
 }
@@ -116,6 +185,10 @@ async function handleSubmit() {
     key: values.key,
     sort: values.sort,
     remark: values.remark || undefined,
+    dataScope: values.dataScope,
+    ...(values.dataScope === "custom"
+      ? { deptIds: (values.deptIds ?? []).map(Number) }
+      : {}),
   };
   if (editingId.value === null) {
     await createRole(body);

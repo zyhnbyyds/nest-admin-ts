@@ -25,21 +25,46 @@ describe('UsersController', () => {
       const service = mockUsersService();
       const controller = new UsersController(service as UsersService);
       await controller.list('1', '20');
-      expect(service.list).toHaveBeenCalledWith(1, 20);
+      expect(service.list).toHaveBeenCalledWith(1, 20, {
+        status: undefined,
+        deptId: undefined,
+        actor: undefined,
+      });
     });
 
     it('uses defaults when pagination params are missing', async () => {
       const service = mockUsersService();
       const controller = new UsersController(service as UsersService);
       await controller.list(undefined, undefined);
-      expect(service.list).toHaveBeenCalledWith(1, 20);
+      expect(service.list).toHaveBeenCalledWith(1, 20, {
+        status: undefined,
+        deptId: undefined,
+        actor: undefined,
+      });
     });
 
     it('clamps page and pageSize to valid ranges', async () => {
       const service = mockUsersService();
       const controller = new UsersController(service as UsersService);
       await controller.list('0', '200');
-      expect(service.list).toHaveBeenCalledWith(1, 100);
+      expect(service.list).toHaveBeenCalledWith(1, 100, {
+        status: undefined,
+        deptId: undefined,
+        actor: undefined,
+      });
+    });
+
+    it('forwards status, deptId and actor from request', async () => {
+      const service = mockUsersService();
+      const controller = new UsersController(service as UsersService);
+      await controller.list('1', '20', 'active', '3', {
+        user: { id: 7, roles: ['editor'], permissions: ['system:user:list'] },
+      });
+      expect(service.list).toHaveBeenCalledWith(1, 20, {
+        status: 'active',
+        deptId: 3,
+        actor: { id: 7, roles: ['editor'], permissions: ['system:user:list'] },
+      });
     });
   });
 

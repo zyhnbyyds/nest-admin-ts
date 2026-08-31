@@ -5,6 +5,7 @@ import {
   Param,
   ParseIntPipe,
   Query,
+  Req,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
@@ -35,6 +36,7 @@ export class OperationLogsController {
     @Query('pageSize') rawPageSize?: string,
     @Query('status') status?: string,
     @Query('userId') rawUserId?: string,
+    @Req() request?: { user?: { id: number; roles: string[]; permissions: string[] } },
   ) {
     const page = Math.max(Number(rawPage) || 1, 1);
     const pageSize = Math.min(Math.max(Number(rawPageSize) || 20, 1), 100);
@@ -47,6 +49,7 @@ export class OperationLogsController {
       pageSize,
       status,
       Number.isNaN(userId) ? undefined : userId,
+      request?.user,
     );
   }
   @Get(':id')
