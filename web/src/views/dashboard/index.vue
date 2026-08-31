@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { h, onMounted, ref } from "vue";
+import dayjs from "dayjs";
 import { LewTable } from "lew-ui";
 import * as echarts from "echarts/core";
 import { BarChart, LineChart, PieChart } from "echarts/charts";
@@ -52,13 +53,13 @@ function last7Days(): string[] {
   });
 }
 
-/** 按近 7 日统计登录次数（基于登录日志真实数据） */
+/** 按近 7 日统计登录次数（基于登录日志真实数据，以东八区日界为准） */
 function buildTrend(logs: { createdAt: string }[]): number[] {
   const counts = Array.from({ length: 7 }, () => 0);
-  const now = new Date();
+  const now = dayjs().tz().startOf("day");
   for (const log of logs) {
-    const date = new Date(log.createdAt);
-    const diffDays = Math.floor((now.getTime() - date.getTime()) / 86_400_000);
+    const date = dayjs(log.createdAt).tz().startOf("day");
+    const diffDays = now.diff(date, "day");
     if (diffDays >= 0 && diffDays < 7) counts[6 - diffDays]! += 1;
   }
   return counts;
