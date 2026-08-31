@@ -1,4 +1,8 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import * as argon2 from 'argon2';
 import { and, eq, isNull } from 'drizzle-orm';
 import { SignJWT, jwtVerify } from 'jose';
@@ -17,6 +21,13 @@ import {
 import { OnlineService } from '../monitor/online/online.service';
 
 type LoginInput = { username: string; password: string };
+type RegisterInput = {
+  username: string;
+  displayName: string;
+  password: string;
+  email?: string | undefined;
+  phone?: string | undefined;
+};
 type LoginMeta = { ip?: string | undefined; userAgent?: string | undefined };
 type Claims = {
   sub: string;
@@ -32,6 +43,67 @@ export class AuthService {
     private readonly config: AppConfigService,
     private readonly online: OnlineService,
   ) {}
+
+  /** 注册新用户（默认分配普通用户角色，注册成功后直接登录） */
+  async register(
+    input: RegisterInput,
+    meta: LoginMeta = {},
+  ): Promise<{
+    accessToken: string;
+    refreshToken: string;
+    tokenType: 'Bearer';
+    expiresIn: string;
+  }> {
+    const [existing] = await this.database.db
+      .select({ id: users.id })
+      .from(users)
+      .where(eq(users.username, input.username))
+      .limit(1);
+    if (existing) throw new ConflictException('Username already exists');
+
+    const passwordHash = await argon2.hash(input.password, {
+      type: argon2.argon2id,
+    });
+    const { password: _password, ...fields } = input;
+    const result = await this.database.db.insert(users).values({
+      ...withoutUndefined(fields),
+      passwordHash,
+    });
+    const userId = Number(result[0].insertId);
+
+    // 分配默认角色（普通用户），不存在时静默跳过
+    const [defaultRole] = await this.database.db
+      .select({ id: roles.id })
+      .from(roles)
+      .where(eq(roles.key, 'user'))
+      .limit(1);
+    if (defaultRole) {
+      await this.database.db
+        .insert(userRoles)
+        .values({ userId, roleId: defaultRole.id });
+    }
+
+    await this.recordLogin({
+      userId,
+      username: input.username,
+      ip: meta.ip,
+      userAgent: meta.userAgent,
+      status: 'success',
+      message: 'registered',
+    });
+    const tokens = await this.issueTokens(userId, input.username);
+    await this.online.track(
+      {
+        userId,
+        username: input.username,
+        ip: meta.ip ?? null,
+        userAgent: meta.userAgent ?? null,
+        loginAt: new Date().toISOString(),
+      },
+      durationSeconds(this.config.jwt.JWT_REFRESH_TTL),
+    );
+    return tokens;
+  }
 
   async login(
     input: LoginInput,
@@ -247,6 +319,14 @@ export class AuthService {
       .setExpirationTime(expiresIn)
       .sign(new TextEncoder().encode(secret));
   }
+}
+
+function withoutUndefined<T extends object>(
+  value: T,
+): { [K in keyof T]: Exclude<T[K], undefined> } {
+  return Object.fromEntries(
+    Object.entries(value).filter(([, field]) => field !== undefined),
+  ) as { [K in keyof T]: Exclude<T[K], undefined> };
 }
 function hashToken(token: string): string {
   return createHash('sha256').update(token).digest('hex');

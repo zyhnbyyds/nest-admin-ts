@@ -30,6 +30,33 @@ const loginSchema = z.object({
     .max(128)
     .openapi({ example: '123456', description: '密码' }),
 });
+const registerSchema = z.object({
+  username: z
+    .string()
+    .min(3)
+    .max(64)
+    .openapi({ example: 'zhangsan', description: '用户名（3-64 个字符）' }),
+  displayName: z
+    .string()
+    .min(1)
+    .max(64)
+    .openapi({ example: '张三', description: '显示名称' }),
+  password: z
+    .string()
+    .min(8)
+    .max(128)
+    .openapi({ example: 'password123', description: '密码（最少 8 位）' }),
+  email: z
+    .string()
+    .email()
+    .optional()
+    .openapi({ example: 'zhangsan@example.com', description: '邮箱' }),
+  phone: z
+    .string()
+    .max(20)
+    .optional()
+    .openapi({ example: '13800138000', description: '手机号' }),
+});
 const refreshSchema = z.object({
   refreshToken: z
     .string()
@@ -38,6 +65,7 @@ const refreshSchema = z.object({
 });
 
 registerComponent('LoginRequest', loginSchema);
+registerComponent('RegisterRequest', registerSchema);
 registerComponent('RefreshRequest', refreshSchema);
 
 type LoginRequest = {
@@ -60,6 +88,21 @@ export class AuthController {
   async login(@Body() body: unknown, @Req() request: LoginRequest) {
     const userAgent = request.headers?.['user-agent'];
     return this.authService.login(loginSchema.parse(body), {
+      ip: request.ip,
+      userAgent: typeof userAgent === 'string' ? userAgent : undefined,
+    });
+  }
+
+  @Post('register')
+  @HttpCode(200)
+  @Public()
+  @ApiOperation({ summary: '用户注册' })
+  @ApiBody({ schema: { $ref: '#/components/schemas/RegisterRequest' } })
+  @ApiResponse({ status: 200, description: '注册成功并返回令牌' })
+  @ApiResponse({ status: 409, description: '用户名已存在' })
+  async register(@Body() body: unknown, @Req() request: LoginRequest) {
+    const userAgent = request.headers?.['user-agent'];
+    return this.authService.register(registerSchema.parse(body), {
       ip: request.ip,
       userAgent: typeof userAgent === 'string' ? userAgent : undefined,
     });

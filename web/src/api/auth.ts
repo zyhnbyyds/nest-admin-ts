@@ -1,10 +1,15 @@
-import type { LoginBody, LoginResult } from "~/types/api";
+import type { LoginBody, LoginResult, RegisterBody } from "~/types/api";
 import { get, post } from "~/request";
 import type { RouteNode } from "~/types/app";
 
 /** 登录 */
 export function login(body: LoginBody) {
   return post<LoginResult>("/auth/login", body);
+}
+
+/** 注册（注册成功后直接返回令牌） */
+export function register(body: RegisterBody) {
+  return post<LoginResult>("/auth/register", body);
 }
 
 /** 刷新令牌 */

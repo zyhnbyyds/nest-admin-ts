@@ -28,10 +28,18 @@ const sidebarWidth = computed(() =>
       :style="{ width: sidebarWidth }"
     >
       <div
-        class="flex items-center justify-center h-14 shrink-0 border-b border-[var(--app-border)]"
+        class="flex items-center justify-center gap-2 h-14 shrink-0 px-3 overflow-hidden border-b border-[var(--app-border)]"
       >
-        <span class="text-17px font-800 tracking--2% text-[var(--lew-color-primary)]">
-          {{ settings.collapsed ? "NA" : "Nest Admin" }}
+        <img
+          src="/image/logo.png"
+          alt="Nest Admin Logo"
+          class="w-30px h-30px shrink-0 object-contain"
+        />
+        <span
+          v-if="!settings.collapsed"
+          class="text-17px font-800 tracking--2% whitespace-nowrap text-[var(--lew-color-primary)]"
+        >
+          Nest Admin
         </span>
       </div>
       <SidebarMenu :items="permissionStore.sidebar" :collapsed="settings.collapsed" />

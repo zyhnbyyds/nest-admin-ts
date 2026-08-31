@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { UnauthorizedException } from '@nestjs/common';
+import { ConflictException, UnauthorizedException } from '@nestjs/common';
 import { AuthService } from './auth.service';
 
 vi.mock('argon2', () => ({
@@ -116,6 +116,77 @@ describe('AuthService', () => {
       await expect(
         service.login({ username: 'disabled', password: 'pass' }),
       ).rejects.toThrow(UnauthorizedException);
+    });
+  });
+
+  describe('register', () => {
+    it('creates a user and returns tokens', async () => {
+      const { db } = mockDb();
+      const selectMock = vi.fn();
+      // 1. 用户名查重（返回空）
+      selectMock.mockReturnValueOnce({
+        from: vi.fn().mockReturnValue({
+          where: vi.fn().mockReturnValue({
+            limit: vi.fn().mockResolvedValue([]),
+          }),
+        }),
+      });
+      // 2. 查询默认角色 user（返回一个角色）
+      selectMock.mockReturnValueOnce({
+        from: vi.fn().mockReturnValue({
+          where: vi.fn().mockReturnValue({
+            limit: vi.fn().mockResolvedValue([{ id: 2 }]),
+          }),
+        }),
+      });
+      // 3. getClaims：角色分配查询（返回空）
+      selectMock.mockReturnValueOnce({
+        from: vi.fn().mockReturnValue({
+          innerJoin: vi.fn().mockReturnThis(),
+          where: vi.fn().mockResolvedValue([]),
+        }),
+      });
+      // 4. getClaims：权限查询（返回空）
+      selectMock.mockReturnValueOnce({
+        from: vi.fn().mockReturnValue({
+          innerJoin: vi.fn().mockReturnThis(),
+          where: vi.fn().mockResolvedValue([]),
+        }),
+      });
+      db.select = selectMock;
+      const service = new AuthService(
+        { db } as any,
+        buildConfig() as any,
+        buildOnline() as any,
+      );
+      const result = await service.register(
+        {
+          username: 'newuser',
+          displayName: 'New User',
+          password: 'password123',
+        },
+        { ip: '127.0.0.1', userAgent: 'test' },
+      );
+      expect(result).toHaveProperty('accessToken');
+      expect(result).toHaveProperty('refreshToken');
+      expect(db.insert).toHaveBeenCalled();
+    });
+
+    it('throws ConflictException when username exists', async () => {
+      const { db } = mockDb();
+      db.select = selectWithLimit([{ id: 1 }]);
+      const service = new AuthService(
+        { db } as any,
+        buildConfig() as any,
+        buildOnline() as any,
+      );
+      await expect(
+        service.register({
+          username: 'existing',
+          displayName: 'Existing',
+          password: 'password123',
+        }),
+      ).rejects.toThrow(ConflictException);
     });
   });
 

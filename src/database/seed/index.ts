@@ -16,6 +16,11 @@ async function seed(): Promise<void> {
     .insert(roles)
     .values({ name: '超级管理员', key: 'admin', isSystem: true })
     .onDuplicateKeyUpdate({ set: { name: '超级管理员' } });
+  // 普通用户角色：注册用户默认分配
+  await db
+    .insert(roles)
+    .values({ name: '普通用户', key: 'user' })
+    .onDuplicateKeyUpdate({ set: { name: '普通用户' } });
   const [role] = await db
     .select()
     .from(roles)

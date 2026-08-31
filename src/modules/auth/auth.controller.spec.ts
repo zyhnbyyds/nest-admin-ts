@@ -11,6 +11,12 @@ function mockAuthService(): Partial<AuthService> {
       tokenType: 'Bearer',
       expiresIn: '15m',
     }),
+    register: vi.fn().mockResolvedValue({
+      accessToken: 'access-token',
+      refreshToken: 'refresh-token',
+      tokenType: 'Bearer',
+      expiresIn: '15m',
+    }),
     refresh: vi.fn().mockResolvedValue({
       accessToken: 'new-access-token',
       refreshToken: 'new-refresh-token',
@@ -62,6 +68,31 @@ describe('AuthController', () => {
         ip: undefined,
         userAgent: undefined,
       });
+    });
+  });
+
+  describe('register', () => {
+    it('returns tokens on valid registration', async () => {
+      const authService = mockAuthService();
+      const controller = new AuthController(authService as AuthService);
+      const result = await controller.register(
+        {
+          username: 'newuser',
+          displayName: 'New User',
+          password: 'password123',
+        },
+        { headers: { 'user-agent': 'test' } },
+      );
+      expect(result).toHaveProperty('accessToken');
+      expect(result).toHaveProperty('refreshToken');
+      expect(authService.register).toHaveBeenCalledWith(
+        {
+          username: 'newuser',
+          displayName: 'New User',
+          password: 'password123',
+        },
+        { ip: undefined, userAgent: 'test' },
+      );
     });
   });
 

@@ -3,5 +3,12 @@
     "**/.git": false
   },
   "eslint.format.enable": true,
-  "cSpell.words": ["asteasolutions", "depts", "echostr", "loginlog", "varchar"]
+  "cSpell.words": [
+    "asteasolutions",
+    "depts",
+    "echostr",
+    "loginlog",
+    "operlog",
+    "varchar"
+  ]
 }

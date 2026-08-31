@@ -26,6 +26,14 @@ export interface LoginBody {
   password: string;
 }
 
+export interface RegisterBody {
+  username: string;
+  displayName: string;
+  password: string;
+  email?: string;
+  phone?: string;
+}
+
 export interface LoginResult {
   accessToken: string;
   refreshToken: string;
