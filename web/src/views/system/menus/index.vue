@@ -182,8 +182,10 @@ async function moveMenu(menu: Menu, direction: -1 | 1) {
 const modalVisible = ref(false);
 const editingId = ref<number | null>(null);
 const formRef = ref();
+/** 上级菜单下拉框里的“根目录”哨兵值（LewSelect 对假值 0 不显示选中标签） */
+const ROOT_PARENT = -1;
 const form = ref({
-  parentId: 0,
+  parentId: ROOT_PARENT,
   name: "",
   title: "",
   type: "M" as MenuType,
@@ -225,14 +227,14 @@ function openCreate(parentId = 0) {
   parentOptions.splice(
     0,
     parentOptions.length,
-    { label: "根目录", value: 0 },
+    { label: "根目录", value: ROOT_PARENT },
     ...flattenMenus(menus.value),
   );
   formKey.value += 1;
   modalVisible.value = true;
   void nextTick(() => {
     formRef.value?.setForm?.({
-      parentId,
+      parentId: parentId === 0 ? ROOT_PARENT : parentId,
       name: "",
       title: "",
       type: "M",
@@ -251,14 +253,14 @@ function openEdit(row: Menu) {
   parentOptions.splice(
     0,
     parentOptions.length,
-    { label: "根目录", value: 0 },
+    { label: "根目录", value: ROOT_PARENT },
     ...flattenMenus(menus.value),
   );
   formKey.value += 1;
   modalVisible.value = true;
   void nextTick(() => {
     formRef.value?.setForm?.({
-      parentId: row.parentId,
+      parentId: row.parentId === 0 ? ROOT_PARENT : row.parentId,
       name: row.name,
       title: row.title,
       type: row.type,
@@ -277,7 +279,7 @@ async function handleSubmit() {
   if (!valid) return;
   const values = (formRef.value?.getForm?.() ?? form.value) as typeof form.value;
   const body = {
-    parentId: values.parentId,
+    parentId: values.parentId === ROOT_PARENT ? 0 : values.parentId,
     name: values.name,
     title: values.title,
     type: values.type,
@@ -414,21 +416,21 @@ function handleDelete(row: Menu) {
               field: 'type',
               label: '类型',
               as: 'select',
-              rule: 'Yup.string().required()',
+              rule: `Yup.string().required('不能为空')`,
               props: { options: typeOptions },
             },
             {
               field: 'name',
               label: '路由名称',
               as: 'input',
-              rule: 'Yup.string().required()',
+              rule: `Yup.string().required('不能为空')`,
               props: { placeholder: '如 system', clearable: true },
             },
             {
               field: 'title',
               label: '菜单标题',
               as: 'input',
-              rule: 'Yup.string().required()',
+              rule: `Yup.string().required('不能为空')`,
               props: { placeholder: '如 系统管理', clearable: true },
             },
             {

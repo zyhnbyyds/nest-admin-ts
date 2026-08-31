@@ -42,8 +42,10 @@ void fetchList();
 const modalVisible = ref(false);
 const editingId = ref<number | null>(null);
 const formRef = ref();
+/** 上级部门下拉框里的“根部门”哨兵值（LewSelect 对假值 0 不显示选中标签） */
+const ROOT_PARENT = -1;
 const form = ref({
-  parentId: 0,
+  parentId: ROOT_PARENT,
   name: "",
   sort: 0,
   leaderUserId: undefined as number | undefined,
@@ -75,14 +77,14 @@ function openCreate(parentId = 0) {
   parentOptions.splice(
     0,
     parentOptions.length,
-    { label: "根部门", value: 0 },
+    { label: "根部门", value: ROOT_PARENT },
     ...flattenDepts(depts.value),
   );
   formKey.value += 1;
   modalVisible.value = true;
   void nextTick(() => {
     formRef.value?.setForm?.({
-      parentId,
+      parentId: parentId === 0 ? ROOT_PARENT : parentId,
       name: "",
       sort: 0,
       leaderUserId: undefined,
@@ -98,14 +100,14 @@ function openEdit(row: Dept) {
   parentOptions.splice(
     0,
     parentOptions.length,
-    { label: "根部门", value: 0 },
+    { label: "根部门", value: ROOT_PARENT },
     ...flattenDepts(depts.value),
   );
   formKey.value += 1;
   modalVisible.value = true;
   void nextTick(() => {
     formRef.value?.setForm?.({
-      parentId: row.parentId,
+      parentId: row.parentId === 0 ? ROOT_PARENT : row.parentId,
       name: row.name,
       sort: row.sort,
       leaderUserId: row.leaderUserId ?? undefined,
@@ -121,7 +123,7 @@ async function handleSubmit() {
   if (!valid) return;
   const values = (formRef.value?.getForm?.() ?? form.value) as typeof form.value;
   const body = {
-    parentId: values.parentId,
+    parentId: values.parentId === ROOT_PARENT ? 0 : values.parentId,
     name: values.name,
     sort: values.sort,
     leaderUserId: values.leaderUserId,
@@ -254,7 +256,7 @@ function handleDelete(row: Dept) {
               field: 'name',
               label: '部门名称',
               as: 'input',
-              rule: 'Yup.string().required()',
+              rule: `Yup.string().required('不能为空')`,
               props: { placeholder: '请输入部门名称', clearable: true },
             },
             { field: 'sort', label: '排序', as: 'input-number', props: { min: 0 } },
