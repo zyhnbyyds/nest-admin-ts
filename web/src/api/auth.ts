@@ -1,5 +1,11 @@
-import type { LoginBody, LoginResult, RegisterBody } from "~/types/api";
-import { get, post } from "~/request";
+import type {
+  ChangePasswordBody,
+  LoginBody,
+  LoginResult,
+  RegisterBody,
+  UpdateProfileBody,
+} from "~/types/api";
+import { get, patch, post } from "~/request";
 import type { RouteNode } from "~/types/app";
 
 /** 登录 */
@@ -10,6 +16,16 @@ export function login(body: LoginBody) {
 /** 注册（注册成功后直接返回令牌） */
 export function register(body: RegisterBody) {
   return post<LoginResult>("/auth/register", body);
+}
+
+/** 更新当前用户资料 */
+export function updateProfile(body: UpdateProfileBody) {
+  return patch<{ success: boolean }>("/auth/profile", body);
+}
+
+/** 修改当前用户密码 */
+export function changePassword(body: ChangePasswordBody) {
+  return patch<{ success: boolean }>("/auth/password", body);
 }
 
 /** 刷新令牌 */

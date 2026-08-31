@@ -7,6 +7,7 @@ function mockRolesService(): Partial<RolesService> {
     list: vi.fn().mockResolvedValue([]),
     create: vi.fn().mockResolvedValue({ id: 1 }),
     setMenus: vi.fn().mockResolvedValue(undefined),
+    remove: vi.fn().mockResolvedValue(undefined),
   };
 }
 
@@ -38,6 +39,15 @@ describe('RolesController', () => {
       const controller = new RolesController(service as RolesService);
       await controller.setMenus(1, { menuIds: [10, 20, 30] });
       expect(service.setMenus).toHaveBeenCalledWith(1, [10, 20, 30]);
+    });
+  });
+
+  describe('remove', () => {
+    it('removes a role', async () => {
+      const service = mockRolesService();
+      const controller = new RolesController(service as RolesService);
+      await controller.remove(1, { user: { id: 1 } });
+      expect(service.remove).toHaveBeenCalledWith(1, 1);
     });
   });
 });

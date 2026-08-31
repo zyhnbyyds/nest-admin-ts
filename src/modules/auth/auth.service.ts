@@ -28,6 +28,15 @@ type RegisterInput = {
   email?: string | undefined;
   phone?: string | undefined;
 };
+type UpdateProfileInput = {
+  displayName?: string | undefined;
+  email?: string | null | undefined;
+  phone?: string | null | undefined;
+};
+type ChangePasswordInput = {
+  oldPassword: string;
+  newPassword: string;
+};
 type LoginMeta = { ip?: string | undefined; userAgent?: string | undefined };
 type Claims = {
   sub: string;
@@ -103,6 +112,48 @@ export class AuthService {
       durationSeconds(this.config.jwt.JWT_REFRESH_TTL),
     );
     return tokens;
+  }
+
+  /** 更新当前登录用户的个人资料 */
+  async updateProfile(
+    userId: number,
+    input: UpdateProfileInput,
+  ): Promise<void> {
+    const [user] = await this.database.db
+      .select({ id: users.id })
+      .from(users)
+      .where(and(eq(users.id, userId), isNull(users.deletedAt)))
+      .limit(1);
+    if (!user) throw new UnauthorizedException('User not found');
+    await this.database.db
+      .update(users)
+      .set({ ...withoutUndefined(input), updatedBy: userId })
+      .where(eq(users.id, userId));
+  }
+
+  /** 修改当前登录用户的密码（需校验旧密码） */
+  async changePassword(
+    userId: number,
+    input: ChangePasswordInput,
+  ): Promise<void> {
+    const [user] = await this.database.db
+      .select({ passwordHash: users.passwordHash })
+      .from(users)
+      .where(and(eq(users.id, userId), isNull(users.deletedAt)))
+      .limit(1);
+    if (!user || !(await argon2.verify(user.passwordHash, input.oldPassword)))
+      throw new UnauthorizedException('Old password is incorrect');
+    const passwordHash = await argon2.hash(input.newPassword, {
+      type: argon2.argon2id,
+    });
+    await this.database.db
+      .update(users)
+      .set({
+        passwordHash,
+        passwordChangedAt: new Date(),
+        updatedBy: userId,
+      })
+      .where(eq(users.id, userId));
   }
 
   async login(

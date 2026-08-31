@@ -1,10 +1,16 @@
 <script setup lang="ts">
 import { ref } from "vue";
 import { KeyRound, Plus, Trash2 } from "lucide-vue-next";
-import { LewButton, LewForm, LewMessage, LewModal, LewTable, LewTree } from "lew-ui";
+import { LewButton, LewDialog, LewForm, LewMessage, LewModal, LewTable, LewTree } from "lew-ui";
 import type { LewFormOption, LewTreeDataSource } from "lew-ui";
 import type { LewTableColumn } from "lew-ui";
-import { assignRoleMenus, createRole, getRoleMenuIds, listRoles } from "~/api/system/roles";
+import {
+  assignRoleMenus,
+  createRole,
+  deleteRole,
+  getRoleMenuIds,
+  listRoles,
+} from "~/api/system/roles";
 import { listMenus } from "~/api/system/menus";
 import { formatDateTime } from "~/composables/useFormat";
 import type { Menu, Role } from "~/types/api";
@@ -124,9 +130,17 @@ async function handleAuthSubmit() {
   authVisible.value = false;
 }
 
-// ---------- 删除（后端未暴露角色删除接口，仅提示） ----------
-function handleDelete(_row: Role) {
-  LewMessage.warning("当前后端未提供角色删除接口");
+// ---------- 删除角色 ----------
+function handleDelete(row: Role) {
+  LewDialog.warning({
+    title: "删除确认",
+    content: `确定删除角色「${row.name}」吗？此操作不可恢复。`,
+    onOk: async () => {
+      await deleteRole(row.id);
+      LewMessage.success("删除成功");
+      void fetchList();
+    },
+  });
 }
 </script>
 

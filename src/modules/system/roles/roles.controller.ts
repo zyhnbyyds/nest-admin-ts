@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   ParseIntPipe,
@@ -87,5 +88,14 @@ export class RolesController {
   @ApiResponse({ status: 200, description: '成功' })
   setMenus(@Param('id', ParseIntPipe) id: number, @Body() body: unknown) {
     return this.roles.setMenus(id, menuSchema.parse(body).menuIds);
+  }
+
+  @Delete(':id')
+  @RequirePermissions('system:role:delete')
+  @ApiOperation({ summary: '删除角色' })
+  @ApiParam({ name: 'id', description: '角色ID' })
+  @ApiResponse({ status: 200, description: '成功' })
+  remove(@Param('id', ParseIntPipe) id: number, @Req() request: AuthRequest) {
+    return this.roles.remove(id, request.user.id);
   }
 }

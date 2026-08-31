@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   HttpCode,
+  Patch,
   Post,
   Req,
   UnauthorizedException,
@@ -63,14 +64,51 @@ const refreshSchema = z.object({
     .min(1)
     .openapi({ example: 'eyJhbG...', description: '刷新令牌' }),
 });
+const updateProfileSchema = z.object({
+  displayName: z
+    .string()
+    .min(1)
+    .max(64)
+    .optional()
+    .openapi({ example: '张三', description: '显示名称' }),
+  email: z
+    .email()
+    .nullable()
+    .optional()
+    .openapi({ example: 'zhangsan@example.com', description: '邮箱' }),
+  phone: z
+    .string()
+    .max(20)
+    .nullable()
+    .optional()
+    .openapi({ example: '13800138000', description: '手机号' }),
+});
+const changePasswordSchema = z.object({
+  oldPassword: z
+    .string()
+    .min(1)
+    .openapi({ example: 'admin123456', description: '原密码' }),
+  newPassword: z
+    .string()
+    .min(8)
+    .max(128)
+    .openapi({ example: 'newpassword123', description: '新密码（最少 8 位）' }),
+});
 
 registerComponent('LoginRequest', loginSchema);
 registerComponent('RegisterRequest', registerSchema);
 registerComponent('RefreshRequest', refreshSchema);
+registerComponent('UpdateProfileRequest', updateProfileSchema);
+registerComponent('ChangePasswordRequest', changePasswordSchema);
 
 type LoginRequest = {
   ip?: string;
   headers?: Record<string, string | string[] | undefined>;
+};
+type AuthRequest = {
+  ip?: string;
+  headers?: Record<string, string | string[] | undefined>;
+  user?: { id: number };
 };
 
 @ApiTags('认证管理')
@@ -106,6 +144,33 @@ export class AuthController {
       ip: request.ip,
       userAgent: typeof userAgent === 'string' ? userAgent : undefined,
     });
+  }
+
+  @Patch('profile')
+  @ApiBearerAuth('access-token')
+  @ApiOperation({ summary: '更新当前用户资料' })
+  @ApiBody({ schema: { $ref: '#/components/schemas/UpdateProfileRequest' } })
+  @ApiResponse({ status: 200, description: '成功' })
+  async updateProfile(@Body() body: unknown, @Req() request: AuthRequest) {
+    await this.authService.updateProfile(
+      request.user?.id ?? 0,
+      updateProfileSchema.parse(body),
+    );
+    return { success: true };
+  }
+
+  @Patch('password')
+  @ApiBearerAuth('access-token')
+  @ApiOperation({ summary: '修改当前用户密码' })
+  @ApiBody({ schema: { $ref: '#/components/schemas/ChangePasswordRequest' } })
+  @ApiResponse({ status: 200, description: '成功' })
+  @ApiResponse({ status: 401, description: '原密码错误' })
+  async changePassword(@Body() body: unknown, @Req() request: AuthRequest) {
+    await this.authService.changePassword(
+      request.user?.id ?? 0,
+      changePasswordSchema.parse(body),
+    );
+    return { success: true };
   }
 
   @Post('refresh')

@@ -1,0 +1,69 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#123B8F"/>
+      <stop offset="100%" stop-color="#1685F5"/>
+    </linearGradient>
+    <clipPath id="circleClip">
+      <circle cx="256" cy="256" r="256"/>
+    </clipPath>
+  </defs>
+
+  <!-- Circular badge, flush to the canvas edges -->
+  <circle cx="256" cy="256" r="256" fill="url(#bg)"/>
+
+  <g clip-path="url(#circleClip)">
+    <!-- White N / eagle silhouette -->
+    <path fill="#fff" d="
+      M72 93
+      Q72 80 85 80
+      H176
+      Q188 80 196 91
+      L327 260
+      V169
+      H303
+      Q291 169 285 157
+      L270 133
+      Q265 122 276 111
+      L298 80
+      H454
+      Q466 80 460 94
+      L441 130
+      Q436 140 425 140
+      H400
+      V427
+      Q400 440 387 440
+      H322
+      Q309 440 302 430
+      L176 269
+      V407
+      Q176 420 163 420
+      H85
+      Q72 420 72 407
+      Z"/>
+
+    <!-- Cut-out / eagle head -->
+    <path fill="#123B8F" d="
+      M103 333
+      C108 284 124 246 157 222
+      C143 219 128 208 119 191
+      C134 199 149 201 163 198
+      C151 187 148 174 153 160
+      C168 181 190 187 215 191
+      C244 196 265 207 278 225
+      C287 237 292 251 291 266
+      C286 257 276 252 264 252
+      C279 259 289 271 288 287
+      C285 304 272 315 254 318
+      C238 321 224 329 215 343
+      C205 358 205 375 214 390
+      C193 383 176 372 164 357
+      C147 336 136 314 131 291
+      C119 304 110 319 103 333
+      Z"/>
+
+    <!-- Eagle eye -->
+    <path fill="#fff" d="M207 232 Q226 226 244 235 Q231 244 213 242 Z"/>
+    <circle cx="229" cy="236" r="4" fill="#123B8F"/>
+  </g>
+</svg>

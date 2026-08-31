@@ -34,6 +34,17 @@ export interface RegisterBody {
   phone?: string;
 }
 
+export interface UpdateProfileBody {
+  displayName?: string;
+  email?: string | null;
+  phone?: string | null;
+}
+
+export interface ChangePasswordBody {
+  oldPassword: string;
+  newPassword: string;
+}
+
 export interface LoginResult {
   accessToken: string;
   refreshToken: string;

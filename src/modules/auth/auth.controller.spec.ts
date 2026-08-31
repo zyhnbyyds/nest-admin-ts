@@ -24,6 +24,8 @@ function mockAuthService(): Partial<AuthService> {
       expiresIn: '15m',
     }),
     logout: vi.fn().mockResolvedValue(undefined),
+    updateProfile: vi.fn().mockResolvedValue(undefined),
+    changePassword: vi.fn().mockResolvedValue(undefined),
   };
 }
 
@@ -128,6 +130,37 @@ describe('AuthController', () => {
       });
       expect(result).toEqual({ success: true });
       expect(authService.logout).toHaveBeenCalledWith('token-to-revoke');
+    });
+  });
+
+  describe('updateProfile', () => {
+    it('updates profile and returns success', async () => {
+      const authService = mockAuthService();
+      const controller = new AuthController(authService as AuthService);
+      const result = await controller.updateProfile(
+        { displayName: '张三' },
+        { user: { id: 7 } },
+      );
+      expect(result).toEqual({ success: true });
+      expect(authService.updateProfile).toHaveBeenCalledWith(7, {
+        displayName: '张三',
+      });
+    });
+  });
+
+  describe('changePassword', () => {
+    it('changes password and returns success', async () => {
+      const authService = mockAuthService();
+      const controller = new AuthController(authService as AuthService);
+      const result = await controller.changePassword(
+        { oldPassword: 'old-pass', newPassword: 'new-pass-123' },
+        { user: { id: 7 } },
+      );
+      expect(result).toEqual({ success: true });
+      expect(authService.changePassword).toHaveBeenCalledWith(7, {
+        oldPassword: 'old-pass',
+        newPassword: 'new-pass-123',
+      });
     });
   });
 });

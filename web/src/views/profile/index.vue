@@ -3,6 +3,7 @@ import { ref } from "vue";
 import { Lock } from "lucide-vue-next";
 import { LewButton, LewForm, LewMessage } from "lew-ui";
 import type { LewFormOption } from "lew-ui";
+import { changePassword, updateProfile } from "~/api/auth";
 import { useUserStore } from "~/store/user";
 
 const userStore = useUserStore();
@@ -16,16 +17,40 @@ const profile = ref({
 });
 
 const profileOptions: LewFormOption[] = [
-  { field: "displayName", label: "显示名称", as: "input", props: { clearable: true } },
-  { field: "email", label: "邮箱", as: "input", props: { placeholder: "选填", clearable: true } },
-  { field: "phone", label: "手机号", as: "input", props: { placeholder: "选填", clearable: true } },
+  {
+    field: "displayName",
+    label: "显示名称",
+    as: "input",
+    rule: "Yup.string().required()",
+    props: { clearable: true },
+  },
+  {
+    field: "email",
+    label: "邮箱",
+    as: "input",
+    rule: "Yup.string().email().nullable()",
+    props: { placeholder: "选填", clearable: true },
+  },
+  {
+    field: "phone",
+    label: "手机号",
+    as: "input",
+    rule: "Yup.string().nullable()",
+    props: { placeholder: "选填", clearable: true },
+  },
 ];
 
 async function handleSaveProfile() {
   const valid = await profileRef.value?.validate();
   if (!valid) return;
-  // 后端暂无独立 profile 接口，资料修改走用户更新接口（需 system:user:update 权限）
-  LewMessage.info("当前后端未提供个人资料独立接口，请联系管理员修改");
+  // 用 getForm 读取表单当前值，确保拿到用户真实输入
+  const values = (profileRef.value?.getForm?.() ?? profile.value) as typeof profile.value;
+  await updateProfile({
+    displayName: values.displayName || userStore.username,
+    email: values.email || null,
+    phone: values.phone || null,
+  });
+  LewMessage.success("资料已更新");
 }
 
 // ---------- 改密码 ----------
@@ -44,8 +69,8 @@ const passwordOptions: LewFormOption[] = [
     field: "newPassword",
     label: "新密码",
     as: "input",
-    rule: "Yup.string().required()",
-    props: { type: "password", placeholder: "最少 12 位", clearable: true, showPassword: true },
+    rule: "Yup.string().required().min(8)",
+    props: { type: "password", placeholder: "最少 8 位", clearable: true, showPassword: true },
   },
   {
     field: "confirmPassword",
@@ -59,16 +84,18 @@ const passwordOptions: LewFormOption[] = [
 async function handleChangePassword() {
   const valid = await passwordRef.value?.validate();
   if (!valid) return;
-  if (password.value.newPassword !== password.value.confirmPassword) {
+  // 用 getForm 读取表单当前值，确保拿到用户真实输入
+  const values = (passwordRef.value?.getForm?.() ?? password.value) as typeof password.value;
+  if (values.newPassword !== values.confirmPassword) {
     LewMessage.error("两次输入的新密码不一致");
     return;
   }
-  if (password.value.newPassword.length < 12) {
-    LewMessage.error("新密码最少 12 位");
-    return;
-  }
-  // 后端暂无改密码接口
-  LewMessage.info("当前后端未提供修改密码接口");
+  await changePassword({
+    oldPassword: values.oldPassword,
+    newPassword: values.newPassword,
+  });
+  LewMessage.success("密码修改成功");
+  password.value = { oldPassword: "", newPassword: "", confirmPassword: "" };
 }
 </script>
 

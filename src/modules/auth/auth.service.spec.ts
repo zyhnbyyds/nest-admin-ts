@@ -203,6 +203,74 @@ describe('AuthService', () => {
     });
   });
 
+  describe('updateProfile', () => {
+    it('updates profile of existing user', async () => {
+      const { db } = mockDb();
+      db.select = selectWithLimit([{ id: 1 }]);
+      const service = new AuthService(
+        { db } as any,
+        buildConfig() as any,
+        buildOnline() as any,
+      );
+      await expect(
+        service.updateProfile(1, { displayName: '张三' }),
+      ).resolves.toBeUndefined();
+      expect(db.update).toHaveBeenCalled();
+    });
+
+    it('throws UnauthorizedException when user not found', async () => {
+      const { db } = mockDb();
+      db.select = selectWithLimit([]);
+      const service = new AuthService(
+        { db } as any,
+        buildConfig() as any,
+        buildOnline() as any,
+      );
+      await expect(
+        service.updateProfile(999, { displayName: '张三' }),
+      ).rejects.toThrow(UnauthorizedException);
+    });
+  });
+
+  describe('changePassword', () => {
+    it('changes password with valid old password', async () => {
+      const { db } = mockDb();
+      db.select = selectWithLimit([{ passwordHash: 'hash' }]);
+      const argon2Mock = await import('argon2');
+      (argon2Mock.verify as ReturnType<typeof vi.fn>).mockResolvedValue(true);
+      const service = new AuthService(
+        { db } as any,
+        buildConfig() as any,
+        buildOnline() as any,
+      );
+      await expect(
+        service.changePassword(1, {
+          oldPassword: 'old-pass',
+          newPassword: 'new-pass-123',
+        }),
+      ).resolves.toBeUndefined();
+      expect(db.update).toHaveBeenCalled();
+    });
+
+    it('throws UnauthorizedException when old password is wrong', async () => {
+      const { db } = mockDb();
+      db.select = selectWithLimit([{ passwordHash: 'hash' }]);
+      const argon2Mock = await import('argon2');
+      (argon2Mock.verify as ReturnType<typeof vi.fn>).mockResolvedValue(false);
+      const service = new AuthService(
+        { db } as any,
+        buildConfig() as any,
+        buildOnline() as any,
+      );
+      await expect(
+        service.changePassword(1, {
+          oldPassword: 'wrong',
+          newPassword: 'new-pass-123',
+        }),
+      ).rejects.toThrow(UnauthorizedException);
+    });
+  });
+
   describe('refresh', () => {
     it('throws for invalid token', async () => {
       const { db } = mockDb();

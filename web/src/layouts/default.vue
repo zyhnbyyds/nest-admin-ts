@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, ref } from "vue";
 import { useRoute } from "vue-router";
 import { ChevronsLeft, ChevronsRight } from "lucide-vue-next";
 import { usePermissionStore } from "~/store/permission";
@@ -8,7 +8,6 @@ import SidebarMenu from "./components/SidebarMenu.vue";
 import AppHeader from "./components/AppHeader.vue";
 import TabsBar from "./components/TabsBar.vue";
 import ThemePanel from "./components/ThemePanel.vue";
-import { ref } from "vue";
 
 const route = useRoute();
 const settings = useSettingsStore();
@@ -18,6 +17,34 @@ const themeVisible = ref(false);
 const sidebarWidth = computed(() =>
   settings.collapsed ? "var(--app-sidebar-collapsed-width)" : "var(--app-sidebar-width)",
 );
+
+/** 页面过渡：JS 驱动淡入（不依赖 transitionend，避免路由切换卡死） */
+const pageTransition = {
+  enterActiveClass: "",
+  enterFromClass: "",
+  enterToClass: "",
+  leaveActiveClass: "",
+  leaveFromClass: "",
+  leaveToClass: "",
+  enter(el: Element, done: () => void) {
+    const node = el as HTMLElement;
+    node.style.opacity = "0";
+    node.style.transform = "translateY(8px)";
+    requestAnimationFrame(() => {
+      node.style.transition = "opacity 0.2s ease, transform 0.2s ease";
+      node.style.opacity = "1";
+      node.style.transform = "translateY(0)";
+      setTimeout(done, 220);
+    });
+  },
+  leave(el: Element, done: () => void) {
+    const node = el as HTMLElement;
+    node.style.transition = "opacity 0.15s ease, transform 0.15s ease";
+    node.style.opacity = "0";
+    node.style.transform = "translateY(-4px)";
+    setTimeout(done, 170);
+  },
+};
 </script>
 
 <template>
@@ -58,7 +85,12 @@ const sidebarWidth = computed(() =>
       <TabsBar />
       <main class="flex-1 overflow-y-auto p-5">
         <RouterView v-slot="{ Component }">
-          <Transition name="fade-slide" mode="out-in">
+          <Transition
+            :css="false"
+            mode="out-in"
+            @enter="pageTransition.enter"
+            @leave="pageTransition.leave"
+          >
             <component :is="Component" :key="route.path" />
           </Transition>
         </RouterView>

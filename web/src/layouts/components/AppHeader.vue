@@ -2,6 +2,7 @@
 import { useRouter } from "vue-router";
 import { Moon, Palette, Sun } from "lucide-vue-next";
 import { LewDropdown, LewMessage } from "lew-ui";
+import type { LewContextMenusOption } from "lew-ui";
 import { logout as logoutApi } from "~/api/auth";
 import { useUserStore } from "~/store/user";
 import { useSettingsStore } from "~/store/settings";
@@ -23,6 +24,14 @@ async function handleLogout() {
   resetRouteFlag();
   LewMessage.success("已退出登录");
   router.push("/login");
+}
+
+function handleUserMenu(option: LewContextMenusOption) {
+  if (option.value === "profile") {
+    router.push("/profile");
+  } else if (option.value === "logout") {
+    void handleLogout();
+  }
 }
 
 function toggleDark() {
@@ -53,8 +62,11 @@ function toggleDark() {
       <!-- 用户菜单 -->
       <LewDropdown
         trigger="click"
-        :options="[{ label: '退出登录', value: 'logout' }]"
-        @change="handleLogout"
+        :options="[
+          { label: '个人中心', value: 'profile' },
+          { label: '退出登录', value: 'logout' },
+        ]"
+        @change="handleUserMenu"
       >
         <button
           class="flex items-center gap-2 py-1 pr-2.5 pl-1 border-none rounded-full bg-transparent cursor-pointer transition-colors duration-200 hover:bg-[var(--app-bg-hover)]"
