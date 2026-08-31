@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { nextTick, ref } from "vue";
+import { h, nextTick, reactive, ref } from "vue";
 import { Pencil, Plus, Trash2 } from "lucide-vue-next";
 import {
   LewButton,
@@ -14,6 +14,7 @@ import {
 import type { LewFormOption } from "lew-ui";
 import type { LewTableColumn } from "lew-ui";
 import { createUser, deleteUser, updateUser } from "~/api/system/users";
+import { listRoles } from "~/api/system/roles";
 import { useTable } from "~/composables/useTable";
 import { formatDateTime } from "~/composables/useFormat";
 import type { User } from "~/types/api";
@@ -26,10 +27,19 @@ const { items, loading, currentPage, pageSize, total, search, refresh, handleCha
 
 const columns: LewTableColumn[] = [
   { title: "ID", field: "id", width: 70 },
-  { title: "用户名", field: "username", width: 140 },
-  { title: "显示名称", field: "displayName", width: 140 },
+  { title: "用户名", field: "username", width: 130 },
+  { title: "显示名称", field: "displayName", width: 130 },
+  {
+    title: "角色",
+    field: "roleNames",
+    width: 140,
+    customRender: ({ row }) => {
+      const names = (row as unknown as User).roleNames ?? [];
+      return h("span", { class: "text-12.5px" }, names.length ? names.join("、") : "-");
+    },
+  },
   { title: "邮箱", field: "email" },
-  { title: "手机号", field: "phone", width: 130 },
+  { title: "手机号", field: "phone", width: 120 },
   {
     title: "状态",
     field: "status",
@@ -39,19 +49,27 @@ const columns: LewTableColumn[] = [
   {
     title: "创建时间",
     field: "createdAt",
-    width: 170,
+    width: 160,
     customRender: ({ row }) => formatDateTime((row as unknown as User).createdAt),
   },
   {
     title: "最近登录",
     field: "loginAt",
-    width: 170,
+    width: 160,
     customRender: ({ row }) => formatDateTime((row as unknown as User).loginAt),
   },
   { title: "操作", field: "operation", width: 100, fixed: "right" },
 ];
 
 void search();
+
+// ---------- 角色选项 ----------
+const roleOptions = reactive<{ label: string; value: number }[]>([]);
+async function loadRoles() {
+  const roles = await listRoles();
+  roleOptions.splice(0, roleOptions.length, ...roles.map((r) => ({ label: r.name, value: r.id })));
+}
+void loadRoles();
 
 // ---------- 新增/编辑弹窗 ----------
 const modalVisible = ref(false);
@@ -64,6 +82,7 @@ const form = ref({
   email: "",
   phone: "",
   status: "active",
+  roleIds: [] as number[],
 });
 /** 表单 key：每次打开弹窗自增，强制重建 LewForm 以回填数据 */
 const formKey = ref(0);
@@ -87,11 +106,23 @@ const formOptions: LewFormOption[] = [
     field: "password",
     label: "密码",
     as: "input",
-    rule: "Yup.string().required()",
-    props: { type: "password", placeholder: "最少 12 位", clearable: true, showPassword: true },
+    rule: "Yup.string().nullable()",
+    props: {
+      type: "password",
+      placeholder: "新增必填；编辑选填，不填则不修改",
+      clearable: true,
+      showPassword: true,
+    },
   },
   { field: "email", label: "邮箱", as: "input", props: { placeholder: "选填", clearable: true } },
   { field: "phone", label: "手机号", as: "input", props: { placeholder: "选填", clearable: true } },
+  {
+    field: "roleIds",
+    label: "角色",
+    as: "select",
+    rule: "Yup.array().nullable()",
+    props: { options: roleOptions, multiple: true, placeholder: "请选择角色" },
+  },
 ];
 
 function openCreate() {
@@ -107,6 +138,7 @@ function openCreate() {
       email: "",
       phone: "",
       status: "active",
+      roleIds: [],
     });
   });
 }
@@ -124,6 +156,7 @@ function openEdit(row: User) {
       email: row.email ?? "",
       phone: row.phone ?? "",
       status: row.status,
+      roleIds: row.roleIds ?? [],
     });
   });
 }
@@ -134,12 +167,21 @@ async function handleSubmit() {
   // LewForm 为受控组件，用 getForm 读取用户真实输入
   const values = (formRef.value?.getForm?.() ?? form.value) as typeof form.value;
   if (editingId.value === null) {
+    if (!values.password) {
+      LewMessage.error("请输入密码");
+      return;
+    }
+    if (values.password.length < 12) {
+      LewMessage.error("密码最少 12 位");
+      return;
+    }
     await createUser({
       username: values.username,
       displayName: values.displayName,
       password: values.password,
       email: values.email || undefined,
       phone: values.phone || undefined,
+      roleIds: values.roleIds ?? [],
     });
     LewMessage.success("创建成功");
   } else {
@@ -148,6 +190,8 @@ async function handleSubmit() {
       email: values.email || null,
       phone: values.phone || null,
       status: values.status as "active" | "disabled",
+      password: values.password || undefined,
+      roleIds: values.roleIds ?? [],
     });
     LewMessage.success("更新成功");
   }

@@ -76,6 +76,8 @@ export interface User {
   deptId: number | null;
   createdAt: string;
   loginAt: string | null;
+  roleIds?: number[];
+  roleNames?: string[];
 }
 
 export interface CreateUserBody {
@@ -85,6 +87,7 @@ export interface CreateUserBody {
   email?: string;
   phone?: string;
   deptId?: number;
+  roleIds?: number[];
 }
 
 export interface UpdateUserBody {
@@ -93,6 +96,8 @@ export interface UpdateUserBody {
   phone?: string | null;
   deptId?: number | null;
   status?: EntityStatus;
+  password?: string;
+  roleIds?: number[];
 }
 
 // ============ roles ============

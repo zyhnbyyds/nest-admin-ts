@@ -35,36 +35,51 @@ function mockDbService() {
 
 describe('UsersService', () => {
   describe('list', () => {
-    it('returns paginated users', async () => {
+    it('returns paginated users with roles', async () => {
       const { db } = mockDbService();
-      // For list: select({...}).from(users).where(...).orderBy(...).limit(...).offset(...)
-      // We need: select() -> from() -> where() -> orderBy() -> limit() -> offset()
-      (db as any).select = vi.fn().mockReturnValue({
-        from: vi.fn().mockReturnValue({
-          where: vi.fn().mockReturnValue({
-            orderBy: vi.fn().mockReturnValue({
-              limit: vi.fn().mockReturnValue({
-                offset: vi.fn().mockResolvedValue([
-                  {
-                    id: 1,
-                    username: 'admin',
-                    displayName: 'Admin',
-                    email: null,
-                    phone: null,
-                    status: 'active',
-                    deptId: null,
-                    createdAt: new Date(),
-                    loginAt: null,
-                  },
-                ]),
+      // 第一次 select：用户列表
+      // 第二次 select：fetchRoleMap 查询角色（innerJoin 链）
+      (db as any).select = vi
+        .fn()
+        .mockReturnValueOnce({
+          from: vi.fn().mockReturnValue({
+            where: vi.fn().mockReturnValue({
+              orderBy: vi.fn().mockReturnValue({
+                limit: vi.fn().mockReturnValue({
+                  offset: vi.fn().mockResolvedValue([
+                    {
+                      id: 1,
+                      username: 'admin',
+                      displayName: 'Admin',
+                      email: null,
+                      phone: null,
+                      status: 'active',
+                      deptId: null,
+                      createdAt: new Date(),
+                      loginAt: null,
+                    },
+                  ]),
+                }),
               }),
             }),
           }),
-        }),
-      });
+        })
+        .mockReturnValueOnce({
+          from: vi.fn().mockReturnValue({
+            innerJoin: vi.fn().mockReturnValue({
+              where: vi
+                .fn()
+                .mockResolvedValue([{ userId: 1, id: 1, name: 'admin' }]),
+            }),
+          }),
+        });
       const service = new UsersService({ db } as any);
       const result = await service.list(1, 20);
       expect(result.items).toHaveLength(1);
+      expect(result.items[0]).toMatchObject({
+        roleIds: [1],
+        roleNames: ['admin'],
+      });
       expect(result.page).toBe(1);
     });
   });
@@ -120,7 +135,16 @@ describe('UsersService', () => {
       const service = new UsersService({ db } as any);
       await expect(
         service.update(1, { displayName: 'Updated' }, 1),
-      ).resolves.toBeUndefined();
+      ).resolves.toEqual({ id: 1, success: true });
+    });
+
+    it('updates password when provided', async () => {
+      const { db } = mockDbService();
+      const service = new UsersService({ db } as any);
+      await expect(
+        service.update(1, { password: 'newpassword123' }, 1),
+      ).resolves.toEqual({ id: 1, success: true });
+      expect(db.update).toHaveBeenCalled();
     });
 
     it('throws NotFoundException', async () => {
@@ -159,37 +183,48 @@ describe('UsersService', () => {
   describe('assignRole', () => {
     it('assigns a role to a user', async () => {
       const { db } = mockDbService();
-      db.select = vi.fn().mockReturnValue({
-        from: vi.fn().mockReturnValue({
-          where: vi.fn().mockReturnValue({
-            limit: vi.fn().mockResolvedValue([{ id: 1 }]),
+      // 第一次 select：查已有 userRoles（空）
+      // 第二次 select：查有效角色
+      db.select = vi
+        .fn()
+        .mockReturnValueOnce({
+          from: vi.fn().mockReturnValue({
+            where: vi.fn().mockResolvedValue([]),
           }),
-        }),
-      });
+        })
+        .mockReturnValueOnce({
+          from: vi.fn().mockReturnValue({
+            where: vi.fn().mockResolvedValue([{ id: 2 }]),
+          }),
+        });
       db.insert = vi.fn().mockReturnValue({
-        values: vi.fn().mockReturnValue({
-          onDuplicateKeyUpdate: vi.fn().mockReturnValue({
-            set: vi.fn().mockResolvedValue([{ affectedRows: 1 }]),
-          }),
-        }),
+        values: vi.fn().mockResolvedValue([{ affectedRows: 1 }]),
       });
       const service = new UsersService({ db } as any);
       await expect(service.assignRole(1, 2)).resolves.toBeUndefined();
+      expect(db.insert).toHaveBeenCalled();
     });
 
-    it('throws NotFoundException when user not found', async () => {
+    it('skips invalid role', async () => {
       const { db } = mockDbService();
-      db.select = vi.fn().mockReturnValue({
-        from: vi.fn().mockReturnValue({
-          where: vi.fn().mockReturnValue({
-            limit: vi.fn().mockResolvedValue([]),
+      db.select = vi
+        .fn()
+        .mockReturnValueOnce({
+          from: vi.fn().mockReturnValue({
+            where: vi.fn().mockResolvedValue([]),
           }),
-        }),
+        })
+        .mockReturnValueOnce({
+          from: vi.fn().mockReturnValue({
+            where: vi.fn().mockResolvedValue([]),
+          }),
+        });
+      db.insert = vi.fn().mockReturnValue({
+        values: vi.fn().mockResolvedValue([{ affectedRows: 0 }]),
       });
       const service = new UsersService({ db } as any);
-      await expect(service.assignRole(999, 2)).rejects.toThrow(
-        NotFoundException,
-      );
+      await expect(service.assignRole(999, 2)).resolves.toBeUndefined();
+      expect(db.insert).not.toHaveBeenCalled();
     });
   });
 });

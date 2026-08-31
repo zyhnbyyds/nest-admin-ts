@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, h, nextTick, ref } from "vue";
+import { computed, h, nextTick, reactive, ref } from "vue";
 import { ChevronDown, ChevronUp, CornerDownRight, Pencil, Plus, Trash2 } from "lucide-vue-next";
 import { LewButton, LewDialog, LewForm, LewMessage, LewModal, LewTable } from "lew-ui";
 import type { LewTableColumn } from "lew-ui";
@@ -217,11 +217,16 @@ function flattenMenus(list: Menu[], prefix = ""): { label: string; value: number
   });
 }
 
-const parentOptions = ref<{ label: string; value: number }[]>([]);
+const parentOptions = reactive<{ label: string; value: number }[]>([]);
 
 function openCreate(parentId = 0) {
   editingId.value = null;
-  parentOptions.value = [{ label: "根目录", value: 0 }, ...flattenMenus(menus.value)];
+  parentOptions.splice(
+    0,
+    parentOptions.length,
+    { label: "根目录", value: 0 },
+    ...flattenMenus(menus.value),
+  );
   formKey.value += 1;
   modalVisible.value = true;
   void nextTick(() => {
@@ -242,7 +247,12 @@ function openCreate(parentId = 0) {
 
 function openEdit(row: Menu) {
   editingId.value = row.id;
-  parentOptions.value = [{ label: "根目录", value: 0 }, ...flattenMenus(menus.value)];
+  parentOptions.splice(
+    0,
+    parentOptions.length,
+    { label: "根目录", value: 0 },
+    ...flattenMenus(menus.value),
+  );
   formKey.value += 1;
   modalVisible.value = true;
   void nextTick(() => {

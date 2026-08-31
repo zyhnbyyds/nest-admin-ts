@@ -56,9 +56,14 @@ const createSchema = z.object({
     .positive()
     .optional()
     .openapi({ example: 1, description: '部门ID' }),
+  roleIds: z
+    .array(z.number().int().positive())
+    .max(100)
+    .optional()
+    .openapi({ example: [1], description: '角色ID集合' }),
 });
 const updateSchema = createSchema
-  .omit({ username: true, password: true })
+  .omit({ username: true })
   .partial()
   .extend({
     email: z
@@ -84,6 +89,20 @@ const updateSchema = createSchema
       .enum(['active', 'disabled'])
       .optional()
       .openapi({ example: 'active', description: '状态' }),
+    password: z
+      .string()
+      .min(12)
+      .max(128)
+      .optional()
+      .openapi({
+        example: 'newpassword123',
+        description: '新密码（选填，不填则不修改）',
+      }),
+    roleIds: z
+      .array(z.number().int().positive())
+      .max(100)
+      .optional()
+      .openapi({ example: [1, 2], description: '角色ID集合' }),
   });
 
 registerComponent('CreateUserRequest', createSchema);
