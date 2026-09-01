@@ -1,3 +1,4 @@
+/// <reference types="bun" />
 import 'reflect-metadata';
 import type { NestFastifyApplication } from '@nestjs/platform-fastify';
 import type { InjectOptions } from 'fastify';
@@ -64,7 +65,7 @@ Bun.serve({
           headers.set(key, String(value));
         }
       }
-      return new Response(result.payload as BodyInit, {
+      return new Response(result.payload, {
         status: result.statusCode,
         headers,
       });

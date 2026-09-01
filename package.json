@@ -60,6 +60,7 @@
     "@nestjs/testing": "^12.0.1",
     "@swc/cli": "^0.8.1",
     "@swc/core": "^1.16.1",
+    "@types/bun": "^1.4.0",
     "@types/node": "^26.4.0",
     "@vitest/coverage-v8": "^4.1.11",
     "drizzle-kit": "1.0.0-rc.3",
