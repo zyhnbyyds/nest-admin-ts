@@ -1,5 +1,6 @@
 node_modules
 dist
-types/auto-imports.d.ts
+# auto-imports.d.ts 需要提交：vue-tsc 在 vite 生成它之前先运行，
+# 干净环境（CI/Vercel）缺了它会导致 h 等自动导入报 TS2304
 *.local
 .DS_Store

@@ -188,7 +188,7 @@ onMounted(async () => {
           {
             title: '状态',
             field: 'status',
-            customRender: ({ row }) =>
+            customRender: ({ row }: { row: unknown }) =>
               (row as { status: string }).status === 'success'
                 ? h('span', { class: 'tag-success' }, '成功')
                 : h('span', { class: 'tag-failure' }, '失败'),
@@ -196,7 +196,8 @@ onMounted(async () => {
           {
             title: '时间',
             field: 'createdAt',
-            customRender: ({ row }) => formatDateTime((row as { createdAt: string }).createdAt),
+            customRender: ({ row }: { row: unknown }) =>
+              formatDateTime((row as { createdAt: string }).createdAt),
           },
         ]"
       />
