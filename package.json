@@ -13,6 +13,7 @@
     "dev": "nest start --watch",
     "dev:bun": "bun --watch src/main.ts",
     "build": "nest build",
+    "build:vercel": "bun scripts/vercel-build.mjs",
     "start": "node dist/main.js",
     "start:bun": "bun src/main.ts",
     "typecheck": "tsc --noEmit",

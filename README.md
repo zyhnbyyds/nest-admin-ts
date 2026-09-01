@@ -154,6 +154,49 @@ bun run test:watch       # 监听模式
 
 测试覆盖全部 Controller、Service、Guard、Interceptor 和工具函数。每个测试完全隔离，不依赖数据库。
 
+## 部署到 Vercel
+
+本仓库配置为**单项目部署**：前端 SPA 与 NestJS API 合并为一个 Vercel 项目（同源 `/api/v1`，无需配置 CORS 跨域）。后端使用 Vercel 的 **Bun 运行时**（Beta，见 <https://vercel.com/docs/functions/runtimes/bun>），前端静态资源与 API 函数共存。
+
+### 部署步骤
+
+1. **准备外部依赖**（Vercel 是无状态 Serverless 平台，MySQL / Redis 需要自备）：
+   - MySQL：任意公网可达实例，如 TiDB Cloud（MySQL 兼容，有免费档）、Aiven、自建 VPS；
+   - Redis（可选）：如 Upstash、Redis Cloud。
+2. **在 Vercel Dashboard 导入仓库**：Framework Preset 选 **Other**，Root Directory 保持仓库根目录（`.`）。
+3. **配置环境变量**（Vercel → Project → Settings → Environment Variables，必填项与 `.env.example` 一致）：
+
+   | 变量 | 必填 | 说明 |
+   | --- | --- | --- |
+   | `DATABASE_URL` | ✅ | 形如 `mysql://user:pass@host:3306/dbname` |
+   | `JWT_ISSUER` / `JWT_AUDIENCE` | ✅ | 任意字符串 |
+   | `JWT_ACCESS_SECRET` / `JWT_REFRESH_SECRET` | ✅ | 至少 32 位随机字符 |
+   | `REDIS_URL` | ❌ | 不配则相关功能降级 |
+   | `CORS_ORIGINS` | ❌ | 同源部署时可不配 |
+   | `SWAGGER_ENABLED` | ❌ | 默认 `true`，文档地址 `/api/v1/docs` |
+
+4. 推送代码触发部署。首次部署前用 `bun run db:migrate` + `bun run db:seed`（本机执行，指向同一数据库）初始化表结构和管理员账号。
+
+### 部署机制
+
+- **Bun 运行时**：`vercel.json` 中声明 `"bunVersion": "1.4.x"`，Vercel 会用 Bun 运行时执行 API 函数（若遇兼容问题可改回 `"1.x"`，即 Bun 1.3.14）；
+- **API 函数**：`api/server.ts` 在模块启动时调用一次 `Bun.serve()`，Vercel 检测后把 `/api/*` 的请求路由给它；请求经标准 Web `Request` 转换后由 `fastify.inject()` 分发给 NestJS（冷启动缓存实例）；
+- **构建工具链全程 bun**：`buildCommand` 为 `bun run build:vercel`（`scripts/vercel-build.mjs`），只构建前端 `web/dist`（`bun install` + `vite build`），由 `outputDirectory` 发布为静态资源。后端源码由 Vercel 在部署时直接编译，无需本地 `nest build`，也不需要 pnpm / npm / node；
+- 路由：`/api/*` → `/api/server`（Bun 函数），其余路径 → SPA `index.html`；
+- `dist/`、`uploads/`、`.env.*`、`.vercel*` 均已在 `.gitignore`，不会提交。
+
+### 已知限制（Serverless 平台特性）
+
+- **文件上传不持久**：`UPLOAD_DIR` 写入的是函数临时磁盘，实例回收即丢失。文件管理模块建议改为对象存储（S3/R2/OSS）；
+- **定时任务不可靠**：`@nestjs/schedule` 依赖常驻进程。可在 Vercel 用 `crons` 定时请求暴露的 HTTP 任务接口替代；
+- **Bun 运行时为 Beta**：函数包上限 5GB、最长执行时长 30 分钟（Beta 特性）；上传接口仍受 Vercel 请求体大小限制；
+- **内存态限流/在线会话**：基于实例内存，多实例并发时不精确；
+- 数据库连接池按函数实例各自建立，注意连接数上限（小实例数配置可缓解）。
+
+### 可选：前后端拆分为两个 Vercel 项目
+
+也可以只把 `web/` 部署为静态站（Root Directory 选 `web/`，已附 `web/vercel.json` 处理 SPA 路由），后端另部署到常驻平台（Railway / Render / Fly.io / VPS）。此时需在 Web 项目配置环境变量 `VITE_API_BASE_URL=https://<后端域名>/api/v1`，并在后端环境变量中把前端域名加入 `CORS_ORIGINS`。
+
 ## License
 
 MIT
