@@ -31,5 +31,6 @@ export default defineConfig({
   ],
   build: {
     chunkSizeWarningLimit: 1500,
+    outDir: path.resolve(import.meta.dirname, "../output/web"),
   },
 });
