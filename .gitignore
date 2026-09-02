@@ -9,5 +9,3 @@ uploads/
 .DS_Store
 src/modules/generated/
 .playwright-mcp/
-.vercel/
-.vercel-build/
