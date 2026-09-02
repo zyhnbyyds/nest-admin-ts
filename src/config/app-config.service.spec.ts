@@ -1,8 +1,7 @@
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, it } from 'vitest';
 
 describe('AppConfigService', () => {
   it('fails fast when secrets are unsafe', { timeout: 30000 }, async () => {
-    vi.resetModules();
     process.env = {
       ...process.env,
       DATABASE_URL: 'mysql://localhost:3306/app',

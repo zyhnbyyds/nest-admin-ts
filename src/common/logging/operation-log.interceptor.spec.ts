@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { of, throwError } from 'rxjs';
+import { lastValueFrom, of, throwError } from 'rxjs';
 import { OperationLogInterceptor } from './operation-log.interceptor';
 
 function buildDb() {
@@ -40,7 +40,7 @@ describe('OperationLogInterceptor', () => {
     const context = buildContext('GET', '/api/v1/system/users');
     const next = { handle: vi.fn().mockReturnValue(of({ data: 'ok' })) };
 
-    await interceptor.intercept(context, next).toPromise();
+    await lastValueFrom(interceptor.intercept(context, next));
     // GET should not call insert
     expect(db.db.insert).not.toHaveBeenCalled();
   });
@@ -51,7 +51,7 @@ describe('OperationLogInterceptor', () => {
     const context = buildContext('POST', '/api/v1/auth/login');
     const next = { handle: vi.fn().mockReturnValue(of({ data: 'ok' })) };
 
-    await interceptor.intercept(context, next).toPromise();
+    await lastValueFrom(interceptor.intercept(context, next));
     expect(db.db.insert).not.toHaveBeenCalled();
   });
 
@@ -66,10 +66,10 @@ describe('OperationLogInterceptor', () => {
     );
     const next = { handle: vi.fn().mockReturnValue(of({ id: 1 })) };
 
-    await interceptor.intercept(context, next).toPromise();
-    await vi.waitFor(() => {
-      expect(db.db.insert).toHaveBeenCalled();
-    });
+    await lastValueFrom(interceptor.intercept(context, next));
+    // rxjs `of()` emits synchronously, so the tap callback (and thus the
+    // insert) has already run; vi.waitFor is not available under bun test.
+    expect(db.db.insert).toHaveBeenCalled();
   });
 
   it('logs mutating requests on failure', async () => {
@@ -88,10 +88,10 @@ describe('OperationLogInterceptor', () => {
     };
 
     await expect(
-      interceptor.intercept(context, next).toPromise(),
+      lastValueFrom(interceptor.intercept(context, next)),
     ).rejects.toThrow();
-    await vi.waitFor(() => {
-      expect(db.db.insert).toHaveBeenCalled();
-    });
+    // rxjs `throwError()` emits synchronously, so the tap error callback (and
+    // thus the insert) has already run; vi.waitFor is not available under bun test.
+    expect(db.db.insert).toHaveBeenCalled();
   });
 });
