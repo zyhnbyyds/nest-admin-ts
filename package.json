@@ -20,8 +20,6 @@
     "lint:fix": "oxlint . --fix",
     "format": "oxfmt --write .",
     "format:check": "oxfmt --check .",
-    "test": "vitest run --config vitest.config.ts",
-    "test:watch": "vitest --config vitest.config.ts",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "tsx src/database/migrate.ts",
     "db:seed": "tsx src/database/seed/index.ts",
