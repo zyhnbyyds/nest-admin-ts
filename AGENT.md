@@ -6,7 +6,7 @@
 
 - **运行时 / 包管理器**：`bun@1.4.0`（唯一运行时与包管理器，锁文件 `bun.lock` 为准；应用、迁移、seed、测试全部跑在 Bun 上，不依赖 Node/tsx）
 - **数据库**：MySQL，通过 `mysql2` + `drizzle-orm@1.0.0-rc.3` 访问
-- **缓存**：`ioredis`（可选——所有 Redis 调用在 `REDIS_URL` 未配置时静默降级）
+- **缓存**：Bun.RedisClient（可选——所有 Redis 调用在 `REDIS_URL` 未配置时静默降级）
 
 ## 技术栈
 
@@ -70,7 +70,7 @@ src/
       public.decorator.ts         # @Public()——跳过认证
     cache/
       redis.module.ts
-      redis.service.ts            # ioredis 封装（get/set/del/keys/getJson/setJson/ping）
+      redis.service.ts            # Bun.RedisClient 封装（get/set/del/keys/getJson/setJson/ping）
       redis.service.spec.ts
       cache-keys.ts               # 在线会话 key 前缀及 key 生成函数
     logging/

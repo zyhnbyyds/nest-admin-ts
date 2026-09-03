@@ -33,7 +33,7 @@
 - **ORM**：Drizzle ORM 1.0（MySQL）
 - **校验**：Zod 4
 - **认证**：jose（JWT）+ Bun.password（argon2id 密码哈希）
-- **缓存**：ioredis（可选）
+- **缓存**：Bun.RedisClient（可选）
 - **调度**：@nestjs/schedule + cron
 - **文档**：@nestjs/swagger
 - **测试**：vitest + @vitest/coverage-v8
