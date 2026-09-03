@@ -1,4 +1,4 @@
-import { defineRelations } from 'drizzle-orm';
+import { defineRelations, sql } from 'drizzle-orm';
 import {
   boolean,
   datetime,
@@ -14,8 +14,13 @@ import {
 } from 'drizzle-orm/mysql-core';
 
 const auditColumns = {
-  createdAt: timestamp('created_at').defaultNow().notNull(),
-  updatedAt: timestamp('updated_at').defaultNow().onUpdateNow().notNull(),
+  createdAt: timestamp('created_at')
+    .default(sql`CURRENT_TIMESTAMP`)
+    .notNull(),
+  updatedAt: timestamp('updated_at')
+    .default(sql`CURRENT_TIMESTAMP`)
+    .onUpdateNow()
+    .notNull(),
   deletedAt: datetime('deleted_at'),
   createdBy: bigintId('created_by'),
   updatedBy: bigintId('updated_by'),
@@ -238,7 +243,9 @@ export const refreshTokens = mysqlTable(
     revokedAt: datetime('revoked_at'),
     device: varchar('device', { length: 255 }),
     ip: varchar('ip', { length: 45 }),
-    createdAt: timestamp('created_at').defaultNow().notNull(),
+    createdAt: timestamp('created_at')
+      .default(sql`CURRENT_TIMESTAMP`)
+      .notNull(),
   },
   (table) => [
     uniqueIndex('uq_refresh_token_hash').on(table.tokenHash),
@@ -310,7 +317,9 @@ export const operationLogs = mysqlTable(
     status: mysqlEnum('status', ['success', 'failure']).notNull(),
     errorMessage: varchar('error_message', { length: 2000 }),
     durationMs: int('duration_ms', { unsigned: true }).notNull(),
-    createdAt: timestamp('created_at').defaultNow().notNull(),
+    createdAt: timestamp('created_at')
+      .default(sql`CURRENT_TIMESTAMP`)
+      .notNull(),
   },
   (table) => [
     index('idx_operation_log_user_time').on(table.userId, table.createdAt),
@@ -331,7 +340,9 @@ export const loginLogs = mysqlTable(
     userAgent: varchar('user_agent', { length: 500 }),
     status: mysqlEnum('status', ['success', 'failure']).notNull(),
     message: varchar('message', { length: 500 }),
-    createdAt: timestamp('created_at').defaultNow().notNull(),
+    createdAt: timestamp('created_at')
+      .default(sql`CURRENT_TIMESTAMP`)
+      .notNull(),
   },
   (table) => [
     index('idx_login_log_user').on(table.userId),
@@ -392,7 +403,9 @@ export const files = mysqlTable(
     ext: varchar('ext', { length: 20 }).notNull(),
     size: int('size', { unsigned: true }).notNull(),
     createdBy: int('created_by', { unsigned: true }),
-    createdAt: timestamp('created_at').defaultNow().notNull(),
+    createdAt: timestamp('created_at')
+      .default(sql`CURRENT_TIMESTAMP`)
+      .notNull(),
   },
   (table) => [
     index('idx_file_created_by').on(table.createdBy),

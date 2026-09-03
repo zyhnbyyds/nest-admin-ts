@@ -205,7 +205,7 @@ const MENU_SEEDS: MenuSeed[] = [
 ];
 
 async function seedMenus(): Promise<void> {
-  const url = process.env.DATABASE_URL;
+  const url = Bun.env.DATABASE_URL;
   if (!url) throw new Error('DATABASE_URL is required');
   const pool = mysql.createPool(url);
   const db = drizzle({ client: pool });

@@ -19,7 +19,8 @@
     "ignoreDeprecations": "6.0",
     "paths": { "@/*": ["./src/*"] },
     "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true
+    "forceConsistentCasingInFileNames": true,
+    "types": ["bun"]
   },
   "include": ["src/**/*.ts", "drizzle.config.ts"],
   "exclude": ["node_modules", "dist", "src/modules/generated", "**/*.spec.ts"]

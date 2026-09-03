@@ -5,8 +5,8 @@ import { hashPassword } from '../../common/password/password.service';
 import { roles, userRoles, users } from '../schema/index';
 
 async function seed(): Promise<void> {
-  const url = process.env.DATABASE_URL;
-  const password = process.env.SEED_ADMIN_PASSWORD;
+  const url = Bun.env.DATABASE_URL;
+  const password = Bun.env.SEED_ADMIN_PASSWORD;
   if (!url || !password)
     throw new Error('DATABASE_URL and SEED_ADMIN_PASSWORD are required');
   const pool = mysql.createPool(url);

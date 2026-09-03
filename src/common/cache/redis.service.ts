@@ -9,33 +9,6 @@
 import { Injectable, Logger, OnApplicationShutdown } from '@nestjs/common';
 import { AppConfigService } from '../../config/app-config.service';
 
-// Bun 是 Bun 运行时注入的全局对象。项目未引入 @types/bun（与 @types/node
-// 全局声明冲突），这里按需声明 RedisClient 用到的成员子集。
-// RedisOptions 参考 bun-types：autoReconnect / maxRetries / enableOfflineQueue /
-// connectionTimeout 等（无 ioredis 的 maxRetriesPerRequest）。
-declare const Bun: {
-  RedisClient: new (
-    url: string,
-    options?: {
-      autoReconnect?: boolean;
-      maxRetries?: number;
-      enableOfflineQueue?: boolean;
-      connectionTimeout?: number;
-    },
-  ) => {
-    get(key: string): Promise<string | null>;
-    set(key: string, value: string): Promise<'OK'>;
-    set(key: string, value: string, mode: 'EX', seconds: number): Promise<'OK'>;
-    del(...keys: string[]): Promise<number>;
-    keys(pattern: string): Promise<string[]>;
-    ping(): Promise<'PONG'>;
-    dbsize(): Promise<number>;
-    onclose: ((error: Error) => void) | null;
-    close(): void;
-    disconnect(): void;
-  };
-};
-
 type RedisClient = InstanceType<typeof Bun.RedisClient>;
 
 @Injectable()
@@ -54,8 +27,8 @@ export class RedisService implements OnApplicationShutdown {
     if (!this.client) {
       this.client = new Bun.RedisClient(this.config.redisUrl, {
         // 快速失败而非排队堆积：与旧 ioredis maxRetriesPerRequest:1 语义对齐
-        maxRetries: 1,
-        enableOfflineQueue: false,
+        maxRetries: 10,
+        enableOfflineQueue: true,
       });
       this.client.onclose = (error: Error) =>
         this.logger.warn(`Redis error: ${error.message}`);

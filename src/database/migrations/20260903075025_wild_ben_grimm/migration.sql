@@ -5,8 +5,8 @@ CREATE TABLE `sys_config` (
 	`value` varchar(500) NOT NULL,
 	`builtin` boolean NOT NULL DEFAULT false,
 	`remark` varchar(500),
-	`created_at` timestamp NOT NULL DEFAULT (now()),
-	`updated_at` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP,
+	`created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	`updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 	`deleted_at` datetime,
 	`created_by` int unsigned,
 	`updated_by` int unsigned,
@@ -23,8 +23,8 @@ CREATE TABLE `sys_dept` (
 	`phone` varchar(20),
 	`email` varchar(100),
 	`status` enum('active','disabled') NOT NULL DEFAULT 'active',
-	`created_at` timestamp NOT NULL DEFAULT (now()),
-	`updated_at` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP,
+	`created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	`updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 	`deleted_at` datetime,
 	`created_by` int unsigned,
 	`updated_by` int unsigned
@@ -36,8 +36,8 @@ CREATE TABLE `sys_dict_type` (
 	`type` varchar(100) NOT NULL,
 	`status` enum('active','disabled') NOT NULL DEFAULT 'active',
 	`remark` varchar(500),
-	`created_at` timestamp NOT NULL DEFAULT (now()),
-	`updated_at` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP,
+	`created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	`updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 	`deleted_at` datetime,
 	`created_by` int unsigned,
 	`updated_by` int unsigned,
@@ -53,8 +53,8 @@ CREATE TABLE `sys_dict_data` (
 	`status` enum('active','disabled') NOT NULL DEFAULT 'active',
 	`css_class` varchar(100),
 	`list_class` varchar(100),
-	`created_at` timestamp NOT NULL DEFAULT (now()),
-	`updated_at` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP,
+	`created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	`updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 	`deleted_at` datetime,
 	`created_by` int unsigned,
 	`updated_by` int unsigned,
@@ -70,7 +70,7 @@ CREATE TABLE `sys_file` (
 	`ext` varchar(20) NOT NULL,
 	`size` int unsigned NOT NULL,
 	`created_by` int unsigned,
-	`created_at` timestamp NOT NULL DEFAULT (now())
+	`created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 --> statement-breakpoint
 CREATE TABLE `sys_job_log` (
@@ -93,8 +93,8 @@ CREATE TABLE `sys_job` (
 	`status` enum('active','disabled') NOT NULL DEFAULT 'active',
 	`concurrent` boolean NOT NULL DEFAULT true,
 	`remark` varchar(500),
-	`created_at` timestamp NOT NULL DEFAULT (now()),
-	`updated_at` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP,
+	`created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	`updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 	`deleted_at` datetime,
 	`created_by` int unsigned,
 	`updated_by` int unsigned,
@@ -109,7 +109,7 @@ CREATE TABLE `sys_login_log` (
 	`user_agent` varchar(500),
 	`status` enum('success','failure') NOT NULL,
 	`message` varchar(500),
-	`created_at` timestamp NOT NULL DEFAULT (now())
+	`created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 --> statement-breakpoint
 CREATE TABLE `sys_menu` (
@@ -127,8 +127,8 @@ CREATE TABLE `sys_menu` (
 	`cacheable` boolean NOT NULL DEFAULT false,
 	`external` boolean NOT NULL DEFAULT false,
 	`status` enum('active','disabled') NOT NULL DEFAULT 'active',
-	`created_at` timestamp NOT NULL DEFAULT (now()),
-	`updated_at` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP,
+	`created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	`updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 	`deleted_at` datetime,
 	`created_by` int unsigned,
 	`updated_by` int unsigned,
@@ -149,7 +149,7 @@ CREATE TABLE `sys_operation_log` (
 	`status` enum('success','failure') NOT NULL,
 	`error_message` varchar(2000),
 	`duration_ms` int unsigned NOT NULL,
-	`created_at` timestamp NOT NULL DEFAULT (now())
+	`created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 --> statement-breakpoint
 CREATE TABLE `sys_post` (
@@ -159,8 +159,8 @@ CREATE TABLE `sys_post` (
 	`sort` int NOT NULL DEFAULT 0,
 	`status` enum('active','disabled') NOT NULL DEFAULT 'active',
 	`remark` varchar(500),
-	`created_at` timestamp NOT NULL DEFAULT (now()),
-	`updated_at` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP,
+	`created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	`updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 	`deleted_at` datetime,
 	`created_by` int unsigned,
 	`updated_by` int unsigned,
@@ -175,8 +175,14 @@ CREATE TABLE `sys_refresh_token` (
 	`revoked_at` datetime,
 	`device` varchar(255),
 	`ip` varchar(45),
-	`created_at` timestamp NOT NULL DEFAULT (now()),
+	`created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	CONSTRAINT `uq_refresh_token_hash` UNIQUE INDEX(`token_hash`)
+);
+--> statement-breakpoint
+CREATE TABLE `sys_role_dept` (
+	`role_id` int unsigned NOT NULL,
+	`dept_id` int unsigned NOT NULL,
+	CONSTRAINT `uq_role_dept` UNIQUE INDEX(`role_id`,`dept_id`)
 );
 --> statement-breakpoint
 CREATE TABLE `sys_role_menu` (
@@ -194,8 +200,8 @@ CREATE TABLE `sys_role` (
 	`status` enum('active','disabled') NOT NULL DEFAULT 'active',
 	`is_system` boolean NOT NULL DEFAULT false,
 	`remark` varchar(500),
-	`created_at` timestamp NOT NULL DEFAULT (now()),
-	`updated_at` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP,
+	`created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	`updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 	`deleted_at` datetime,
 	`created_by` int unsigned,
 	`updated_by` int unsigned,
@@ -227,8 +233,8 @@ CREATE TABLE `sys_user` (
 	`login_at` datetime,
 	`login_ip` varchar(45),
 	`password_changed_at` datetime,
-	`created_at` timestamp NOT NULL DEFAULT (now()),
-	`updated_at` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP,
+	`created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	`updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 	`deleted_at` datetime,
 	`created_by` int unsigned,
 	`updated_by` int unsigned,
@@ -243,6 +249,7 @@ CREATE INDEX `idx_login_log_time` ON `sys_login_log` (`created_at`);--> statemen
 CREATE INDEX `idx_menu_parent` ON `sys_menu` (`parent_id`);--> statement-breakpoint
 CREATE INDEX `idx_operation_log_user_time` ON `sys_operation_log` (`user_id`,`created_at`);--> statement-breakpoint
 CREATE INDEX `idx_refresh_user` ON `sys_refresh_token` (`user_id`);--> statement-breakpoint
+CREATE INDEX `idx_role_dept_dept` ON `sys_role_dept` (`dept_id`);--> statement-breakpoint
 CREATE INDEX `idx_role_menu_menu` ON `sys_role_menu` (`menu_id`);--> statement-breakpoint
 CREATE INDEX `idx_user_post_post` ON `sys_user_post` (`post_id`);--> statement-breakpoint
 CREATE INDEX `idx_user_role_role` ON `sys_user_role` (`role_id`);--> statement-breakpoint
@@ -252,6 +259,8 @@ ALTER TABLE `sys_job_log` ADD CONSTRAINT `fk_job_log_job` FOREIGN KEY (`job_id`)
 ALTER TABLE `sys_login_log` ADD CONSTRAINT `fk_login_log_user` FOREIGN KEY (`user_id`) REFERENCES `sys_user`(`id`) ON DELETE SET NULL;--> statement-breakpoint
 ALTER TABLE `sys_operation_log` ADD CONSTRAINT `fk_operation_log_user` FOREIGN KEY (`user_id`) REFERENCES `sys_user`(`id`) ON DELETE SET NULL;--> statement-breakpoint
 ALTER TABLE `sys_refresh_token` ADD CONSTRAINT `fk_refresh_token_user` FOREIGN KEY (`user_id`) REFERENCES `sys_user`(`id`) ON DELETE CASCADE;--> statement-breakpoint
+ALTER TABLE `sys_role_dept` ADD CONSTRAINT `fk_role_dept_role` FOREIGN KEY (`role_id`) REFERENCES `sys_role`(`id`) ON DELETE CASCADE;--> statement-breakpoint
+ALTER TABLE `sys_role_dept` ADD CONSTRAINT `fk_role_dept_dept` FOREIGN KEY (`dept_id`) REFERENCES `sys_dept`(`id`) ON DELETE CASCADE;--> statement-breakpoint
 ALTER TABLE `sys_role_menu` ADD CONSTRAINT `fk_role_menu_role` FOREIGN KEY (`role_id`) REFERENCES `sys_role`(`id`) ON DELETE CASCADE;--> statement-breakpoint
 ALTER TABLE `sys_role_menu` ADD CONSTRAINT `fk_role_menu_menu` FOREIGN KEY (`menu_id`) REFERENCES `sys_menu`(`id`) ON DELETE CASCADE;--> statement-breakpoint
 ALTER TABLE `sys_user_post` ADD CONSTRAINT `fk_user_post_user` FOREIGN KEY (`user_id`) REFERENCES `sys_user`(`id`) ON DELETE CASCADE;--> statement-breakpoint
