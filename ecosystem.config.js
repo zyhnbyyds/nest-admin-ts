@@ -26,7 +26,7 @@ module.exports = {
     {
       name: 'nest-admin-server',
       cwd: '/usr/apps/nest-admin-ts',
-      script: 'output/server/src/main.ts',
+      script: 'output/server/main.js',
 
       // ---- 少占用：单进程 fork 模式，不启用 cluster ----
       exec_mode: 'fork',
