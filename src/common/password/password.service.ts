@@ -19,12 +19,9 @@ declare const Bun: {
   };
 };
 
-/** argon2id 算法标识常量，对齐旧调用风格 argon2.argon2id */
-export const ARGON2ID = 'argon2id' as const;
-
 /** 以 argon2id 生成密码哈希（返回 PHC 格式字符串） */
 export function hashPassword(password: string): Promise<string> {
-  return Bun.password.hash(password, { algorithm: ARGON2ID });
+  return Bun.password.hash(password, { algorithm: 'argon2id' });
 }
 
 /** 校验明文密码与存储哈希是否匹配 */
