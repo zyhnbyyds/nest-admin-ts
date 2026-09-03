@@ -5,6 +5,7 @@
   "eslint.format.enable": true,
   "cSpell.words": [
     "asteasolutions",
+    "dbsize",
     "depts",
     "echostr",
     "loginlog",
