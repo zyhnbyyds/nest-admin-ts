@@ -33,9 +33,7 @@ module.exports = {
       instances: 1,
       watch: false,
       interpreter: 'bun',
-      // ---- 资源上限（内存用量如需更低可继续调小） ----
-      max_memory_restart: '512M',
-      node_args: '--max-old-space-size=384 --smol', // 限制 V8 堆上限，防止无谓膨胀
+      node_args: '--smol', // 限制 V8 堆上限，防止无谓膨胀
 
       // ---- 可靠性 ----
       autorestart: true,
