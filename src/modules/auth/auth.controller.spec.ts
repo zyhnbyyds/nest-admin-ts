@@ -1,12 +1,4 @@
 import { describe, expect, it, vi } from 'vitest';
-// Controller 经 AuthService 间接引入 argon2 原生绑定；单测已整体 mock Service，这里屏蔽原生模块以保证隔离
-vi.mock('argon2', () => ({
-  default: {
-    hash: vi.fn().mockResolvedValue('hashed'),
-    verify: vi.fn().mockResolvedValue(true),
-    argon2id: 2,
-  },
-}));
 import { UnauthorizedException } from '@nestjs/common';
 import { AuthController } from './auth.controller';
 import type { AuthService } from './auth.service';

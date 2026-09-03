@@ -1,8 +1,8 @@
 import 'dotenv/config';
-import * as argon2 from 'argon2';
 import { eq } from 'drizzle-orm';
 import { drizzle } from 'drizzle-orm/mysql2';
 import mysql from 'mysql2/promise';
+import { hashPassword } from '../../common/password/password.service';
 import { roles, userRoles, users } from '../schema/index';
 
 async function seed(): Promise<void> {
@@ -27,7 +27,7 @@ async function seed(): Promise<void> {
     .where(eq(roles.key, 'admin'))
     .limit(1);
   if (!role) throw new Error('Failed to initialize administrator role');
-  const hash = await argon2.hash(password, { type: argon2.argon2id });
+  const hash = await hashPassword(password);
   await db
     .insert(users)
     .values({ username: 'admin', displayName: '管理员', passwordHash: hash })

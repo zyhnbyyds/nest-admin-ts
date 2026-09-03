@@ -2,15 +2,9 @@ import { describe, expect, it, vi } from 'vitest';
 import { ConflictException, NotFoundException } from '@nestjs/common';
 import { UsersService } from './users.service';
 
-vi.mock('argon2', () => ({
-  default: {
-    verify: vi.fn().mockResolvedValue(true),
-    hash: vi.fn().mockResolvedValue('hashed'),
-    argon2id: 2,
-  },
-  verify: vi.fn().mockResolvedValue(true),
-  hash: vi.fn().mockResolvedValue('hashed'),
-  argon2id: 2,
+vi.mock('../../../common/password/password.service', () => ({
+  hashPassword: vi.fn().mockResolvedValue('hashed'),
+  verifyPassword: vi.fn().mockResolvedValue(true),
 }));
 
 /** Returns { db: { select, insert, update, delete } } — the shape DatabaseService expects. */

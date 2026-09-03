@@ -4,8 +4,7 @@
 
 **nest-admin** 是一个通用后端管理 API。技术栈为 NestJS + Fastify 作为 HTTP 层，Drizzle ORM 操作数据库，Zod 做数据校验。主要功能：JWT 双 token 认证、基于权限字符串的 RBAC 访问控制、部门/菜单/岗位/字典管理、定时任务、文件上传、操作审计日志、在线用户跟踪、代码生成器。
 
-- **包管理器**：`bun@1.4.0`（同时存在 `bun.lock` 和 `pnpm-lock.yaml`，以 `bun install` 为准）
-- **Node 版本**：`>=24`
+- **运行时 / 包管理器**：`bun@1.4.0`（唯一运行时与包管理器，锁文件 `bun.lock` 为准；应用、迁移、seed、测试全部跑在 Bun 上，不依赖 Node/tsx）
 - **数据库**：MySQL，通过 `mysql2` + `drizzle-orm@1.0.0-rc.3` 访问
 - **缓存**：`ioredis`（可选——所有 Redis 调用在 `REDIS_URL` 未配置时静默降级）
 
@@ -13,11 +12,11 @@
 
 | 领域              | 选型                                                              |
 | ----------------- | ----------------------------------------------------------------- |
-| 运行时 / 包管理器 | Bun / pnpm                                                        |
+| 运行时 / 包管理器 | Bun（无 Node / tsx 运行方式）                                     |
 | Web 框架          | NestJS 12 + Fastify 适配器（不是 Express）                        |
 | ORM               | Drizzle ORM 1.0.0-rc.3（MySQL 方言）                              |
 | 数据校验          | Zod 4（Controller 层校验请求体；`AppConfigService` 校验环境变量） |
-| 认证              | JWT via `jose`（HS256）；密码哈希 `argon2id`                      |
+| 认证              | JWT via `jose`（HS256）；密码哈希 `Bun.password`（argon2id）      |
 | 调度              | `@nestjs/schedule` + `cron`                                       |
 | API 文档          | `@nestjs/swagger`（开启时路径：`/api/v1/docs`）                   |
 | 日志              | `pino`（Fastify 内置）                                            |
@@ -28,9 +27,9 @@
 ## 常用命令
 
 ```bash
-bun dev                    # 开发模式启动（nest start --watch）
-bun run dev:bun            # 用 bun 直接跑（bun --watch src/main.ts）
+bun dev                    # 开发模式（bun --watch src/main.ts）
 bun run build              # 编译
+bun run start              # 生产启动（bun src/main.ts）
 bun run typecheck          # 类型检查（tsc --noEmit）
 bun run lint               # 代码检查（oxlint）
 bun run lint:fix           # 自动修复 lint 问题
@@ -187,7 +186,7 @@ bun run test:watch    # 监听模式
 
 - 测试文件与源文件同目录：`src/modules/system/users/users.service.spec.ts`
 - 使用 `vitest` + `describe`/`it`/`expect`/`vi`
-- 全部 229 个测试用例完全隔离——每个 Service 测试都 mock 了 `DatabaseService`（必要时还有 `RedisService`、`AppConfigService`、`SchedulerRegistry`）
+- 全部 269 个测试用例完全隔离——每个 Service 测试都 mock 了 `DatabaseService`（必要时还有 `RedisService`、`AppConfigService`、`SchedulerRegistry`）
 - 覆盖率：`vitest.config.ts` 启用了 `@vitest/coverage-v8`（输出 `text` 和 `lcov`）
 
 ### Mock 模板

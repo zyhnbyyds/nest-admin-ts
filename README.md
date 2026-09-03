@@ -2,7 +2,6 @@
 
 基于 NestJS 12 + Fastify + Drizzle ORM + MySQL 的通用后台管理 API。
 
-[![Node.js](https://img.shields.io/badge/node-%3E%3D24-brightgreen)](https://nodejs.org)
 [![Bun](https://img.shields.io/badge/bun-%3E%3D1.4-orange)](https://bun.sh)
 [![TypeScript](https://img.shields.io/badge/typescript-5.9-blue)](https://www.typescriptlang.org)
 [![License](https://img.shields.io/badge/license-MIT-green)](./LICENSE)
@@ -11,7 +10,7 @@
 
 | 模块           | 说明                                                             |
 | -------------- | ---------------------------------------------------------------- |
-| **认证鉴权**   | JWT 双 token（access + refresh）、HS256 签名、密码 argon2id 哈希 |
+| **认证鉴权**   | JWT 双 token（access + refresh）、HS256 签名、密码 Bun.password argon2id 哈希 |
 | **用户管理**   | 用户 CRUD、角色分配、状态管理、软删除                            |
 | **角色管理**   | 角色 CRUD、菜单权限分配、数据权限范围                            |
 | **菜单管理**   | 树形菜单 CRUD、按钮权限标识、前端路由数据                        |
@@ -33,7 +32,7 @@
 - **框架**：NestJS 11 + Fastify
 - **ORM**：Drizzle ORM 1.0（MySQL）
 - **校验**：Zod 4
-- **认证**：jose（JWT）+ argon2（密码）
+- **认证**：jose（JWT）+ Bun.password（argon2id 密码哈希）
 - **缓存**：ioredis（可选）
 - **调度**：@nestjs/schedule + cron
 - **文档**：@nestjs/swagger
@@ -44,7 +43,7 @@
 
 ### 环境要求
 
-- Node.js >= 24 或 Bun >= 1.4
+- Bun >= 1.4（单一运行时：应用、迁移、seed、测试均运行在 Bun 上）
 - MySQL 8
 - Redis（可选，不配置则缓存/在线用户/任务模块自动降级）
 
@@ -148,7 +147,7 @@ bun run db:studio        # 打开 Drizzle Studio
 ## 测试
 
 ```bash
-bun run test             # 229 个测试用例，全部通过
+bun run test             # 269 个测试用例，全部通过
 bun run test:watch       # 监听模式
 ```
 

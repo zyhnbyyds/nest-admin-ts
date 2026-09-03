@@ -2,15 +2,9 @@ import { describe, expect, it, vi } from 'vitest';
 import { ConflictException, UnauthorizedException } from '@nestjs/common';
 import { AuthService } from './auth.service';
 
-vi.mock('argon2', () => ({
-  default: {
-    verify: vi.fn(),
-    hash: vi.fn().mockResolvedValue('hashed'),
-    argon2id: 2,
-  },
-  verify: vi.fn(),
-  hash: vi.fn().mockResolvedValue('hashed'),
-  argon2id: 2,
+vi.mock('../../common/password/password.service', () => ({
+  hashPassword: vi.fn().mockResolvedValue('hashed'),
+  verifyPassword: vi.fn(),
 }));
 
 function mockDb() {
@@ -283,8 +277,12 @@ describe('AuthService', () => {
     it('changes password with valid old password', async () => {
       const { db } = mockDb();
       db.select = selectWithLimit([{ passwordHash: 'hash' }]);
-      const argon2Mock = await import('argon2');
-      (argon2Mock.verify as ReturnType<typeof vi.fn>).mockResolvedValue(true);
+      const passwordService = await import(
+        '../../common/password/password.service'
+      );
+      (
+        passwordService.verifyPassword as ReturnType<typeof vi.fn>
+      ).mockResolvedValue(true);
       const service = new AuthService(
         { db } as any,
         buildConfig() as any,
@@ -302,8 +300,12 @@ describe('AuthService', () => {
     it('throws UnauthorizedException when old password is wrong', async () => {
       const { db } = mockDb();
       db.select = selectWithLimit([{ passwordHash: 'hash' }]);
-      const argon2Mock = await import('argon2');
-      (argon2Mock.verify as ReturnType<typeof vi.fn>).mockResolvedValue(false);
+      const passwordService = await import(
+        '../../common/password/password.service'
+      );
+      (
+        passwordService.verifyPassword as ReturnType<typeof vi.fn>
+      ).mockResolvedValue(false);
       const service = new AuthService(
         { db } as any,
         buildConfig() as any,

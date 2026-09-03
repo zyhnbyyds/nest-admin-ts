@@ -3,8 +3,8 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import * as argon2 from 'argon2';
 import { and, desc, eq, inArray, isNull, sql } from 'drizzle-orm';
+import { hashPassword } from '../../../common/password/password.service';
 import { DatabaseService } from '../../../database/database.service';
 import { departments, roles, userRoles, users } from '../../../database/schema/index';
 import {
@@ -97,9 +97,7 @@ export class UsersService {
       .where(eq(users.username, input.username))
       .limit(1);
     if (existing) throw new ConflictException('用户名已存在');
-    const passwordHash = await argon2.hash(input.password, {
-      type: argon2.argon2id,
-    });
+    const passwordHash = await hashPassword(input.password);
     const { password: _password, roleIds = [], ...fields } = input;
     const result = await this.database.db.insert(users).values({
       ...withoutUndefined(fields),
@@ -115,9 +113,7 @@ export class UsersService {
     const { password, roleIds, ...rest } = input;
     const patch: Record<string, unknown> = { ...withoutUndefined(rest) };
     if (password) {
-      patch.passwordHash = await argon2.hash(password, {
-        type: argon2.argon2id,
-      });
+      patch.passwordHash = await hashPassword(password);
       patch.passwordChangedAt = new Date();
     }
     if (roleIds) await this.replaceRoles(id, roleIds);

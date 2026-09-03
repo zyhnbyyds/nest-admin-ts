@@ -3,8 +3,11 @@ import {
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
-import * as argon2 from 'argon2';
 import { and, eq, isNull } from 'drizzle-orm';
+import {
+  hashPassword,
+  verifyPassword,
+} from '../../common/password/password.service';
 import { SignJWT, jwtVerify } from 'jose';
 import { createHash, randomUUID } from 'node:crypto';
 import { AppConfigService } from '../../config/app-config.service';
@@ -72,9 +75,7 @@ export class AuthService {
       .limit(1);
     if (existing) throw new ConflictException('用户名已存在');
 
-    const passwordHash = await argon2.hash(input.password, {
-      type: argon2.argon2id,
-    });
+    const passwordHash = await hashPassword(input.password);
     const { password: _password, ...fields } = input;
     const result = await this.database.db.insert(users).values({
       ...withoutUndefined(fields),
@@ -164,11 +165,12 @@ export class AuthService {
       .from(users)
       .where(and(eq(users.id, userId), isNull(users.deletedAt)))
       .limit(1);
-    if (!user || !(await argon2.verify(user.passwordHash, input.oldPassword)))
+    if (
+      !user ||
+      !(await verifyPassword(input.oldPassword, user.passwordHash))
+    )
       throw new UnauthorizedException('原密码不正确');
-    const passwordHash = await argon2.hash(input.newPassword, {
-      type: argon2.argon2id,
-    });
+    const passwordHash = await hashPassword(input.newPassword);
     await this.database.db
       .update(users)
       .set({
@@ -196,7 +198,7 @@ export class AuthService {
     if (
       !user ||
       user.status !== 'active' ||
-      !(await argon2.verify(user.passwordHash, input.password))
+      !(await verifyPassword(input.password, user.passwordHash))
     ) {
       await this.recordLogin({
         userId: user?.id,
