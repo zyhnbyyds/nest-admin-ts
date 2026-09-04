@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from "vue";
+import { computed, nextTick, onMounted, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { LewButton, LewForm, LewMessage, LewTabs } from "lew-ui";
 import type { LewFormOption, LewTabsOption } from "lew-ui";
@@ -23,7 +23,20 @@ const modeTabs: LewTabsOption[] = [
 
 const loading = ref(false);
 const formRef = ref();
-const form = ref({ username: "admin", password: "admin123456" });
+
+/** 默认登录账号 */
+const defaultLogin = { username: "admin", password: "admin123456" };
+const form = ref({ ...defaultLogin });
+
+/** LewForm 为受控组件，外部 v-model 初值不生效，需挂载后 setForm 回填默认账号 */
+function fillDefaultLogin() {
+  form.value = { ...defaultLogin };
+  void nextTick(() => {
+    formRef.value?.setForm?.(form.value);
+  });
+}
+
+void onMounted(fillDefaultLogin);
 
 const loginOptions: LewFormOption[] = [
   {
@@ -100,7 +113,8 @@ function switchMode(next: "login" | "register") {
   mode.value = next;
   // 切换时清空表单，避免残留
   if (next === "login") {
-    form.value = { username: "", password: "" };
+    // 切回登录时回填默认账号
+    fillDefaultLogin();
   } else {
     registerForm.value = {
       username: "",
