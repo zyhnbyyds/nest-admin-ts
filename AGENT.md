@@ -299,4 +299,5 @@ const service = new UsersService({ db } as any);
 3. **软删除 + 审计模式**：每张实体表都用 `deletedAt` 软删除、`created_by`/`updated_by` 记录操作人。Controller 传 `request.user.id` 作为操作人 ID。
 4. **测试完全隔离**：测试绝不访问真实数据库，完全 mock `DatabaseService.db`。Service 通过 `new Service(mock as any)` 实例化。
 5. **提交前过 lint**：`bun run lint` 和 `bun run format:check` 必须零错误通过。Lint 工具是 `oxlint`，不是 ESLint。
-6. **Lockfile 策略**：规范 lockfile 是 `bun.lock`。如果用 pnpm 安装了新依赖，也需要执行 `bun install` 更新 `bun.lock`。
+6. **大修改分模块分功能提交**：进行较大规模的修改（例如跨多个模块的重构、批量 UI 调整）时，必须按模块、按功能拆分为多个独立的暂存与提交单元，分别执行 `git add <相关文件>` + `git commit`，禁止把所有改动一次性混入单个 commit，以便回滚与审查。
+7. **Lockfile 策略**：规范 lockfile 是 `bun.lock`。如果用 pnpm 安装了新依赖，也需要执行 `bun install` 更新 `bun.lock`。
