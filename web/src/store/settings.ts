@@ -78,6 +78,17 @@ function applyPrimaryColor(color: string) {
     "--lew-color-button-primary-text-text": p.textText,
     "--lew-color-button-primary-text-text-hover": p.textTextHover,
     "--lew-color-button-primary-text-text-active": p.textTextActive,
+    // 侧边栏菜单（lew-ui 菜单选中/悬停态使用独立的 --lew-color-menu-primary-* 色板，
+    // 与 --lew-color-primary-* 分离，必需单独覆盖才能随主题色切换）
+    "--lew-color-menu-primary-item-bg": "transparent",
+    "--lew-color-menu-primary-item-bg-hover": "var(--lew-bgcolor-2)",
+    "--lew-color-menu-primary-item-text": "var(--lew-text-color-1)",
+    "--lew-color-menu-primary-item-text-hover": "var(--lew-text-color-0)",
+    "--lew-color-menu-primary-item-selected-bg": p.light,
+    "--lew-color-menu-primary-item-selected-text": p.primary,
+    "--lew-color-menu-primary-item-icon": "var(--lew-text-color-3)",
+    "--lew-color-menu-primary-item-icon-hover": "var(--lew-text-color-0)",
+    "--lew-color-menu-primary-item-icon-selected": p.primary,
   };
   for (const [key, value] of Object.entries(vars)) {
     root.style.setProperty(key, value);
