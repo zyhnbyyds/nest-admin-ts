@@ -75,7 +75,7 @@ export class FilesService {
     part: MultipartFile,
     actorId: number | undefined,
   ): Promise<FileDto> {
-    const originalName = sanitizeFilename(part.filename);
+    const originalName = sanitizeFilename(decodeFilename(part.filename));
     const ext = path.extname(originalName).toLowerCase();
     if (!ALLOWED_EXTENSIONS.has(ext))
       throw new BadRequestException('不允许的文件类型');
@@ -158,10 +158,22 @@ export class FilesService {
   }
 }
 
+/**
+ * 纠正 multipart 文件名编码。
+ * busboy 将 Content-Disposition 的 filename 按 latin1 解码，浏览器发送的中文名
+ * （原始 UTF-8 字节）会被解成乱码；这里按 latin1 回编码再按 UTF-8 解码还原。
+ * 若还原结果含 U+FFFD 替换符，说明原本就是合法 UTF-8 字符串，保持原样。
+ */
+function decodeFilename(filename: string): string {
+  const corrected = Buffer.from(filename, 'latin1').toString('utf8');
+  return corrected.includes('\uFFFD') ? filename : corrected;
+}
+
 function sanitizeFilename(name: string): string {
   const base = path
     .basename(name)
-    .replace(/[^\w.\- ]/g, '_')
+    // 保留任意语言的字母/数字、下划线、连字符、点与空格，其余字符替换为下划线
+    .replace(/[^\p{L}\p{N}._\- ]/gu, '_')
     .slice(0, 255);
   return base || 'file';
 }

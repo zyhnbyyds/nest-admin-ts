@@ -166,6 +166,24 @@ describe('FilesService', () => {
       const result = await service.save(file as any, undefined);
       expect(result).toHaveProperty('id', 15);
     });
+
+    it('preserves Chinese filenames (decodes latin1 mojibake)', async () => {
+      const { db } = buildDb();
+      // 模拟 busboy 对中文 UTF-8 字节按 latin1 误解码后得到的乱码字符串
+      const mojibake = Buffer.from('报告.pdf', 'utf8').toString('latin1');
+      const file = mockMultipartFile({ filename: mojibake });
+      const service = new FilesService({ db } as any, buildConfig() as any);
+      const result = await service.save(file as any, 1);
+      expect(result.originalName).toBe('报告.pdf');
+    });
+
+    it('keeps Chinese chars while stripping path separators', async () => {
+      const { db } = buildDb();
+      const file = mockMultipartFile({ filename: '../../目录/报表 2024.xlsx' });
+      const service = new FilesService({ db } as any, buildConfig() as any);
+      const result = await service.save(file as any, 1);
+      expect(result.originalName).toBe('报表 2024.xlsx');
+    });
   });
 
   describe('open', () => {
