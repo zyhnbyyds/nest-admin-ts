@@ -21,7 +21,9 @@ z.config(zhCN());
 async function bootstrap(): Promise<void> {
   const app = await NestFactory.create<NestFastifyApplication>(
     AppModule,
-    new FastifyAdapter({ logger: true }),
+    // trustProxy：反向代理（nginx）场景下让 request.ip 解析 x-forwarded-for，
+    // 配合 nginx 的 Proxy_set_header X-Forwarded-For 才能拿到真实客户端 IP
+    new FastifyAdapter({ logger: true, trustProxy: true }),
   );
   app.useGlobalFilters(new GlobalExceptionFilter());
   const config = app.get(AppConfigService);

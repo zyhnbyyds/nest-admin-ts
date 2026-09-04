@@ -11,6 +11,7 @@ import {
 import { z } from 'zod';
 import { AuthService } from './auth.service';
 import { Public } from '../../common/auth/public.decorator';
+import { resolveClientIp } from '../../common/utils/ip';
 import {
   ApiBearerAuth,
   ApiBody,
@@ -143,7 +144,7 @@ export class AuthController {
   async login(@Body() body: unknown, @Req() request: LoginRequest) {
     const userAgent = request.headers?.['user-agent'];
     return this.authService.login(loginSchema.parse(body), {
-      ip: request.ip,
+      ip: resolveClientIp(request),
       userAgent: typeof userAgent === 'string' ? userAgent : undefined,
     });
   }
@@ -158,7 +159,7 @@ export class AuthController {
   async register(@Body() body: unknown, @Req() request: LoginRequest) {
     const userAgent = request.headers?.['user-agent'];
     return this.authService.register(registerSchema.parse(body), {
-      ip: request.ip,
+      ip: resolveClientIp(request),
       userAgent: typeof userAgent === 'string' ? userAgent : undefined,
     });
   }
