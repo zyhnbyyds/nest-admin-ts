@@ -16,6 +16,7 @@ import { useTable } from "~/composables/useTable";
 import type { CreateJobBody, Job, JobLog } from "~/types/api";
 import { renderStatus } from "~/utils/render";
 import { confirmDanger } from "~/utils/confirm";
+import IconButton from "~/components/IconButton.vue";
 
 // ---------- 任务列表 ----------
 const { items, loading, currentPage, pageSize, total, search, refresh, handleChange } =
@@ -208,40 +209,31 @@ async function handleClearLogs() {
       >
         <template #operation="{ row }">
           <div class="flex items-center gap-1">
-            <LewButton
-              v-permission="'system:job:run'"
-              type="text"
-              size="small"
+            <IconButton
+              permission="system:job:run"
               title="手动执行"
               @click="handleRun(row as unknown as Job)"
             >
               <Play :size="14" />
-            </LewButton>
-            <LewButton
-              type="text"
-              size="small"
-              title="执行日志"
-              @click="openLogs(row as unknown as Job)"
-            >
+            </IconButton>
+            <IconButton title="执行日志" @click="openLogs(row as unknown as Job)">
               <FileClock :size="14" />
-            </LewButton>
-            <LewButton
-              v-permission="'system:job:update'"
-              type="text"
-              size="small"
+            </IconButton>
+            <IconButton
+              permission="system:job:update"
+              title="编辑"
               @click="openEdit(row as unknown as Job)"
             >
               <Pencil :size="14" />
-            </LewButton>
-            <LewButton
-              v-permission="'system:job:delete'"
-              type="text"
-              size="small"
+            </IconButton>
+            <IconButton
+              permission="system:job:delete"
               color="error"
+              title="删除"
               @click="handleDelete(row as unknown as Job)"
             >
               <Trash2 :size="14" />
-            </LewButton>
+            </IconButton>
           </div>
         </template>
       </LewTable>

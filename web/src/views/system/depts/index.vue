@@ -7,6 +7,7 @@ import { createDept, deleteDept, listDepts, updateDept } from "~/api/system/dept
 import type { CreateDeptBody, Dept } from "~/types/api";
 import { renderStatus } from "~/utils/render";
 import { confirmDanger } from "~/utils/confirm";
+import IconButton from "~/components/IconButton.vue";
 
 // ---------- 部门树 ----------
 const depts = ref<Dept[]>([]);
@@ -175,32 +176,28 @@ function handleDelete(row: Dept) {
       >
         <template #operation="{ row }">
           <div class="flex items-center gap-1">
-            <LewButton
-              v-permission="'system:dept:create'"
-              type="text"
-              size="small"
+            <IconButton
+              permission="system:dept:create"
               title="添加子部门"
               @click="openCreate((row as unknown as Dept).id)"
             >
               <Plus :size="14" />
-            </LewButton>
-            <LewButton
-              v-permission="'system:dept:update'"
-              type="text"
-              size="small"
+            </IconButton>
+            <IconButton
+              permission="system:dept:update"
+              title="编辑"
               @click="openEdit(row as unknown as Dept)"
             >
               <Pencil :size="14" />
-            </LewButton>
-            <LewButton
-              v-permission="'system:dept:delete'"
-              type="text"
-              size="small"
+            </IconButton>
+            <IconButton
+              permission="system:dept:delete"
               color="error"
+              title="删除"
               @click="handleDelete(row as unknown as Dept)"
             >
               <Trash2 :size="14" />
-            </LewButton>
+            </IconButton>
           </div>
         </template>
       </LewTable>

@@ -20,6 +20,7 @@ import { formatDateTime } from "~/composables/useFormat";
 import type { Dept, User } from "~/types/api";
 import { renderStatus } from "~/utils/render";
 import { confirmDanger } from "~/utils/confirm";
+import IconButton from "~/components/IconButton.vue";
 
 // ---------- 列表 ----------
 const statusFilters = [
@@ -321,23 +322,21 @@ function handleDelete(row: User) {
       >
         <template #operation="{ row }">
           <div class="flex items-center gap-1">
-            <LewButton
-              v-permission="'system:user:update'"
-              type="text"
-              size="small"
+            <IconButton
+              permission="system:user:update"
+              title="编辑"
               @click="openEdit(row as unknown as User)"
             >
               <Pencil :size="14" />
-            </LewButton>
-            <LewButton
-              v-permission="'system:user:delete'"
-              type="text"
-              size="small"
+            </IconButton>
+            <IconButton
+              permission="system:user:delete"
               color="error"
+              title="删除"
               @click="handleDelete(row as unknown as User)"
             >
               <Trash2 :size="14" />
-            </LewButton>
+            </IconButton>
           </div>
         </template>
       </LewTable>

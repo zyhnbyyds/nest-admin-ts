@@ -16,6 +16,7 @@ import { useTable } from "~/composables/useTable";
 import { formatDateTime } from "~/composables/useFormat";
 import type { OperationLog } from "~/types/api";
 import { confirmDanger } from "~/utils/confirm";
+import IconButton from "~/components/IconButton.vue";
 
 // ---------- 列表 ----------
 const query = ref<{ status?: string; username?: string }>({});
@@ -207,22 +208,17 @@ function handleClear() {
       >
         <template #operation="{ row }">
           <div class="flex items-center gap-1">
-            <LewButton
-              type="text"
-              size="small"
-              @click="openDetail(row as unknown as OperationLog)"
-            >
+            <IconButton title="详情" @click="openDetail(row as unknown as OperationLog)">
               <Eye :size="14" />
-            </LewButton>
-            <LewButton
-              v-permission="'monitor:operlog:delete'"
-              type="text"
-              size="small"
+            </IconButton>
+            <IconButton
+              permission="monitor:operlog:delete"
               color="error"
+              title="删除"
               @click="handleDelete(row as unknown as OperationLog)"
             >
               <Trash2 :size="14" />
-            </LewButton>
+            </IconButton>
           </div>
         </template>
       </LewTable>

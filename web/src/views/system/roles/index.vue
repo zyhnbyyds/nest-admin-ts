@@ -17,6 +17,7 @@ import { listDepts } from "~/api/system/depts";
 import { formatDateTime } from "~/composables/useFormat";
 import type { DataScope, Dept, Menu, Role } from "~/types/api";
 import { renderStatus } from "~/utils/render";
+import IconButton from "~/components/IconButton.vue";
 
 // ---------- 数据范围 ----------
 const dataScopeOptions = [
@@ -294,33 +295,23 @@ function handleDelete(row: Role) {
       >
         <template #operation="{ row }">
           <div class="flex items-center gap-1">
-            <LewButton
-              v-permission="'system:role:update'"
-              type="text"
-              size="small"
+            <IconButton
+              permission="system:role:update"
               title="编辑角色"
               @click="openEdit(row as unknown as Role)"
             >
               <Pencil :size="14" />
-            </LewButton>
-            <LewButton
-              v-permission="'system:role:update'"
-              type="text"
-              size="small"
+            </IconButton>
+            <IconButton
+              permission="system:role:update"
               title="分配菜单权限"
               @click="openAuth(row as unknown as Role)"
             >
               <KeyRound :size="14" />
-            </LewButton>
-            <LewButton
-              type="text"
-              size="small"
-              color="error"
-              title="删除角色"
-              @click="handleDelete(row as unknown as Role)"
-            >
+            </IconButton>
+            <IconButton color="error" title="删除角色" @click="handleDelete(row as unknown as Role)">
               <Trash2 :size="14" />
-            </LewButton>
+            </IconButton>
           </div>
         </template>
       </LewTable>

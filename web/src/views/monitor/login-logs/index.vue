@@ -16,6 +16,7 @@ import { formatDateTime } from "~/composables/useFormat";
 import { confirmDanger } from "~/utils/confirm";
 import { renderTag } from "~/utils/render";
 import type { LoginLog } from "~/types/api";
+import IconButton from "~/components/IconButton.vue";
 
 // ---------- 列表 ----------
 const query = ref<{ username?: string; status?: string }>({});
@@ -130,15 +131,14 @@ function handleClear() {
         size="small"
       >
         <template #operation="{ row }">
-          <LewButton
-            v-permission="'monitor:loginlog:delete'"
-            type="text"
-            size="small"
+          <IconButton
+            permission="monitor:loginlog:delete"
             color="error"
+            title="删除"
             @click="handleDelete(row as unknown as LoginLog)"
           >
             <Trash2 :size="14" />
-          </LewButton>
+          </IconButton>
         </template>
       </LewTable>
 

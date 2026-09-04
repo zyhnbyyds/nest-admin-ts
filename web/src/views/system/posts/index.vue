@@ -16,6 +16,7 @@ import { formatDateTime } from "~/composables/useFormat";
 import type { CreatePostBody, Post } from "~/types/api";
 import { renderStatus } from "~/utils/render";
 import { confirmDanger } from "~/utils/confirm";
+import IconButton from "~/components/IconButton.vue";
 
 // ---------- 列表 ----------
 const { items, loading, currentPage, pageSize, total, search, refresh, handleChange } =
@@ -136,23 +137,21 @@ function handleDelete(row: Post) {
       >
         <template #operation="{ row }">
           <div class="flex items-center gap-1">
-            <LewButton
-              v-permission="'system:post:update'"
-              type="text"
-              size="small"
+            <IconButton
+              permission="system:post:update"
+              title="编辑"
               @click="openEdit(row as unknown as Post)"
             >
               <Pencil :size="14" />
-            </LewButton>
-            <LewButton
-              v-permission="'system:post:delete'"
-              type="text"
-              size="small"
+            </IconButton>
+            <IconButton
+              permission="system:post:delete"
               color="error"
+              title="删除"
               @click="handleDelete(row as unknown as Post)"
             >
               <Trash2 :size="14" />
-            </LewButton>
+            </IconButton>
           </div>
         </template>
       </LewTable>

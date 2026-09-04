@@ -16,6 +16,7 @@ import { useTable } from "~/composables/useTable";
 import type { CreateDictDataBody, CreateDictTypeBody, DictData, DictType } from "~/types/api";
 import { renderStatus } from "~/utils/render";
 import { confirmDanger } from "~/utils/confirm";
+import IconButton from "~/components/IconButton.vue";
 
 // ---------- 左侧：字典类型 ----------
 const typeTable = useTable<DictType>({ url: "/system/dict-types", defaultPageSize: 20 });
@@ -262,21 +263,16 @@ function handleDataDelete(row: DictData) {
         >
           <template #operation="{ row }">
             <div class="flex items-center gap-1">
-              <LewButton
-                type="text"
-                size="small"
-                @click.stop="openTypeEdit(row as unknown as DictType)"
-              >
+              <IconButton title="编辑" @click="openTypeEdit(row as unknown as DictType)">
                 <Pencil :size="13" />
-              </LewButton>
-              <LewButton
-                type="text"
-                size="small"
+              </IconButton>
+              <IconButton
                 color="error"
-                @click.stop="handleTypeDelete(row as unknown as DictType)"
+                title="删除"
+                @click="handleTypeDelete(row as unknown as DictType)"
               >
                 <Trash2 :size="13" />
-              </LewButton>
+              </IconButton>
             </div>
           </template>
         </LewTable>
@@ -319,17 +315,16 @@ function handleDataDelete(row: DictData) {
         >
           <template #operation="{ row }">
             <div class="flex items-center gap-1">
-              <LewButton type="text" size="small" @click="openDataEdit(row as unknown as DictData)">
+              <IconButton title="编辑" @click="openDataEdit(row as unknown as DictData)">
                 <Pencil :size="13" />
-              </LewButton>
-              <LewButton
-                type="text"
-                size="small"
+              </IconButton>
+              <IconButton
                 color="error"
+                title="删除"
                 @click="handleDataDelete(row as unknown as DictData)"
               >
                 <Trash2 :size="13" />
-              </LewButton>
+              </IconButton>
             </div>
           </template>
         </LewTable>

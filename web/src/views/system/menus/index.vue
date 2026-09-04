@@ -16,6 +16,7 @@ import type { CreateMenuBody, Menu, MenuType } from "~/types/api";
 import { renderStatus } from "~/utils/render";
 import { MENU_ICON_OPTIONS, resolveMenuIcon } from "~/utils/menu-icon";
 import { confirmDanger } from "~/utils/confirm";
+import IconButton from "~/components/IconButton.vue";
 
 // ---------- 菜单树 ----------
 const menus = ref<Menu[]>([]);
@@ -503,46 +504,38 @@ function handleDelete(row: Menu) {
       >
         <template #operation="{ row }">
           <div class="flex items-center gap-1">
-            <LewButton
+            <IconButton
               v-if="menuOf(row).type !== 'F'"
-              v-permission="'system:menu:create'"
-              type="text"
-              size="small"
+              permission="system:menu:create"
               title="添加子菜单"
               @click="openCreate(menuOf(row).id)"
             >
               <Plus :size="14" />
-            </LewButton>
-            <LewButton
+            </IconButton>
+            <IconButton
               v-if="menuOf(row).type !== 'F'"
-              v-permission="'system:menu:create'"
-              type="text"
-              size="small"
+              permission="system:menu:create"
               title="按钮权限"
               @click="openBtnAuth(menuOf(row))"
             >
               <KeyRound :size="14" />
-            </LewButton>
-            <LewButton
-              v-permission="'system:menu:update'"
-              type="text"
-              size="small"
+            </IconButton>
+            <IconButton
+              permission="system:menu:update"
               title="编辑"
               @click="openEdit(menuOf(row))"
             >
               <Pencil :size="14" />
-            </LewButton>
-            <LewButton
-              v-permission="'system:menu:delete'"
-              type="text"
-              size="small"
+            </IconButton>
+            <IconButton
+              permission="system:menu:delete"
               color="error"
               :disabled="(menuOf(row).children?.length ?? 0) > 0"
               title="存在子菜单时不可删除"
               @click="handleDelete(menuOf(row))"
             >
               <Trash2 :size="14" />
-            </LewButton>
+            </IconButton>
           </div>
         </template>
       </LewTable>
@@ -653,23 +646,21 @@ function handleDelete(row: Menu) {
         >
           <template #operation="{ row }">
             <div class="flex items-center gap-1">
-              <LewButton
-                v-permission="'system:menu:update'"
-                type="text"
-                size="small"
+              <IconButton
+                permission="system:menu:update"
+                title="编辑"
                 @click="openEdit(row as unknown as Menu)"
               >
                 <Pencil :size="13" />
-              </LewButton>
-              <LewButton
-                v-permission="'system:menu:delete'"
-                type="text"
-                size="small"
+              </IconButton>
+              <IconButton
+                permission="system:menu:delete"
                 color="error"
+                title="删除"
                 @click="handleDelete(row as unknown as Menu)"
               >
                 <Trash2 :size="13" />
-              </LewButton>
+              </IconButton>
             </div>
           </template>
         </LewTable>

@@ -15,6 +15,7 @@ import { useTable } from "~/composables/useTable";
 import { formatDateTime } from "~/composables/useFormat";
 import type { Config } from "~/types/api";
 import { confirmDanger } from "~/utils/confirm";
+import IconButton from "~/components/IconButton.vue";
 
 // ---------- 列表 ----------
 const { items, loading, currentPage, pageSize, total, search, refresh, handleChange } =
@@ -135,23 +136,21 @@ function handleDelete(row: Config) {
       >
         <template #operation="{ row }">
           <div class="flex items-center gap-1">
-            <LewButton
-              v-permission="'system:config:update'"
-              type="text"
-              size="small"
+            <IconButton
+              permission="system:config:update"
+              title="编辑"
               @click="openEdit(row as unknown as Config)"
             >
               <Pencil :size="14" />
-            </LewButton>
-            <LewButton
-              v-permission="'system:config:delete'"
-              type="text"
-              size="small"
+            </IconButton>
+            <IconButton
+              permission="system:config:delete"
               color="error"
+              title="删除"
               @click="handleDelete(row as unknown as Config)"
             >
               <Trash2 :size="14" />
-            </LewButton>
+            </IconButton>
           </div>
         </template>
       </LewTable>
