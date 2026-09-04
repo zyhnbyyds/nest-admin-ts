@@ -1,6 +1,6 @@
 import axios, { AxiosError, type AxiosRequestConfig } from "axios";
 import { LewMessage } from "lew-ui";
-import { useUserStore } from "~/store/user";
+import { REFRESH_TOKEN_KEY, useUserStore } from "~/store/user";
 import type { LoginResult } from "~/types/api";
 
 /** 业务错误（后端无统一包裹层，直接用 HTTP 状态码 + message） */
@@ -40,18 +40,38 @@ function flushQueue(token: string | null) {
   }
 }
 
+/** 拿最新 refreshToken：优先 localStorage（多标签页场景下内存态可能已被其他标签页轮换更新） */
+function readLatestRefreshToken(): string {
+  return localStorage.getItem(REFRESH_TOKEN_KEY) ?? "";
+}
+
 async function doRefresh(): Promise<string> {
   const userStore = useUserStore();
-  const refreshToken = userStore.refreshToken;
-  if (!refreshToken) throw new ApiError(401, "未登录");
   // 直接用裸 axios，避免循环依赖拦截器
-  const { data } = await axios.post<LoginResult>(
-    `${import.meta.env.VITE_API_BASE_URL}/auth/refresh`,
-    { refreshToken },
-    { timeout: 10000 },
-  );
-  userStore.setTokens(data.accessToken, data.refreshToken);
-  return data.accessToken;
+  const attempt = async (rawToken: string) => {
+    const { data } = await axios.post<LoginResult>(
+      `${import.meta.env.VITE_API_BASE_URL}/auth/refresh`,
+      { refreshToken: rawToken },
+      { timeout: 10000 },
+    );
+    userStore.setTokens(data.accessToken, data.refreshToken);
+    return data.accessToken;
+  };
+
+  const initialToken = readLatestRefreshToken() || userStore.refreshToken;
+  if (!initialToken) throw new ApiError(401, "未登录");
+
+  try {
+    return await attempt(initialToken);
+  } catch (error) {
+    // 轮换竞态：本标签页持有的 refreshToken 刚被其他标签页消耗（后端一次性轮换）。
+    // 重新读取 localStorage 中最新的 token 再试一次，能覆盖多标签页刷新的场景。
+    const latestToken = readLatestRefreshToken();
+    if (latestToken && latestToken !== initialToken) {
+      return await attempt(latestToken);
+    }
+    throw error;
+  }
 }
 
 /** 触发一次全局刷新（并发请求共享同一个 Promise） */
@@ -82,8 +102,7 @@ function refreshOnce(): Promise<string> {
 /** 把后端/网络层的各种错误形态转成一句可读的中文提示 */
 function formatMessage(error: AxiosError): string {
   const status = error.response?.status;
-  const raw = (error.response?.data as { message?: unknown } | undefined)
-    ?.message;
+  const raw = (error.response?.data as { message?: unknown } | undefined)?.message;
 
   // 后端校验失败会返回字段提示数组，如 ["name：不能为空"]
   if (Array.isArray(raw) && raw.length > 0) {

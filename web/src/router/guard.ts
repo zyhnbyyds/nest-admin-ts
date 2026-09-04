@@ -37,8 +37,16 @@ export function setupGuard(router: Router) {
         dynamicRoutesAdded = true;
         // 拉取当前用户完整资料（头像等 JWT 之外的信息），失败不阻塞导航
         void userStore.fetchProfile().catch(() => undefined);
-        // 重新进入目标路由（此时动态路由已注册）
-        return { ...to, replace: true };
+        // 重新进入目标路由（此时动态路由已注册）。
+        // 注意不能直接 return { ...to }：刷新时首个导航会命中兜底路由，
+        // to.name 为 "not-found"，重定向按 name 解析会再次命中兜底路由导致 404，
+        // 必须只保留 path/query/hash，按 path 重新解析。
+        return {
+          path: to.path,
+          query: to.query,
+          hash: to.hash,
+          replace: true,
+        };
       } catch {
         userStore.reset();
         return { path: "/login", query: { redirect: to.fullPath } };

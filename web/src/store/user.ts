@@ -3,7 +3,8 @@ import { computed, ref } from "vue";
 import type { JwtPayload, Profile } from "~/types/api";
 import { getProfile as fetchProfileApi } from "~/api/auth";
 
-const REFRESH_TOKEN_KEY = "nest-admin:refresh-token";
+/** refreshToken 在 localStorage 中的存储 key（request.ts 刷新逻辑也会读取，保持单一来源） */
+export const REFRESH_TOKEN_KEY = "nest-admin:refresh-token";
 
 function decodeJwt(token: string): JwtPayload | null {
   try {
@@ -51,9 +52,7 @@ export const useUserStore = defineStore("user", () => {
 
   /** 本地更新资料快照（保存资料后同步，避免再次请求） */
   function setProfile(partial: Partial<Profile>) {
-    profile.value = profile.value
-      ? { ...profile.value, ...partial }
-      : ({ ...partial } as Profile);
+    profile.value = profile.value ? { ...profile.value, ...partial } : ({ ...partial } as Profile);
   }
 
   function reset() {
