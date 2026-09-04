@@ -44,12 +44,15 @@ const profileOptions: LewFormOption[] = [
 
 async function loadProfile() {
   const data = await getProfile();
-  profile.value = {
+  const next = {
     displayName: data.displayName || userStore.username,
     email: data.email ?? "",
     phone: data.phone ?? "",
     avatar: data.avatar ?? "",
   };
+  profile.value = next;
+  // LewForm 为受控组件，外部赋值不生效，需 setForm 回填展示
+  profileRef.value?.setForm?.(next);
   // 同步到 store，顶栏头像随之更新
   userStore.setProfile({
     displayName: data.displayName,
