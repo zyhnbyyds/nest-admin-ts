@@ -4,7 +4,7 @@ import { ChevronDown, ChevronUp, CornerDownRight, Pencil, Plus, Trash2 } from "l
 import { LewButton, LewForm, LewMessage, LewModal, LewTable } from "lew-ui";
 import type { LewTableColumn } from "lew-ui";
 import { createMenu, deleteMenu, listMenus, updateMenu } from "~/api/system/menus";
-import type { Menu, MenuType } from "~/types/api";
+import type { CreateMenuBody, Menu, MenuType } from "~/types/api";
 import { renderStatus } from "~/utils/render";
 import { confirmDanger } from "~/utils/confirm";
 
@@ -194,7 +194,7 @@ const form = ref({
   permission: "",
   icon: "",
   sort: 0,
-  status: "active",
+  status: true,
 });
 /** 表单 key：每次打开弹窗自增，强制重建 LewForm 以回填数据 */
 const formKey = ref(0);
@@ -203,11 +203,6 @@ const typeOptions = [
   { label: "目录", value: "M" },
   { label: "菜单", value: "C" },
   { label: "按钮", value: "F" },
-];
-
-const statusOptions = [
-  { label: "启用", value: "active" },
-  { label: "禁用", value: "disabled" },
 ];
 
 /** 扁平化菜单树供父级选择 */
@@ -243,7 +238,7 @@ function openCreate(parentId = 0) {
       permission: "",
       icon: "",
       sort: 0,
-      status: "active",
+      status: true,
     });
   });
 }
@@ -269,7 +264,7 @@ function openEdit(row: Menu) {
       permission: row.permission ?? "",
       icon: row.icon ?? "",
       sort: row.sort,
-      status: row.status,
+      status: row.status === "active",
     });
   });
 }
@@ -278,7 +273,7 @@ async function handleSubmit() {
   const valid = await formRef.value?.validate();
   if (!valid) return;
   const values = (formRef.value?.getForm?.() ?? form.value) as typeof form.value;
-  const body = {
+  const body: CreateMenuBody = {
     parentId: values.parentId === ROOT_PARENT ? 0 : values.parentId,
     name: values.name,
     title: values.title,
@@ -288,7 +283,7 @@ async function handleSubmit() {
     permission: values.permission || undefined,
     icon: values.icon || undefined,
     sort: values.sort,
-    status: values.status as "active" | "disabled",
+    status: values.status ? "active" : "disabled",
   };
   if (editingId.value === null) {
     await createMenu(body);
@@ -458,7 +453,7 @@ function handleDelete(row: Menu) {
               props: { placeholder: '图标名（lucide）', clearable: true },
             },
             { field: 'sort', label: '排序', as: 'input-number', props: { min: 0 } },
-            { field: 'status', label: '状态', as: 'select', props: { options: statusOptions } },
+            { field: 'status', label: '状态', as: 'switch' },
           ]"
         />
       </div>

@@ -13,7 +13,7 @@ import {
 } from "~/api/system/dict";
 import { clearDictCache } from "~/composables/useDict";
 import { useTable } from "~/composables/useTable";
-import type { DictData, DictType } from "~/types/api";
+import type { CreateDictDataBody, CreateDictTypeBody, DictData, DictType } from "~/types/api";
 import { renderStatus } from "~/utils/render";
 import { confirmDanger } from "~/utils/confirm";
 
@@ -77,7 +77,7 @@ const dataColumns: LewTableColumn[] = [
 const typeModalVisible = ref(false);
 const typeEditingId = ref<number | null>(null);
 const typeFormRef = ref();
-const typeForm = ref({ name: "", type: "", status: "active", remark: "" });
+const typeForm = ref({ name: "", type: "", status: true, remark: "" });
 /** 类型表单 key：每次打开自增，强制重建 LewForm 回填数据 */
 const typeFormKey = ref(0);
 
@@ -86,7 +86,7 @@ function openTypeCreate() {
   typeFormKey.value += 1;
   typeModalVisible.value = true;
   void nextTick(() => {
-    typeFormRef.value?.setForm?.({ name: "", type: "", status: "active", remark: "" });
+    typeFormRef.value?.setForm?.({ name: "", type: "", status: true, remark: "" });
   });
 }
 
@@ -98,7 +98,7 @@ function openTypeEdit(row: DictType) {
     typeFormRef.value?.setForm?.({
       name: row.name,
       type: row.type,
-      status: row.status,
+      status: row.status === "active",
       remark: row.remark ?? "",
     });
   });
@@ -108,10 +108,10 @@ async function handleTypeSubmit() {
   const valid = await typeFormRef.value?.validate();
   if (!valid) return;
   const values = (typeFormRef.value?.getForm?.() ?? typeForm.value) as typeof typeForm.value;
-  const body = {
+  const body: CreateDictTypeBody = {
     name: values.name,
     type: values.type,
-    status: values.status as "active" | "disabled",
+    status: values.status ? "active" : "disabled",
     remark: values.remark || undefined,
   };
   if (typeEditingId.value === null) {
@@ -148,17 +148,12 @@ const dataForm = ref({
   label: "",
   value: "",
   sort: 0,
-  status: "active",
+  status: true,
   cssClass: "",
   listClass: "",
 });
 /** 数据表单 key：每次打开自增，强制重建 LewForm 回填数据 */
 const dataFormKey = ref(0);
-
-const statusOptions = [
-  { label: "启用", value: "active" },
-  { label: "禁用", value: "disabled" },
-];
 
 function openDataCreate() {
   dataEditingId.value = null;
@@ -169,7 +164,7 @@ function openDataCreate() {
       label: "",
       value: "",
       sort: 0,
-      status: "active",
+      status: true,
       cssClass: "",
       listClass: "",
     });
@@ -185,7 +180,7 @@ function openDataEdit(row: DictData) {
       label: row.label,
       value: row.value,
       sort: row.sort,
-      status: row.status,
+      status: row.status === "active",
       cssClass: row.cssClass ?? "",
       listClass: row.listClass ?? "",
     });
@@ -200,12 +195,12 @@ async function handleDataSubmit() {
     return;
   }
   const values = (dataFormRef.value?.getForm?.() ?? dataForm.value) as typeof dataForm.value;
-  const body = {
+  const body: CreateDictDataBody = {
     type: selectedType.value.type,
     label: values.label,
     value: values.value,
     sort: values.sort,
-    status: values.status as "active" | "disabled",
+    status: values.status ? "active" : "disabled",
     cssClass: values.cssClass || undefined,
     listClass: values.listClass || undefined,
   };
@@ -399,7 +394,7 @@ function handleDataDelete(row: DictData) {
               rule: `Yup.string().required('不能为空')`,
               props: { placeholder: '小写字母/数字/:-_', clearable: true },
             },
-            { field: 'status', label: '状态', as: 'select', props: { options: statusOptions } },
+            { field: 'status', label: '状态', as: 'switch' },
             {
               field: 'remark',
               label: '备注',
@@ -461,7 +456,7 @@ function handleDataDelete(row: DictData) {
               props: { placeholder: '如 1', clearable: true },
             },
             { field: 'sort', label: '排序', as: 'input-number', props: { min: 0 } },
-            { field: 'status', label: '状态', as: 'select', props: { options: statusOptions } },
+            { field: 'status', label: '状态', as: 'switch' },
             {
               field: 'cssClass',
               label: '样式类名',

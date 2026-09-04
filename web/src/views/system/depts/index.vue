@@ -4,7 +4,7 @@ import { Pencil, Plus, Trash2 } from "lucide-vue-next";
 import { LewButton, LewForm, LewMessage, LewModal, LewTable } from "lew-ui";
 import type { LewTableColumn } from "lew-ui";
 import { createDept, deleteDept, listDepts, updateDept } from "~/api/system/depts";
-import type { Dept } from "~/types/api";
+import type { CreateDeptBody, Dept } from "~/types/api";
 import { renderStatus } from "~/utils/render";
 import { confirmDanger } from "~/utils/confirm";
 
@@ -51,15 +51,10 @@ const form = ref({
   leaderUserId: undefined as number | undefined,
   phone: "",
   email: "",
-  status: "active",
+  status: true,
 });
 /** 表单 key：每次打开弹窗自增，强制重建 LewForm 以回填数据 */
 const formKey = ref(0);
-
-const statusOptions = [
-  { label: "启用", value: "active" },
-  { label: "禁用", value: "disabled" },
-];
 
 function flattenDepts(list: Dept[], prefix = ""): { label: string; value: number }[] {
   return list.flatMap((dept) => {
@@ -90,7 +85,7 @@ function openCreate(parentId = 0) {
       leaderUserId: undefined,
       phone: "",
       email: "",
-      status: "active",
+      status: true,
     });
   });
 }
@@ -113,7 +108,7 @@ function openEdit(row: Dept) {
       leaderUserId: row.leaderUserId ?? undefined,
       phone: row.phone ?? "",
       email: row.email ?? "",
-      status: row.status,
+      status: row.status === "active",
     });
   });
 }
@@ -122,14 +117,14 @@ async function handleSubmit() {
   const valid = await formRef.value?.validate();
   if (!valid) return;
   const values = (formRef.value?.getForm?.() ?? form.value) as typeof form.value;
-  const body = {
+  const body: CreateDeptBody = {
     parentId: values.parentId === ROOT_PARENT ? 0 : values.parentId,
     name: values.name,
     sort: values.sort,
     leaderUserId: values.leaderUserId,
     phone: values.phone || undefined,
     email: values.email || undefined,
-    status: values.status as "active" | "disabled",
+    status: values.status ? "active" : "disabled",
   };
   if (editingId.value === null) {
     await createDept(body);
@@ -278,7 +273,7 @@ function handleDelete(row: Dept) {
               as: 'input',
               props: { placeholder: '选填', clearable: true },
             },
-            { field: 'status', label: '状态', as: 'select', props: { options: statusOptions } },
+            { field: 'status', label: '状态', as: 'switch' },
           ]"
         />
       </div>

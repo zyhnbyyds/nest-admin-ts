@@ -13,7 +13,7 @@ import type { LewTableColumn } from "lew-ui";
 import { createPost, deletePost, updatePost } from "~/api/system/posts";
 import { useTable } from "~/composables/useTable";
 import { formatDateTime } from "~/composables/useFormat";
-import type { Post } from "~/types/api";
+import type { CreatePostBody, Post } from "~/types/api";
 import { renderStatus } from "~/utils/render";
 import { confirmDanger } from "~/utils/confirm";
 
@@ -48,21 +48,16 @@ void search();
 const modalVisible = ref(false);
 const editingId = ref<number | null>(null);
 const formRef = ref();
-const form = ref({ name: "", key: "", sort: 0, status: "active", remark: "" });
+const form = ref({ name: "", key: "", sort: 0, status: true, remark: "" });
 /** 表单 key：每次打开弹窗自增，强制重建 LewForm 以回填数据 */
 const formKey = ref(0);
-
-const statusOptions = [
-  { label: "启用", value: "active" },
-  { label: "禁用", value: "disabled" },
-];
 
 function openCreate() {
   editingId.value = null;
   formKey.value += 1;
   modalVisible.value = true;
   void nextTick(() => {
-    formRef.value?.setForm?.({ name: "", key: "", sort: 0, status: "active", remark: "" });
+    formRef.value?.setForm?.({ name: "", key: "", sort: 0, status: true, remark: "" });
   });
 }
 
@@ -75,7 +70,7 @@ function openEdit(row: Post) {
       name: row.name,
       key: row.key,
       sort: row.sort,
-      status: row.status,
+      status: row.status === "active",
       remark: row.remark ?? "",
     });
   });
@@ -85,11 +80,11 @@ async function handleSubmit() {
   const valid = await formRef.value?.validate();
   if (!valid) return;
   const values = (formRef.value?.getForm?.() ?? form.value) as typeof form.value;
-  const body = {
+  const body: CreatePostBody = {
     name: values.name,
     key: values.key,
     sort: values.sort,
-    status: values.status as "active" | "disabled",
+    status: values.status ? "active" : "disabled",
     remark: values.remark || undefined,
   };
   if (editingId.value === null) {
@@ -222,7 +217,7 @@ function handleDelete(row: Post) {
               props: { placeholder: '小写字母/数字/:-_', clearable: true },
             },
             { field: 'sort', label: '排序', as: 'input-number', props: { min: 0 } },
-            { field: 'status', label: '状态', as: 'select', props: { options: statusOptions } },
+            { field: 'status', label: '状态', as: 'switch' },
             {
               field: 'remark',
               label: '备注',

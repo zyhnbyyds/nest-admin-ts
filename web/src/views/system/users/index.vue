@@ -130,7 +130,7 @@ const form = ref({
   password: "",
   email: "",
   phone: "",
-  status: "active",
+  status: true,
   deptId: undefined as number | undefined,
   roleIds: [] as number[],
 });
@@ -175,8 +175,7 @@ const formOptions: LewFormOption[] = [
   {
     field: "status",
     label: "状态",
-    as: "select",
-    props: { options: statusFilters, placeholder: "请选择状态" },
+    as: "switch",
   },
   {
     field: "roleIds",
@@ -199,7 +198,7 @@ function openCreate() {
       password: "",
       email: "",
       phone: "",
-      status: "active",
+      status: true,
       deptId: undefined,
       roleIds: [],
     });
@@ -218,7 +217,7 @@ function openEdit(row: User) {
       password: "",
       email: row.email ?? "",
       phone: row.phone ?? "",
-      status: row.status,
+      status: row.status === "active",
       deptId: row.deptId ?? undefined,
       roleIds: row.roleIds ?? [],
     });
@@ -254,7 +253,7 @@ async function handleSubmit() {
       displayName: values.displayName,
       email: values.email || null,
       phone: values.phone || null,
-      status: values.status as "active" | "disabled",
+      status: values.status ? "active" : "disabled",
       deptId: values.deptId ?? null,
       password: values.password || undefined,
       roleIds: values.roleIds ?? [],

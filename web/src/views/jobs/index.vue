@@ -13,7 +13,7 @@ import type { LewTableColumn } from "lew-ui";
 import { clearJobLogs, createJob, deleteJob, listJobLogs, runJob, updateJob } from "~/api/jobs";
 import { useTable } from "~/composables/useTable";
 
-import type { Job, JobLog } from "~/types/api";
+import type { CreateJobBody, Job, JobLog } from "~/types/api";
 import { renderStatus } from "~/utils/render";
 import { confirmDanger } from "~/utils/confirm";
 
@@ -52,17 +52,12 @@ const form = ref({
   name: "",
   handler: "",
   cron: "",
-  status: "active",
+  status: true,
   concurrent: false,
   remark: "",
 });
 /** 表单 key：每次打开弹窗自增，强制重建 LewForm 以回填数据 */
 const formKey = ref(0);
-
-const statusOptions = [
-  { label: "启用", value: "active" },
-  { label: "停用", value: "disabled" },
-];
 
 function openCreate() {
   editingId.value = null;
@@ -73,7 +68,7 @@ function openCreate() {
       name: "",
       handler: "",
       cron: "",
-      status: "active",
+      status: true,
       concurrent: false,
       remark: "",
     });
@@ -89,7 +84,7 @@ function openEdit(row: Job) {
       name: row.name,
       handler: row.handler,
       cron: row.cron,
-      status: row.status,
+      status: row.status === "active",
       concurrent: row.concurrent,
       remark: row.remark ?? "",
     });
@@ -100,11 +95,11 @@ async function handleSubmit() {
   const valid = await formRef.value?.validate();
   if (!valid) return;
   const values = (formRef.value?.getForm?.() ?? form.value) as typeof form.value;
-  const body = {
+  const body: CreateJobBody = {
     name: values.name,
     handler: values.handler,
     cron: values.cron,
-    status: values.status as "active" | "disabled",
+    status: values.status ? "active" : "disabled",
     concurrent: values.concurrent,
     remark: values.remark || undefined,
   };
@@ -317,7 +312,7 @@ async function handleClearLogs() {
               rule: `Yup.string().required('不能为空')`,
               props: { placeholder: '如 0 0 * * *', clearable: true },
             },
-            { field: 'status', label: '状态', as: 'select', props: { options: statusOptions } },
+            { field: 'status', label: '状态', as: 'switch' },
             { field: 'concurrent', label: '允许并发', as: 'switch' },
             {
               field: 'remark',
