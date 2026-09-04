@@ -20,3 +20,8 @@ export function deleteFile(id: number) {
 export function fileDownloadUrl(id: number) {
   return `${import.meta.env.VITE_API_BASE_URL}/files/${id}/download`;
 }
+
+/** 构造预览地址（内联展示，不触发下载） */
+export function filePreviewUrl(id: number) {
+  return `${import.meta.env.VITE_API_BASE_URL}/files/${id}/download?inline=1`;
+}

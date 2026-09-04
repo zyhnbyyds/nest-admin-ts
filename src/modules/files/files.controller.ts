@@ -67,17 +67,21 @@ export class FilesController {
   @Public()
   @ApiOperation({ summary: '下载文件' })
   @ApiParam({ name: 'id', description: '文件ID' })
+  @ApiQuery({ name: 'inline', required: false, description: '传 1 时内联展示（图片预览），否则作为附件下载' })
   @ApiResponse({ status: 200, description: '成功' })
   @ApiBearerAuth('access-token')
   async download(
     @Param('id', ParseIntPipe) id: number,
     @Res() reply: DownloadReply,
+    @Query('inline') inline?: string,
   ) {
     const { stream, mime, originalName } = await this.files.open(id);
     reply.header('Content-Type', mime);
     reply.header(
       'Content-Disposition',
-      `attachment; filename*=UTF-8''${encodeURIComponent(originalName)}`,
+      inline === '1'
+        ? 'inline'
+        : `attachment; filename*=UTF-8''${encodeURIComponent(originalName)}`,
     );
     reply.send(stream);
   }

@@ -1,13 +1,14 @@
 <script setup lang="ts">
 import { ref } from "vue";
-import { Download, Trash2, Upload } from "lucide-vue-next";
-import { LewButton, LewMessage, LewPagination, LewTable } from "lew-ui";
+import { Download, Eye, Trash2, Upload } from "lucide-vue-next";
+import { LewButton, LewMessage, LewModal, LewPagination, LewTable } from "lew-ui";
 import type { LewTableColumn } from "lew-ui";
-import { deleteFile, fileDownloadUrl, uploadFile } from "~/api/files";
+import { deleteFile, fileDownloadUrl, filePreviewUrl, uploadFile } from "~/api/files";
 import { useTable } from "~/composables/useTable";
 import { formatDateTime, formatSize } from "~/composables/useFormat";
 import type { FileItem } from "~/types/api";
 import { confirmDanger } from "~/utils/confirm";
+import IconButton from "~/components/IconButton.vue";
 
 // ---------- 列表 ----------
 const { items, loading, currentPage, pageSize, total, refresh, handleChange } = useTable<FileItem>({
@@ -30,7 +31,7 @@ const columns: LewTableColumn[] = [
     width: 170,
     customRender: ({ row }) => formatDateTime((row as unknown as FileItem).createdAt),
   },
-  { title: "操作", field: "operation", width: 90, fixed: "right" },
+  { title: "操作", field: "operation", width: 120, fixed: "right" },
 ];
 
 void refresh();
@@ -61,6 +62,22 @@ async function handleFileChange(event: Event) {
 // ---------- 下载 ----------
 function handleDownload(row: FileItem) {
   window.open(fileDownloadUrl(row.id), "_blank");
+}
+
+// ---------- 图片预览 ----------
+const previewVisible = ref(false);
+const previewFile = ref<FileItem | null>(null);
+const previewLoading = ref(true);
+
+function isImage(item: FileItem) {
+  return item.mime?.toLowerCase().startsWith("image/");
+}
+
+function handlePreview(row: FileItem) {
+  if (!isImage(row)) return;
+  previewFile.value = row;
+  previewLoading.value = true;
+  previewVisible.value = true;
 }
 
 // ---------- 删除 ----------
@@ -107,24 +124,29 @@ function handleDelete(row: FileItem) {
       >
         <template #operation="{ row }">
           <div class="flex items-center gap-1">
-            <LewButton
-              v-permission="'system:file:list'"
-              type="text"
-              size="small"
+            <IconButton
+              v-if="isImage(row as unknown as FileItem)"
+              permission="system:file:list"
+              title="预览"
+              @click="handlePreview(row as unknown as FileItem)"
+            >
+              <Eye :size="14" />
+            </IconButton>
+            <IconButton
+              permission="system:file:list"
               title="下载"
               @click="handleDownload(row as unknown as FileItem)"
             >
               <Download :size="14" />
-            </LewButton>
-            <LewButton
-              v-permission="'system:file:delete'"
-              type="text"
-              size="small"
+            </IconButton>
+            <IconButton
+              permission="system:file:delete"
               color="error"
+              title="删除"
               @click="handleDelete(row as unknown as FileItem)"
             >
               <Trash2 :size="14" />
-            </LewButton>
+            </IconButton>
           </div>
         </template>
       </LewTable>
@@ -138,5 +160,37 @@ function handleDelete(row: FileItem) {
         />
       </div>
     </div>
+
+    <!-- 图片预览弹窗 -->
+    <LewModal
+      v-model:visible="previewVisible"
+      :title="previewFile?.originalName ?? '预览'"
+      width="720px"
+      :hide-footer="true"
+    >
+      <div class="p-5">
+        <div
+          v-if="previewLoading"
+          class="flex items-center justify-center h-400px text-13px text-[var(--app-text-muted)]"
+        >
+          加载中…
+        </div>
+        <img
+          v-show="!previewLoading && previewFile"
+          :key="previewFile?.id"
+          :src="previewFile ? filePreviewUrl(previewFile.id) : ''"
+          class="block max-w-full max-h-70vh mx-auto object-contain rounded-8px"
+          alt="预览"
+          @load="previewLoading = false"
+          @error="previewLoading = false"
+        />
+        <div
+          v-if="!previewLoading && !previewFile"
+          class="flex items-center justify-center h-200px text-13px text-[var(--app-text-muted)]"
+        >
+          无可预览文件
+        </div>
+      </div>
+    </LewModal>
   </div>
 </template>
