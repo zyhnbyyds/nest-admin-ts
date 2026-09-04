@@ -64,6 +64,16 @@ const ICON_MAP: Record<string, Component> = {
 
 const DEFAULT_ICON: Component = Activity;
 
+export interface MenuIconOption {
+  key: string;
+  component: Component;
+}
+
+/** 菜单图标可选列表（供菜单管理页图标选择器展示），顺序即展示顺序 */
+export const MENU_ICON_OPTIONS: MenuIconOption[] = Object.entries(ICON_MAP).map(
+  ([key, component]) => ({ key, component }),
+);
+
 /** 根据菜单 icon 字段解析图标组件 */
 export function resolveMenuIcon(icon: string | null | undefined): Component {
   if (!icon) return DEFAULT_ICON;
