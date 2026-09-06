@@ -442,3 +442,32 @@ export interface ColumnMeta {
   extra: string;
   comment: string;
 }
+
+// ============ dashboard 首页统计 ============
+
+/** 用户统计（GET /dashboard/users） */
+export interface UserStats {
+  total: number;
+  active: number;
+  disabled: number;
+  /** 今日新增（东八区日界） */
+  todayNew: number;
+}
+
+/** 启/停用状态统计（GET /dashboard/depts | /dashboard/roles | /dashboard/posts） */
+export interface StatusStats {
+  total: number;
+  active: number;
+  disabled: number;
+}
+
+/** 菜单统计（GET /dashboard/menus） */
+export interface MenuStats {
+  total: number;
+  /** 目录（M） */
+  directory: number;
+  /** 菜单（C） */
+  menu: number;
+  /** 按钮（F） */
+  button: number;
+}

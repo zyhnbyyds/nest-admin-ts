@@ -176,7 +176,7 @@ async function handleChangePassword() {
           />
           <span
             v-else
-            class="flex items-center justify-center w-64px h-64px rounded-full bg-[var(--lew-color-primary)] text-white text-24px font-700"
+            class="flex items-center justify-center w-64px h-64px rounded-full bg-[var(--lew-color-button-primary-fill)] text-white text-24px font-700"
           >
             {{ userStore.username.slice(0, 1).toUpperCase() }}
           </span>

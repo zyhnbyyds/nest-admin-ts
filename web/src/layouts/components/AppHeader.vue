@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useRouter } from "vue-router";
-import { Moon, Palette, Sun } from "lucide-vue-next";
+import { Github, Moon, Palette, Sun } from "lucide-vue-next";
 import { LewDropdown, LewMessage } from "lew-ui";
 import type { LewContextMenusOption } from "lew-ui";
 import { logout as logoutApi } from "~/api/auth";
@@ -59,6 +59,17 @@ function toggleDark() {
         <Palette :size="17" />
       </button>
 
+      <!-- GitHub 链接 -->
+      <a
+        class="icon-btn"
+        href="https://github.com/zyhnbyyds/nest-admin-ts"
+        target="_blank"
+        rel="noopener noreferrer"
+        title="GitHub 仓库"
+      >
+        <Github :size="17" />
+      </a>
+
       <!-- 用户菜单 -->
       <LewDropdown
         trigger="click"
@@ -79,7 +90,7 @@ function toggleDark() {
           />
           <span
             v-else
-            class="flex items-center justify-center w-26px h-26px rounded-full bg-[var(--lew-color-primary)] text-white text-12px font-700"
+            class="flex items-center justify-center w-26px h-26px rounded-full bg-[var(--lew-color-button-primary-fill)] text-white text-12px font-700"
           >
             {{ userStore.username.slice(0, 1).toUpperCase() }}
           </span>

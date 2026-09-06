@@ -113,6 +113,28 @@ export function mixWithBlack(hex: string, ratio: number): string {
   return rgbToHex({ r: mix(r), g: mix(g), b: mix(b) });
 }
 
+/**
+ * 深色模式下的「强调色」：提亮 + 提高饱和度，作为深色背景上的文字/图标/选中色。
+ * 对应 lew-ui 深色变量（如 --lew-color-primary 在 .lew-dark 下被提亮）。
+ */
+function toDarkAccent(hex: string, lightness: number): string {
+  const hsl = rgbToHsl(hexToRgb(hex));
+  hsl.s = Math.min(100, hsl.s + (100 - hsl.s) * 0.6);
+  hsl.l = lightness;
+  return rgbToHex(hslToRgb(hsl));
+}
+
+/**
+ * 深色模式下的「浅色面」：主色去饱和并压暗，作为深色背景上的选中/悬停底色。
+ * 对应 lew-ui 深色变量（如 --lew-color-primary-light 在 .lew-dark 下为深色）。
+ */
+function toDarkSurface(hex: string, lightness: number, satMul = 0.5): string {
+  const hsl = rgbToHsl(hexToRgb(hex));
+  hsl.s = Math.max(0, Math.min(70, hsl.s * satMul));
+  hsl.l = lightness;
+  return rgbToHex(hslToRgb(hsl));
+}
+
 /** 计算文字对比度：浅色背景上应使用深色文字 */
 export function isLightColor(hex: string): boolean {
   const { r, g, b } = hexToRgb(hex);
@@ -151,13 +173,53 @@ export interface PrimaryPalette {
   textText: string;
   textTextHover: string;
   textTextActive: string;
+  /** 填充按钮底色（LIGHT 下等于主色；DARK 下为深色底，保证白色文字对比度） */
+  fill: string;
+  fillHover: string;
+  fillActive: string;
 }
 
-export function buildPrimaryPalette(hex: string): PrimaryPalette {
+export function buildPrimaryPalette(hex: string, dark = false): PrimaryPalette {
   const primary = hex;
+
+  // 深色模式：主色提亮作强调色，浅色面压暗作底色（对齐 lew-ui 的 .lew-dark 派生关系）
+  if (dark) {
+    const accent = toDarkAccent(hex, 73);
+    const hover = toDarkAccent(hex, 81);
+    const active = toDarkAccent(hex, 88);
+    const lightText = toDarkAccent(hex, 81);
+    const lightTextHover = toDarkAccent(hex, 88);
+    const lightTextActive = toDarkAccent(hex, 93);
+    const fill = toDarkSurface(hex, 26);
+    const fillHover = toDarkSurface(hex, 20);
+    const fillActive = toDarkSurface(hex, 14);
+    return {
+      primary: accent,
+      hover,
+      active,
+      dark: accent,
+      light: toDarkSurface(hex, 14),
+      lightHover: toDarkSurface(hex, 19),
+      lightActive: toDarkSurface(hex, 25),
+      lightText,
+      lightTextHover,
+      lightTextActive,
+      ghostText: accent,
+      ghostTextHover: hover,
+      ghostTextActive: active,
+      textText: accent,
+      textTextHover: hover,
+      textTextActive: active,
+      fill,
+      fillHover,
+      fillActive,
+    };
+  }
+
+  // 浅色模式（保持原有派生关系）
   const hover = adjustLightness(hex, -8);
   const active = adjustLightness(hex, -16);
-  const dark = adjustLightness(hex, -20);
+  const darkColor = adjustLightness(hex, -20);
   const light = mixWithWhite(hex, 0.88);
   const lightHover = mixWithWhite(hex, 0.8);
   const lightActive = mixWithWhite(hex, 0.7);
@@ -174,7 +236,7 @@ export function buildPrimaryPalette(hex: string): PrimaryPalette {
     primary,
     hover,
     active,
-    dark,
+    dark: darkColor,
     light,
     lightHover,
     lightActive,
@@ -187,5 +249,8 @@ export function buildPrimaryPalette(hex: string): PrimaryPalette {
     textText,
     textTextHover,
     textTextActive,
+    fill: primary,
+    fillHover: hover,
+    fillActive: active,
   };
 }

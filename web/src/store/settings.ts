@@ -37,9 +37,9 @@ const RADIUS_MAP: Record<
 };
 
 /** 覆盖 lew-ui 主色完整派生变量，保证任意自定义色都协调 */
-function applyPrimaryColor(color: string) {
+function applyPrimaryColor(color: string, dark = false) {
   const root = document.documentElement;
-  const p = buildPrimaryPalette(color);
+  const p = buildPrimaryPalette(color, dark);
   const vars: Record<string, string> = {
     "--lew-color-primary": p.primary,
     "--lew-color-primary-hover": p.hover,
@@ -58,11 +58,11 @@ function applyPrimaryColor(color: string) {
     "--lew-color-primary-text-text-hover": p.textTextHover,
     "--lew-color-primary-text-text-active": p.textTextActive,
     // 按钮
-    "--lew-color-button-primary-fill": p.primary,
-    "--lew-color-button-primary-fill-hover": p.hover,
-    "--lew-color-button-primary-fill-hover-base": p.hover,
-    "--lew-color-button-primary-fill-active": p.active,
-    "--lew-color-button-primary-fill-active-base": p.active,
+    "--lew-color-button-primary-fill": p.fill,
+    "--lew-color-button-primary-fill-hover": p.fillHover,
+    "--lew-color-button-primary-fill-hover-base": p.fillHover,
+    "--lew-color-button-primary-fill-active": p.fillActive,
+    "--lew-color-button-primary-fill-active-base": p.fillActive,
     "--lew-color-button-primary-fill-text": "#fafafc",
     "--lew-color-button-primary-fill-text-hover": "#fafafc",
     "--lew-color-button-primary-fill-text-active": "#fafafc",
@@ -136,7 +136,7 @@ export const useSettingsStore = defineStore("settings", () => {
   function setPrimaryColor(color: string) {
     primaryColor.value = color;
     localStorage.setItem(PRIMARY_KEY, color);
-    applyPrimaryColor(color);
+    syncPrimaryColor();
   }
 
   function setRadius(value: RadiusLevel) {
@@ -156,8 +156,14 @@ export const useSettingsStore = defineStore("settings", () => {
     setRadius("round");
   }
 
-  // 初始化时应用主题色与圆角
-  watch(primaryColor, (color) => applyPrimaryColor(color), { immediate: true });
+  /** 应用/同步主题色（浅色与深色分别派生色板，切换模式时重新应用） */
+  function syncPrimaryColor() {
+    applyPrimaryColor(primaryColor.value, isDark.value);
+  }
+
+  // 初始化与主题色/模式变化时应用
+  watch(primaryColor, syncPrimaryColor, { immediate: true });
+  watch(isDark, syncPrimaryColor, { immediate: true });
   watch(radius, (level) => applyRadius(level), { immediate: true });
 
   return {

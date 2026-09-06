@@ -25,6 +25,7 @@ import { JobsModule } from './modules/jobs/jobs.module';
 import { FilesModule } from './modules/files/files.module';
 import { GeneratorModule } from './modules/generator/generator.module';
 import { CompatModule } from './modules/compat/compat.module';
+import { DashboardModule } from './modules/dashboard/dashboard.module';
 
 @Module({
   imports: [
@@ -51,6 +52,7 @@ import { CompatModule } from './modules/compat/compat.module';
     FilesModule,
     GeneratorModule,
     CompatModule,
+    DashboardModule,
   ],
   providers: [
     { provide: APP_GUARD, useClass: AccessTokenGuard },
