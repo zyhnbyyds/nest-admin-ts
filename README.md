@@ -1,8 +1,10 @@
 # nest-admin-ts
 
-基于 **NestJS 12 + Fastify + Drizzle ORM + MySQL** 的后台管理 API，配套 **Vue 3 + Vite** 的 Web 管理前端。
+**English** | [简体中文](./README.zh-CN.md)
 
-后台管理系统的完整解决方案：RBAC 权限、部门/岗位/字典/配置、操作与登录审计、定时任务、文件管理、代码生成器、Redis 监控，以及一个开箱即用的现代化前端界面。
+A backend admin API built on **NestJS 12 + Fastify + Drizzle ORM + MySQL**, paired with a **Vue 3 + Vite** web admin frontend.
+
+A complete solution for building admin systems: RBAC permissions, departments/posts/dicts/configs, operation & login auditing, scheduled jobs, file management, code generator, Redis monitoring, and a modern, out-of-the-box frontend.
 
 [![Bun](https://img.shields.io/badge/bun-%3E%3D1.4-orange)](https://bun.sh)
 [![NestJS](https://img.shields.io/badge/nestjs-12-red)](https://nestjs.com)
@@ -11,280 +13,280 @@
 [![Vite](https://img.shields.io/badge/vite-8-purple)](https://vitejs.dev)
 [![License](https://img.shields.io/badge/license-MIT-green)](./LICENSE)
 
-## 目录
+## Table of Contents
 
-- [界面预览](#界面预览)
-- [Web 前端介绍](#web-前端介绍)
-- [功能模块](#功能模块)
-- [技术栈](#技术栈)
-- [快速开始](#快速开始)
-- [项目结构](#项目结构)
-- [环境变量](#环境变量)
-- [命令](#命令)
-- [测试](#测试)
+- [Screenshots](#screenshots)
+- [Web Frontend](#web-frontend)
+- [Features](#features)
+- [Tech Stack](#tech-stack)
+- [Quick Start](#quick-start)
+- [Project Structure](#project-structure)
+- [Environment Variables](#environment-variables)
+- [Commands](#commands)
+- [Testing](#testing)
 - [License](#license)
 
-## 界面预览
+## Screenshots
 
-<img src="docs/screenshots/login.png"  alt="登录页" />
-<img src="docs/screenshots/dashboard.png" alt="首页数据看板" />
+<img src="docs/screenshots/login.png" alt="Login page" />
+<img src="docs/screenshots/dashboard.png" alt="Dashboard" />
 
-## Web 前端介绍
+## Web Frontend
 
-管理前端位于 [`web/`](./web)，为独立的 **Vue 3 + Vite** 单页应用，与后端分离部署，通过 `/api` 代理联调。
+The admin frontend lives in [`web/`](./web). It is a standalone **Vue 3 + Vite** single-page app, deployed separately from the backend and integrated with it through the `/api` proxy.
 
-### 技术栈
+### Tech Stack
 
-| 类别     | 选型                                            |
-| -------- | ----------------------------------------------- |
-| 框架     | Vue 3.5 + Vite 8 + TypeScript 5.9               |
-| 路由     | Vue Router 5                                    |
-| 状态管理 | Pinia 3                                         |
-| UI 组件  | lew-ui                                          |
-| 样式     | UnoCSS（原子化 CSS，按需生成）                  |
-| 图表     | ECharts 6（首页登录趋势 / 状态分布 / 看板图表） |
-| HTTP     | axios（JWT 自动刷新 + 并发刷新排队）            |
-| 工具     | dayjs、lucide-vue-next、@vueuse/core            |
-| 构建     | unplugin-auto-import + unplugin-vue-components  |
+| Category   | Choice                                              |
+| ---------- | --------------------------------------------------- |
+| Framework  | Vue 3.5 + Vite 8 + TypeScript 5.9                   |
+| Router     | Vue Router 5                                        |
+| State      | Pinia 3                                             |
+| UI         | lew-ui                                              |
+| Styling    | UnoCSS (atomic CSS, on-demand)                      |
+| Charts     | ECharts 6 (login trend / status distribution / dashboard) |
+| HTTP       | axios (JWT auto-refresh + concurrent refresh queue) |
+| Utilities  | dayjs, lucide-vue-next, @vueuse/core                |
+| Build      | unplugin-auto-import + unplugin-vue-components      |
 
-### 核心特性
+### Core Features
 
-- **登录与令牌**：JWT 双 token；访问令牌 401 时自动刷新并重放请求，刷新期间并发请求排队，多标签页时序安全。
-- **权限驱动**：前端 `permission` 指令 + 路由守卫；按钮级权限由后端返回的权限码控制。
-- **暗色主题**：基于 `lew-dark` 类名的暗色切换，图表随主题自动适配。
-- **动态路由**：菜单/按钮权限由后端 `menus/routes` 逐级生成前端路由。
-- **数据看板**：首页聚合用户/部门/角色/菜单/岗位统计，登录趋势与状态分布图表。
-- **通用全屏表格**：封装 `useTable` 组合式函数，统一分页、查询、开关、删除确认。
-- **路由标签页**：多级 Tab 多开、可关闭（首页固定）、右键「关闭当前/其他/全部」、横向滚动。
+- **Login & tokens**: JWT dual-token; the access token auto-refreshes and replays a request on 401, concurrent requests queue during refresh, and multiple tabs stay time-safe.
+- **Permission-driven**: the frontend `permission` directive + route guard; button-level permissions are controlled by permission codes returned from the backend.
+- **Dark theme**: dark/light switching based on the `lew-dark` class, with charts auto-adapting to the theme.
+- **Dynamic routes**: menu/button permissions generate frontend routes level-by-level from the backend `menus/routes`.
+- **Dashboard**: aggregates user/department/role/menu/post statistics on the home page, plus login trend and status distribution charts.
+- **Unified full-screen tables**: a `useTable` composable unifies pagination, query, toggles, and delete confirmation.
+- **Route tabs**: multi-level tabs, closable (dashboard is fixed), with right-click "Close current/others/all" and horizontal scrolling.
 
-### 页面清单
+### Pages
 
-| 模块     | 路径                      | 说明                          |
-| -------- | ------------------------- | ----------------------------- |
-| 登录页   | `/login`                  | 登录                          |
-| 首页     | `/dashboard`              | 数据看板、登录趋势、最近登录  |
-| 用户管理 | `/system/users`           | CRUD、角色分配、状态、软删除  |
-| 角色管理 | `/system/roles`           | CRUD、菜单权限、数据权限      |
-| 菜单管理 | `/system/menus`           | 树形菜单、按钮权限、前端路由  |
-| 部门管理 | `/system/depts`           | 树形部门                      |
-| 岗位管理 | `/system/posts`           | 岗位 CRUD、用户关联           |
-| 字典管理 | `/system/dicts`           | 字典类型 / 字典数据           |
-| 参数配置 | `/system/configs`         | 系统配置、内置参数保护        |
-| 定时任务 | `/system/jobs`            | Cron 调度、手动执行、执行日志 |
-| 文件管理 | `/files`                  | 上传 / 预览 / 下载            |
-| 登录日志 | `/monitor/login-logs`     | 记录查询、删除、清空          |
-| 操作日志 | `/monitor/operation-logs` | 增删改操作审计                |
-| 在线用户 | `/monitor/online`         | Redis 会话、强制下线          |
-| 缓存监控 | `/monitor/cache`          | Redis 信息                    |
-| 代码生成 | `/generator`              | 读取表结构生成脚手架          |
-| 个人中心 | `/profile`                | 资料、头像、修改密码          |
+| Module       | Path                     | Description                                |
+| ------------ | ------------------------ | ------------------------------------------ |
+| Login        | `/login`                 | Sign in                                    |
+| Dashboard    | `/dashboard`             | Stats, login trend, recent logins          |
+| Users        | `/system/users`          | CRUD, role assignment, status, soft delete |
+| Roles        | `/system/roles`          | CRUD, menu permissions, data scope         |
+| Menus        | `/system/menus`          | Tree menus, button permissions, frontend routes |
+| Departments  | `/system/depts`          | Tree departments                           |
+| Posts        | `/system/posts`          | Post CRUD, user association                |
+| Dicts        | `/system/dicts`          | Dict types / dict data                     |
+| Configs      | `/system/configs`        | System configs, protected built-ins        |
+| Jobs         | `/system/jobs`           | Cron scheduling, manual run, execution logs |
+| Files        | `/files`                 | Upload / preview / download                |
+| Login Logs   | `/monitor/login-logs`    | Query, delete, clear                       |
+| Operation Logs | `/monitor/operation-logs` | Audit of create/update/delete operations |
+| Online Users | `/monitor/online`        | Redis sessions, force logout               |
+| Cache Monitor | `/monitor/cache`         | Redis info                                 |
+| Generator    | `/generator`             | Read table schema and generate scaffolding  |
+| Profile      | `/profile`               | Profile, avatar, change password           |
 
-### 前端目录结构
+### Frontend Structure
 
 ```
 web/
 ├── src/
-│   ├── api/                        # 接口封装（system / monitor / jobs / files / dashboard）
-│   ├── views/                      # 页面
-│   │   ├── dashboard/              # 首页数据看板
-│   │   ├── login/                  # 登录
-│   │   ├── system/                 # 用户/角色/菜单/部门/岗位/字典/配置
-│   │   ├── monitor/                # 登录/操作日志、在线用户、缓存
-│   │   ├── jobs/                   # 定时任务
-│   │   ├── files/                  # 文件管理
-│   │   ├── generator/              # 代码生成器
-│   │   └── profile/                # 个人中心
-│   ├── layouts/                    # 布局（侧边栏、头部、Tab 标签、主题面板）
-│   ├── components/                 # 通用组件
+│   ├── api/                        # API wrappers (system / monitor / jobs / files / dashboard)
+│   ├── views/                      # Pages
+│   │   ├── dashboard/              # Dashboard
+│   │   ├── login/                  # Login
+│   │   ├── system/                 # Users/roles/menus/depts/posts/dicts/configs
+│   │   ├── monitor/                # Login/operation logs, online users, cache
+│   │   ├── jobs/                   # Scheduled jobs
+│   │   ├── files/                  # File management
+│   │   ├── generator/              # Code generator
+│   │   └── profile/                # Profile
+│   ├── layouts/                    # Layouts (sidebar, header, tab bar, theme panel)
+│   ├── components/                 # Shared components
 │   ├── composables/                # useTable / useDict / useFormat
-│   ├── store/                      # Pinia（user / settings / permission）
-│   ├── router/                     # 路由 + 守卫
-│   ├── request.ts                  # axios 封装（刷新排队）
-│   └── types/                      # 类型定义
-├── vite.config.ts                  # 端口 5173，/api 代理到 3000
+│   ├── store/                      # Pinia (user / settings / permission)
+│   ├── router/                     # Routes + guards
+│   ├── request.ts                  # axios wrapper (refresh queue)
+│   └── types/                      # Type definitions
+├── vite.config.ts                  # Port 5173, /api proxied to 3000
 └── package.json
 ```
 
-## 功能模块
+## Features
 
-| 模块           | 说明                                                                          |
-| -------------- | ----------------------------------------------------------------------------- |
-| **认证鉴权**   | JWT 双 token（access + refresh）、HS256 签名、密码 Bun.password argon2id 哈希 |
-| **用户管理**   | 用户 CRUD、角色分配、状态管理、软删除                                         |
-| **角色管理**   | 角色 CRUD、菜单权限分配、数据权限范围                                         |
-| **菜单管理**   | 树形菜单 CRUD、按钮权限标识、前端路由数据                                     |
-| **部门管理**   | 树形部门 CRUD、祖级路径维护                                                   |
-| **岗位管理**   | 岗位 CRUD、用户岗位关联                                                       |
-| **字典管理**   | 字典类型 / 字典数据 CRUD、按类型获取启用项                                    |
-| **参数配置**   | 系统配置项 CRUD、按键查询、内置参数保护                                       |
-| **首页统计**   | 用户/部门/角色/菜单/岗位聚合统计、登录趋势与状态分布                          |
-| **登录日志**   | 登录记录查询、删除、清空                                                      |
-| **操作日志**   | 基于拦截器的增删改操作自动审计                                                |
-| **在线用户**   | Redis 会话跟踪、强制下线                                                      |
-| **定时任务**   | Cron 调度、手动执行、执行日志                                                 |
-| **文件管理**   | 上传（multipart）、下载、类型/大小校验                                        |
-| **代码生成器** | 读取 information_schema 自动生成模块脚手架                                    |
-| **健康检查**   | `GET /health` 免认证                                                          |
-| **Swagger**    | 开发环境自动启用，路径 `/api/v1/docs`                                         |
+| Module          | Description                                                              |
+| --------------- | ------------------------------------------------------------------------ |
+| **Authentication** | JWT dual tokens (access + refresh), HS256 signing, Bun.password argon2id hashing |
+| **Users**       | User CRUD, role assignment, status management, soft delete               |
+| **Roles**       | Role CRUD, menu permission assignment, data-scope ranges                 |
+| **Menus**       | Tree menu CRUD, button permission flags, frontend route data             |
+| **Departments** | Tree department CRUD, ancestor path maintenance                          |
+| **Posts**       | Post CRUD, user–post association                                         |
+| **Dicts**       | Dict type / dict data CRUD, enabled items by type                        |
+| **Configs**     | System config item CRUD, query by key, built-in protection               |
+| **Dashboard**   | Aggregated user/department/role/menu/post stats, login trend & status    |
+| **Login Logs**  | Login record query, delete, clear                                        |
+| **Operation Logs** | Automatic audit of create/update/delete operations via interceptor    |
+| **Online Users** | Redis session tracking, force logout                                    |
+| **Scheduled Jobs** | Cron scheduling, manual run, execution logs                            |
+| **File Management** | Upload (multipart), download, type/size validation                    |
+| **Code Generator** | Reads `information_schema` to auto-generate module scaffolding          |
+| **Health Check** | `GET /health`, no auth required                                         |
+| **Swagger**     | Auto-enabled in dev, path `/api/v1/docs`                                 |
 
-## 技术栈
+## Tech Stack
 
-### 后端
+### Backend
 
-- **框架**：NestJS 12 + Fastify
-- **ORM**：Drizzle ORM 1.0（MySQL 8）
-- **校验**：Zod 4
-- **认证**：jose（JWT）+ Bun.password（argon2id 密码哈希）
-- **缓存**：Bun.RedisClient（可选，未配置自动降级）
-- **调度**：@nestjs/schedule + cron
-- **文档**：@nestjs/swagger
-- **测试**：vitest + @vitest/coverage-v8
-- **Lint**：oxlint + oxfmt
+- **Framework**: NestJS 12 + Fastify
+- **ORM**: Drizzle ORM 1.0 (MySQL 8)
+- **Validation**: Zod 4
+- **Auth**: jose (JWT) + Bun.password (argon2id password hashing)
+- **Cache**: Bun.RedisClient (optional, auto-degrades if not configured)
+- **Scheduler**: @nestjs/schedule + cron
+- **Docs**: @nestjs/swagger
+- **Testing**: vitest + @vitest/coverage-v8
+- **Lint**: oxlint + oxfmt
 
-### 前端
+### Frontend
 
-- **框架**：Vue 3.5 + Vite 8 + TypeScript
-- **状态**：Pinia 3 · **路由**：Vue Router 5
-- **UI**：lew-ui + UnoCSS
-- **HTTP**：axios · **图表**：ECharts 6
+- **Framework**: Vue 3.5 + Vite 8 + TypeScript
+- **State**: Pinia 3 · **Router**: Vue Router 5
+- **UI**: lew-ui + UnoCSS
+- **HTTP**: axios · **Charts**: ECharts 6
 
-## 快速开始
+## Quick Start
 
-### 环境要求
+### Prerequisites
 
-- Bun >= 1.4（后端单一运行时：应用、迁移、seed、测试均运行在 Bun 上）
+- Bun >= 1.4 (single runtime for the backend: app, migrations, seed, and tests all run on Bun)
 - MySQL 8
-- Redis（可选，不配置则缓存/在线用户/任务模块自动降级）
-- Node.js + pnpm（可选，用于 web 前端）
+- Redis (optional; cache/online-user/jobs modules auto-degrade if not configured)
+- Node.js + pnpm (optional, for the web frontend)
 
-### 后端启动
+### Backend
 
 ```bash
-# 1. 克隆项目
+# 1. Clone the project
 git clone <repo-url>
 cd nest-admin
 
-# 2. 配置环境变量
+# 2. Configure environment variables
 cp .env.example .env
-# 编辑 .env 填写数据库连接等必须项
+# Edit .env with the database connection and other required fields
 
-# 3. 安装依赖
+# 3. Install dependencies
 bun install
 
-# 4. 数据库迁移
+# 4. Run database migrations
 bun run db:migrate
 
-# 5. 初始化管理员
+# 5. Initialize the admin user
 SEED_ADMIN_PASSWORD=your-password bun run db:seed
 
-# 6. 启动开发服务
+# 6. Start the dev server
 bun run dev
 ```
 
-后端默认运行在 `http://localhost:3000`，Swagger 文档地址 `http://localhost:3000/api/v1/docs`。
+The backend runs on `http://localhost:3000` by default; Swagger is at `http://localhost:3000/api/v1/docs`.
 
-### Web 前端启动
+### Web Frontend
 
 ```bash
 cd web
-bun install        # 或 pnpm install
+bun install        # or pnpm install
 bun run dev        # http://localhost:5173
 ```
 
-前端开发服务运行在 `http://localhost:5173`，`/api` 会代理到后端 `http://localhost:3000`。
+The frontend dev server runs on `http://localhost:5173`; `/api` is proxied to the backend at `http://localhost:3000`.
 
-### 默认管理员
+### Default Admin
 
-| 用户名  | 密码                   |
-| ------- | ---------------------- |
-| `admin` | `db:seed` 时设置的密码 |
+| Username | Password                       |
+| -------- | ------------------------------ |
+| `admin`  | The password set during `db:seed` |
 
-## 项目结构
+## Project Structure
 
 ```
 .
-├── src/                          # 后端源码
-│   ├── main.ts                   # 启动入口
-│   ├── app.module.ts             # 根模块
-│   ├── config/                   # 环境变量配置（Zod）
+├── src/                          # Backend source
+│   ├── main.ts                   # Entry point
+│   ├── app.module.ts             # Root module
+│   ├── config/                   # Environment variable config (Zod)
 │   ├── database/
-│   │   ├── schema/index.ts       # 全部表定义 + 关联（单文件）
-│   │   ├── database.service.ts   # MySQL 连接池 + Drizzle 实例
-│   │   ├── migrations/           # SQL 迁移文件
-│   │   └── seed/index.ts         # 管理员初始化脚本
+│   │   ├── schema/index.ts       # All table definitions + relations (single file)
+│   │   ├── database.service.ts   # MySQL connection pool + Drizzle instance
+│   │   ├── migrations/           # SQL migration files
+│   │   └── seed/index.ts         # Admin initialization script
 │   ├── common/
-│   │   ├── auth/                 # JWT Guard、权限装饰器、公开路由装饰器
-│   │   ├── cache/                # Redis 封装
-│   │   ├── data-scope/           # 数据权限（若依数据范围）
-│   │   └── logging/              # 操作日志拦截器
+│   │   ├── auth/                 # JWT Guard, permission decorators, public-route decorators
+│   │   ├── cache/                # Redis wrapper
+│   │   ├── data-scope/           # Data scope (RuoYi data range)
+│   │   └── logging/              # Operation log interceptor
 │   └── modules/
-│       ├── auth/                 # 登录 / 刷新 / 登出
-│       ├── system/               # 用户、角色、菜单、部门、岗位、字典、配置
-│       ├── monitor/              # 登录日志、操作日志、在线用户、缓存监控
-│       ├── dashboard/            # 首页聚合统计
-│       ├── jobs/                 # 定时任务
-│       ├── files/                # 文件管理
-│       ├── generator/            # 代码生成器
-│       ├── health/               # 健康检查
-│       └── generated/            # 代码生成器输出（gitignore）
-├── web/                          # Web 前端（Vue 3 + Vite）
-├── docs/screenshots/             # 界面截图（含占位图与生成脚本）
-└── uploads/                      # 文件上传目录
+│       ├── auth/                 # Login / refresh / logout
+│       ├── system/               # Users, roles, menus, depts, posts, dicts, configs
+│       ├── monitor/              # Login logs, operation logs, online users, cache monitor
+│       ├── dashboard/            # Home page aggregated stats
+│       ├── jobs/                 # Scheduled jobs
+│       ├── files/                # File management
+│       ├── generator/            # Code generator
+│       ├── health/               # Health check
+│       └── generated/            # Code generator output (gitignored)
+├── web/                          # Web frontend (Vue 3 + Vite)
+├── docs/screenshots/             # Screenshots (placeholders + generation script)
+└── uploads/                      # Upload directory
 ```
 
-## 环境变量
+## Environment Variables
 
-| 变量                 |  必填  | 默认值                  | 说明                           |
-| -------------------- | :----: | ----------------------- | ------------------------------ |
-| `NODE_ENV`           |   否   | `development`           | 运行环境                       |
-| `PORT`               |   否   | `3000`                  | 服务端口                       |
-| `API_PREFIX`         |   否   | `api/v1`                | API 前缀                       |
-| `DATABASE_URL`       | **是** | —                       | MySQL 连接字符串               |
-| `REDIS_URL`          |   否   | —                       | Redis 连接（可选）             |
-| `JWT_ISSUER`         | **是** | —                       | JWT 签发者                     |
-| `JWT_AUDIENCE`       | **是** | —                       | JWT 受众                       |
-| `JWT_ACCESS_SECRET`  | **是** | —                       | Access Token 密钥（≥32 字符）  |
-| `JWT_REFRESH_SECRET` | **是** | —                       | Refresh Token 密钥（≥32 字符） |
-| `JWT_ACCESS_TTL`     |   否   | `15m`                   | Access Token 有效期            |
-| `JWT_REFRESH_TTL`    |   否   | `7d`                    | Refresh Token 有效期           |
-| `CORS_ORIGINS`       |   否   | `http://localhost:5173` | CORS 允许来源（逗号分隔）      |
-| `UPLOAD_DIR`         |   否   | `uploads`               | 文件上传目录                   |
-| `SWAGGER_ENABLED`    |   否   | `true`                  | 是否启用 Swagger               |
-| `SWAGGER_PATH`       |   否   | `docs`                  | Swagger 路径                   |
+| Variable             | Required | Default                 | Description                          |
+| -------------------- | :------: | ----------------------- | ------------------------------------ |
+| `NODE_ENV`           |    No    | `development`           | Runtime environment                  |
+| `PORT`               |    No    | `3000`                  | Service port                         |
+| `API_PREFIX`         |    No    | `api/v1`                | API prefix                           |
+| `DATABASE_URL`       | **Yes**  | —                       | MySQL connection string              |
+| `REDIS_URL`          |    No    | —                       | Redis connection (optional)          |
+| `JWT_ISSUER`         | **Yes**  | —                       | JWT issuer                           |
+| `JWT_AUDIENCE`       | **Yes**  | —                       | JWT audience                         |
+| `JWT_ACCESS_SECRET`  | **Yes**  | —                       | Access Token secret (≥32 chars)      |
+| `JWT_REFRESH_SECRET` | **Yes**  | —                       | Refresh Token secret (≥32 chars)     |
+| `JWT_ACCESS_TTL`     |    No    | `15m`                   | Access Token TTL                     |
+| `JWT_REFRESH_TTL`    |    No    | `7d`                    | Refresh Token TTL                    |
+| `CORS_ORIGINS`       |    No    | `http://localhost:5173` | Allowed CORS origins (comma-separated) |
+| `UPLOAD_DIR`         |    No    | `uploads`               | Upload directory                     |
+| `SWAGGER_ENABLED`    |    No    | `true`                  | Enable Swagger                       |
+| `SWAGGER_PATH`       |    No    | `docs`                  | Swagger path                         |
 
-## 命令
+## Commands
 
 ```bash
-# 后端（根目录）
-bun run dev              # 开发模式
-bun run build            # 编译
-bun run start            # 生产启动
-bun run typecheck        # 类型检查
-bun run lint             # 代码检查
-bun run lint:fix         # 自动修复
-bun run format           # 格式化
-bun run test             # 运行测试
-bun run test:watch       # 监听测试
-bun run db:generate      # 生成迁移文件
-bun run db:migrate       # 执行迁移
-bun run db:seed          # 初始化管理员
-bun run db:studio        # 打开 Drizzle Studio
+# Backend (root)
+bun run dev              # Dev mode
+bun run build            # Build
+bun run start            # Production start
+bun run typecheck        # Type check
+bun run lint             # Lint
+bun run lint:fix         # Auto-fix
+bun run format           # Format
+bun run test             # Run tests
+bun run test:watch       # Watch mode
+bun run db:generate      # Generate migration files
+bun run db:migrate       # Run migrations
+bun run db:seed          # Initialize admin
+bun run db:studio        # Open Drizzle Studio
 
-# 前端（web/ 目录）
-bun run dev              # 开发模式（5173）
-bun run build            # 类型检查 + 构建
-bun run typecheck        # vue-tsc 类型检查
+# Frontend (web/ directory)
+bun run dev              # Dev mode (5173)
+bun run build            # Type check + build
+bun run typecheck        # vue-tsc type check
 bun run lint             # oxlint
 ```
 
-## 测试
+## Testing
 
 ```bash
-bun run test             # vitest 单元测试
-bun run test:watch       # 监听模式
+bun run test             # vitest unit tests
+bun run test:watch       # Watch mode
 ```
 
-vitest 单元测试覆盖全部 Controller、Service、Guard、Interceptor 与工具函数（295 个用例）。每个测试完全隔离，不依赖数据库。
+Vitest unit tests cover every Controller, Service, Guard, Interceptor, and utility function (**295 test cases**). Each test is fully isolated and does not depend on a database.
 
 ## License
 
