@@ -202,6 +202,17 @@ const MENU_SEEDS: MenuSeed[] = [
     icon: 'code',
     sort: 6,
   },
+  // ===== AI 操作 =====
+  {
+    name: 'ai',
+    title: 'AI 操作',
+    type: 'C',
+    path: '/ai',
+    component: 'ai/index',
+    permission: 'ai:chat',
+    icon: 'bot',
+    sort: 7,
+  },
 ];
 
 async function seedMenus(): Promise<void> {

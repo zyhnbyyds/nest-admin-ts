@@ -119,6 +119,45 @@ export interface UpdateUserBody {
   roleIds?: number[];
 }
 
+// ============ ai ============
+
+export interface AiSession {
+  id: number;
+  userId: number;
+  title: string;
+  status: "active" | "closed";
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface AiToolCall {
+  name: string;
+  arguments: Record<string, unknown>;
+  result?: unknown;
+}
+
+export interface AiMessage {
+  id: number;
+  sessionId: number;
+  role: "user" | "assistant" | "tool" | "system";
+  content: string | null;
+  toolCalls: AiToolCall[] | null;
+  toolResults: unknown[] | null;
+  createdAt: string;
+}
+
+export interface AiResult {
+  content: string;
+  toolCalls: AiToolCall[];
+  waitingApproval: boolean;
+  riskLevel: "L0" | "L1" | "L2" | "L3";
+}
+
+export interface AiSseEvent {
+  type: string;
+  data: unknown;
+}
+
 // ============ roles ============
 
 export type DataScope = "all" | "custom" | "dept" | "dept_and_children" | "self";

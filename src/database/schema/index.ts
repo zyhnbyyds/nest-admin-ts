@@ -8,6 +8,7 @@ import {
   json,
   mysqlEnum,
   mysqlTable,
+  text,
   timestamp,
   uniqueIndex,
   varchar,
@@ -417,6 +418,83 @@ export const files = mysqlTable(
   ],
 );
 
+/** AI 会话：记录一次 AI 对话 */
+export const aiSessions = mysqlTable(
+  'ai_session',
+  {
+    id: int('id', { unsigned: true }).autoincrement().primaryKey(),
+    userId: int('user_id', { unsigned: true }).notNull(),
+    title: varchar('title', { length: 200 }).notNull(),
+    status: mysqlEnum('status', ['active', 'closed'])
+      .default('active')
+      .notNull(),
+    createdAt: timestamp('created_at')
+      .default(sql`CURRENT_TIMESTAMP`)
+      .notNull(),
+    updatedAt: timestamp('updated_at')
+      .default(sql`CURRENT_TIMESTAMP`)
+      .onUpdateNow()
+      .notNull(),
+  },
+  (table) => [
+    index('idx_ai_session_user').on(table.userId),
+    foreignKey({
+      columns: [table.userId],
+      foreignColumns: [users.id],
+      name: 'fk_ai_session_user',
+    }).onDelete('cascade'),
+  ],
+);
+
+/** AI 消息：记录一次对话中的每条消息（含 tool 调用与结果） */
+export const aiMessages = mysqlTable(
+  'ai_message',
+  {
+    id: int('id', { unsigned: true }).autoincrement().primaryKey(),
+    sessionId: int('session_id', { unsigned: true }).notNull(),
+    role: mysqlEnum('role', ['user', 'assistant', 'tool', 'system']).notNull(),
+    content: text('content'),
+    toolCalls: json('tool_calls'),
+    toolResults: json('tool_results'),
+    createdAt: timestamp('created_at')
+      .default(sql`CURRENT_TIMESTAMP`)
+      .notNull(),
+  },
+  (table) => [
+    index('idx_ai_message_session').on(table.sessionId),
+    foreignKey({
+      columns: [table.sessionId],
+      foreignColumns: [aiSessions.id],
+      name: 'fk_ai_message_session',
+    }).onDelete('cascade'),
+  ],
+);
+
+/** AI 审计日志：记录 AI 操作全过程 */
+export const aiAuditLogs = mysqlTable(
+  'ai_audit_log',
+  {
+    id: int('id', { unsigned: true }).autoincrement().primaryKey(),
+    userId: int('user_id', { unsigned: true }),
+    sessionId: int('session_id', { unsigned: true }),
+    action: varchar('action', { length: 100 }).notNull(),
+    toolName: varchar('tool_name', { length: 100 }),
+    riskLevel: varchar('risk_level', { length: 10 }),
+    permission: varchar('permission', { length: 100 }),
+    scope: varchar('scope', { length: 100 }),
+    result: mysqlEnum('result', ['allowed', 'denied', 'error']).notNull(),
+    metadata: json('metadata'),
+    createdAt: timestamp('created_at')
+      .default(sql`CURRENT_TIMESTAMP`)
+      .notNull(),
+  },
+  (table) => [
+    index('idx_ai_audit_user').on(table.userId),
+    index('idx_ai_audit_session').on(table.sessionId),
+    index('idx_ai_audit_time').on(table.createdAt),
+  ],
+);
+
 export const relations = defineRelations(
   {
     departments,
@@ -437,6 +515,9 @@ export const relations = defineRelations(
     jobs,
     jobLogs,
     files,
+    aiSessions,
+    aiMessages,
+    aiAuditLogs,
   },
   ({
     departments,
@@ -449,6 +530,9 @@ export const relations = defineRelations(
     posts,
     userPosts,
     refreshTokens,
+    aiSessions,
+    aiMessages,
+    aiAuditLogs,
     one,
     many,
   }) => ({
@@ -504,6 +588,26 @@ export const relations = defineRelations(
     userPosts: {
       user: one.users({ from: userPosts.userId, to: users.id }),
       post: one.posts({ from: userPosts.postId, to: posts.id }),
+    },
+    aiSessions: {
+      user: one.users({ from: aiSessions.userId, to: users.id }),
+      messages: many.aiMessages({
+        from: aiSessions.id,
+        to: aiMessages.sessionId,
+      }),
+    },
+    aiMessages: {
+      session: one.aiSessions({
+        from: aiMessages.sessionId,
+        to: aiSessions.id,
+      }),
+    },
+    aiAuditLogs: {
+      user: one.users({ from: aiAuditLogs.userId, to: users.id }),
+      session: one.aiSessions({
+        from: aiAuditLogs.sessionId,
+        to: aiSessions.id,
+      }),
     },
   }),
 );

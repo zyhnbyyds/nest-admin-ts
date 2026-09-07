@@ -26,6 +26,7 @@ import { FilesModule } from './modules/files/files.module';
 import { GeneratorModule } from './modules/generator/generator.module';
 import { CompatModule } from './modules/compat/compat.module';
 import { DashboardModule } from './modules/dashboard/dashboard.module';
+import { AiModule } from './ai/ai.module';
 
 @Module({
   imports: [
@@ -53,6 +54,7 @@ import { DashboardModule } from './modules/dashboard/dashboard.module';
     GeneratorModule,
     CompatModule,
     DashboardModule,
+    AiModule,
   ],
   providers: [
     { provide: APP_GUARD, useClass: AccessTokenGuard },

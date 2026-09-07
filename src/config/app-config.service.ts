@@ -27,6 +27,13 @@ const envSchema = z.object({
     .string()
     .default('Administration API built with NestJS, Fastify and Drizzle ORM'),
   SWAGGER_VERSION: z.string().default('0.1.0'),
+  AI_ENABLED: z
+    .enum(['true', 'false'])
+    .default('false')
+    .transform((value) => value === 'true'),
+  DEEPSEEK_API_KEY: z.string().optional(),
+  DEEPSEEK_BASE_URL: z.string().default('https://api.deepseek.com'),
+  DEEPSEEK_MODEL: z.string().default('deepseek-chat'),
 });
 export type AppEnvironment = z.infer<typeof envSchema>;
 
@@ -101,6 +108,19 @@ export class AppConfigService {
       JWT_REFRESH_SECRET,
       JWT_ACCESS_TTL,
       JWT_REFRESH_TTL,
+    };
+  }
+  get ai(): Pick<
+    AppEnvironment,
+    'AI_ENABLED' | 'DEEPSEEK_API_KEY' | 'DEEPSEEK_BASE_URL' | 'DEEPSEEK_MODEL'
+  > {
+    const { AI_ENABLED, DEEPSEEK_API_KEY, DEEPSEEK_BASE_URL, DEEPSEEK_MODEL } =
+      this.values;
+    return {
+      AI_ENABLED,
+      DEEPSEEK_API_KEY,
+      DEEPSEEK_BASE_URL,
+      DEEPSEEK_MODEL,
     };
   }
 }

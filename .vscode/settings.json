@@ -11,6 +11,7 @@
     "loginlog",
     "newpassword",
     "operlog",
+    "undoable",
     "varchar"
   ]
 }
