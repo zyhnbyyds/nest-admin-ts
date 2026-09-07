@@ -90,24 +90,18 @@ export async function sendMessage(
 
 /** 批准 AI 操作意图 */
 export function approveAction(intentId: number) {
-  return post<{ id: number; status: string }>(
-    `/ai/action-intents/${intentId}/approve`,
-    {},
-  );
+  return post<{ id: number; status: string }>(`/ai/action-intents/${intentId}/approve`, {});
 }
 
 /** 拒绝 AI 操作意图 */
 export function rejectAction(intentId: number, reason?: string) {
-  return post<{ id: number; status: string }>(
-    `/ai/action-intents/${intentId}/reject`,
-    { reason },
-  );
+  return post<{ id: number; status: string }>(`/ai/action-intents/${intentId}/reject`, { reason });
 }
 
 /** 确认执行 AI 操作意图 */
 export function confirmAction(intentId: number, confirmToken: string) {
-  return post<{ result: unknown; toolName: string }>(
-    "/ai/action-intents/confirm",
-    { intentId, confirmToken },
-  );
+  return post<{ result: unknown; toolName: string }>("/ai/action-intents/confirm", {
+    intentId,
+    confirmToken,
+  });
 }

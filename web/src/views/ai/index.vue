@@ -23,13 +23,7 @@ import {
   sendMessage,
 } from "~/api/ai";
 import { formatDateTime } from "~/composables/useFormat";
-import type {
-  AiApprovalRequired,
-  AiMessage,
-  AiSession,
-  AiSseEvent,
-  AiToolCall,
-} from "~/types/api";
+import type { AiApprovalRequired, AiMessage, AiSession, AiSseEvent, AiToolCall } from "~/types/api";
 
 // ---------- 布局折叠状态 ----------
 const leftCollapsed = ref(false);
@@ -438,11 +432,7 @@ onMounted(() => {
                 <ShieldAlert :size="16" class="text-orange-500" />
                 <span class="text-13.5px font-600 text-orange-600">需要确认操作</span>
               </div>
-              <LewTag
-                :type="'light'"
-                :color="riskColor(pendingApproval.riskLevel)"
-                size="small"
-              >
+              <LewTag :type="'light'" :color="riskColor(pendingApproval.riskLevel)" size="small">
                 {{ riskText(pendingApproval.riskLevel) }}
               </LewTag>
             </div>
@@ -464,12 +454,7 @@ onMounted(() => {
                 <LewButton size="small" :disabled="confirming" @click="handleReject">
                   取消
                 </LewButton>
-                <LewButton
-                  type="fill"
-                  size="small"
-                  :loading="confirming"
-                  @click="handleConfirm"
-                >
+                <LewButton type="fill" size="small" :loading="confirming" @click="handleConfirm">
                   <template #icon><ShieldCheck :size="14" /></template>
                   确认执行
                 </LewButton>

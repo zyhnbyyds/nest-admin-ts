@@ -91,7 +91,10 @@ export class ActionIntentService {
   }
 
   /** 校验数据快照（TOCTOU 防护：预览后数据变化则拒绝执行） */
-  assertUnchanged(beforeHash: string | null | undefined, currentValue: unknown): void {
+  assertUnchanged(
+    beforeHash: string | null | undefined,
+    currentValue: unknown,
+  ): void {
     if (!beforeHash) return;
     const currentHash = ActionIntentService.hashValue(currentValue);
     if (beforeHash !== currentHash) {

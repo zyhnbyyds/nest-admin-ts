@@ -130,10 +130,7 @@ export class AiGatewayController {
   @RequirePermissions('ai:chat')
   @ApiOperation({ summary: '批准 AI 操作意图' })
   @ApiResponse({ status: 200, description: '成功' })
-  approve(
-    @Param('id', ParseIntPipe) id: number,
-    @Req() request: AuthRequest,
-  ) {
+  approve(@Param('id', ParseIntPipe) id: number, @Req() request: AuthRequest) {
     const parsed = approveSchema.parse({ intentId: id });
     return this.gateway.approveAction(parsed.intentId, request.user);
   }
@@ -148,7 +145,11 @@ export class AiGatewayController {
     @Req() request: AuthRequest,
   ) {
     const parsed = rejectSchema.parse({ intentId: id, ...(body as object) });
-    return this.gateway.rejectAction(parsed.intentId, request.user, parsed.reason);
+    return this.gateway.rejectAction(
+      parsed.intentId,
+      request.user,
+      parsed.reason,
+    );
   }
 
   @Post('action-intents/confirm')

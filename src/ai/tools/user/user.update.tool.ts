@@ -1,5 +1,10 @@
 import { Injectable } from '@nestjs/common';
-import { AiErrorCode, AiException, ApprovalPolicy, RiskLevel } from '../../ai.types';
+import {
+  AiErrorCode,
+  AiException,
+  ApprovalPolicy,
+  RiskLevel,
+} from '../../ai.types';
 import { AiTool, ToolContext } from '../tool.interface';
 import { UsersService } from '../../../modules/system/users/users.service';
 

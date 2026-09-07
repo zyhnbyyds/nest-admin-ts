@@ -35,11 +35,7 @@ export class AiGatewayService {
   }
 
   /** 用户确认后执行操作意图 */
-  async confirmAction(
-    intentId: number,
-    confirmToken: string,
-    actor: AiActor,
-  ) {
+  async confirmAction(intentId: number, confirmToken: string, actor: AiActor) {
     return this.agent.confirmAndExecute(intentId, confirmToken, actor);
   }
 
