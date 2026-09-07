@@ -1,11 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import { RiskLevel } from '../ai.types';
+import { RiskEngine } from '../risk/risk.engine';
 import { PermissionService } from './permission.service';
 import { PolicyEngine } from './policy.engine';
 
 describe('PolicyEngine', () => {
   const permission = new PermissionService();
-  const engine = new PolicyEngine(permission);
+  const riskEngine = new RiskEngine();
+  const engine = new PolicyEngine(permission, riskEngine);
 
   const adminActor = {
     id: 1,
@@ -68,16 +70,15 @@ describe('PolicyEngine', () => {
     expect(decision.requiresApproval).toBe(false);
   });
 
-  it('动态风险高于基础风险时按动态风险判断', async () => {
+  it('批量操作提升风险等级', async () => {
     const decision = await engine.evaluate({
       actor: adminActor,
       toolName: 'user.update',
       requiredPermission: 'system:user:update',
       baseRisk: RiskLevel.L1,
-      dynamicRisk: RiskLevel.L3,
-      input: {},
+      input: { ids: [1, 2, 3, 4, 5] },
     });
-    expect(decision.riskLevel).toBe(RiskLevel.L3);
+    expect(decision.riskLevel).toBe(RiskLevel.L2);
     expect(decision.requiresApproval).toBe(true);
   });
 });

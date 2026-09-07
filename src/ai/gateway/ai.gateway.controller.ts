@@ -16,7 +16,13 @@ import {
 } from '@nestjs/swagger';
 import { RequirePermissions } from '../../common/auth/permissions.decorator';
 import { AgentEvent } from '../agent/agent.service';
-import { createSessionSchema, sendMessageSchema } from '../dto/ai-chat.dto';
+import {
+  approveSchema,
+  confirmSchema,
+  createSessionSchema,
+  rejectSchema,
+  sendMessageSchema,
+} from '../dto/ai-chat.dto';
 import { AiGatewayService } from './ai.gateway.service';
 
 type AuthRequest = {
@@ -118,5 +124,43 @@ export class AiGatewayController {
     } finally {
       raw.end();
     }
+  }
+
+  @Post('action-intents/:id/approve')
+  @RequirePermissions('ai:chat')
+  @ApiOperation({ summary: '批准 AI 操作意图' })
+  @ApiResponse({ status: 200, description: '成功' })
+  approve(
+    @Param('id', ParseIntPipe) id: number,
+    @Req() request: AuthRequest,
+  ) {
+    const parsed = approveSchema.parse({ intentId: id });
+    return this.gateway.approveAction(parsed.intentId, request.user);
+  }
+
+  @Post('action-intents/:id/reject')
+  @RequirePermissions('ai:chat')
+  @ApiOperation({ summary: '拒绝 AI 操作意图' })
+  @ApiResponse({ status: 200, description: '成功' })
+  reject(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() body: unknown,
+    @Req() request: AuthRequest,
+  ) {
+    const parsed = rejectSchema.parse({ intentId: id, ...(body as object) });
+    return this.gateway.rejectAction(parsed.intentId, request.user, parsed.reason);
+  }
+
+  @Post('action-intents/confirm')
+  @RequirePermissions('ai:chat')
+  @ApiOperation({ summary: '确认执行 AI 操作意图' })
+  @ApiResponse({ status: 200, description: '成功' })
+  async confirm(@Body() body: unknown, @Req() request: AuthRequest) {
+    const parsed = confirmSchema.parse(body);
+    return this.gateway.confirmAction(
+      parsed.intentId,
+      parsed.confirmToken,
+      request.user,
+    );
   }
 }

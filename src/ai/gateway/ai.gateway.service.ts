@@ -4,6 +4,8 @@ import { DatabaseService } from '../../database/database.service';
 import { aiMessages, aiSessions } from '../../database/schema/index';
 import { AgentEvent, AgentService } from '../agent/agent.service';
 import { AgentContext } from '../agent/agent.types';
+import { ApprovalService } from '../approval/approval.service';
+import { AiActor } from '../ai.types';
 
 /**
  * AI 网关服务：管理 AI 会话与消息。
@@ -11,6 +13,7 @@ import { AgentContext } from '../agent/agent.types';
  * 负责：
  * - 创建/查询会话
  * - 发送消息（调用 Agent）
+ * - 审批操作（approve/reject/confirm）
  * - 保存消息历史
  */
 @Injectable()
@@ -18,7 +21,27 @@ export class AiGatewayService {
   constructor(
     private readonly database: DatabaseService,
     private readonly agent: AgentService,
+    private readonly approval: ApprovalService,
   ) {}
+
+  /** 批准操作意图 */
+  async approveAction(intentId: number, actor: AiActor) {
+    return this.approval.approve(intentId, actor.id);
+  }
+
+  /** 拒绝操作意图 */
+  async rejectAction(intentId: number, actor: AiActor, reason?: string) {
+    return this.approval.reject(intentId, actor.id, reason);
+  }
+
+  /** 用户确认后执行操作意图 */
+  async confirmAction(
+    intentId: number,
+    confirmToken: string,
+    actor: AiActor,
+  ) {
+    return this.agent.confirmAndExecute(intentId, confirmToken, actor);
+  }
 
   async createSession(userId: number, title?: string) {
     const [result] = await this.database.db.insert(aiSessions).values({

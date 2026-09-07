@@ -4,6 +4,7 @@
  * 核心原则：LLM ≠ 权限系统、LLM ≠ 数据库、LLM ≠ 业务逻辑、LLM ≠ 安全边界。
  * 真正的安全边界必须由后端代码控制。
  */
+import { HttpException } from '@nestjs/common';
 
 /** 风险等级 */
 export enum RiskLevel {
@@ -73,15 +74,13 @@ export enum AiErrorCode {
   LLM_ERROR = 'LLM_ERROR',
 }
 
-/** AI 业务异常 */
-export class AiException extends Error {
+/** AI 业务异常（继承 HttpException，由 GlobalExceptionFilter 透传状态码与响应体） */
+export class AiException extends HttpException {
   readonly code: AiErrorCode;
-  readonly status: number;
 
   constructor(code: AiErrorCode, message: string, status = 400) {
-    super(message);
+    super({ statusCode: status, message, error: code }, status);
     this.name = 'AiException';
     this.code = code;
-    this.status = status;
   }
 }

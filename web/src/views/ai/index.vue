@@ -14,9 +14,22 @@ import {
   X,
 } from "lucide-vue-next";
 import { LewButton, LewMessage, LewTag } from "lew-ui";
-import { createSession, listMessages, listSessions, sendMessage } from "~/api/ai";
+import {
+  confirmAction,
+  createSession,
+  listMessages,
+  listSessions,
+  rejectAction,
+  sendMessage,
+} from "~/api/ai";
 import { formatDateTime } from "~/composables/useFormat";
-import type { AiMessage, AiSession, AiSseEvent, AiToolCall } from "~/types/api";
+import type {
+  AiApprovalRequired,
+  AiMessage,
+  AiSession,
+  AiSseEvent,
+  AiToolCall,
+} from "~/types/api";
 
 // ---------- 布局折叠状态 ----------
 const leftCollapsed = ref(false);
@@ -34,6 +47,8 @@ const thinking = ref(false);
 const toolCalls = ref<AiToolCall[]>([]);
 const waitingApproval = ref(false);
 const riskLevel = ref<string>("");
+const pendingApproval = ref<AiApprovalRequired | null>(null);
+const confirming = ref(false);
 
 async function loadSessions() {
   sessions.value = await listSessions();
@@ -64,6 +79,7 @@ async function handleSend() {
   thinking.value = true;
   toolCalls.value = [];
   waitingApproval.value = false;
+  pendingApproval.value = null;
 
   messages.value.push({
     id: Date.now(),
@@ -114,9 +130,13 @@ function handleSseEvent(event: AiSseEvent) {
       if (call) call.result = data.result;
       break;
     }
-    case "approval_required":
+    case "approval_required": {
+      const data = event.data as AiApprovalRequired;
+      pendingApproval.value = data;
       waitingApproval.value = true;
+      riskLevel.value = data.riskLevel;
       break;
+    }
     case "message":
       thinking.value = false;
       break;
@@ -130,6 +150,42 @@ async function scrollToBottom() {
   await nextTick();
   const container = document.getElementById("ai-messages");
   if (container) container.scrollTop = container.scrollHeight;
+}
+
+// ---------- 确认/取消操作 ----------
+async function handleConfirm() {
+  if (!pendingApproval.value || confirming.value) return;
+  confirming.value = true;
+  try {
+    const { toolName } = await confirmAction(
+      pendingApproval.value.intentId,
+      pendingApproval.value.confirmToken,
+    );
+    LewMessage.success("操作已执行");
+    const call = toolCalls.value.find((c) => c.name === toolName);
+    if (call) call.result = { status: "executed" };
+    pendingApproval.value = null;
+    waitingApproval.value = false;
+  } catch (error) {
+    LewMessage.error(error instanceof Error ? error.message : "确认失败");
+  } finally {
+    confirming.value = false;
+  }
+}
+
+async function handleReject() {
+  if (!pendingApproval.value || confirming.value) return;
+  confirming.value = true;
+  try {
+    await rejectAction(pendingApproval.value.intentId, "用户取消");
+    LewMessage.info("已取消操作");
+    pendingApproval.value = null;
+    waitingApproval.value = false;
+  } catch (error) {
+    LewMessage.error(error instanceof Error ? error.message : "取消失败");
+  } finally {
+    confirming.value = false;
+  }
 }
 
 // ---------- 数据展示辅助 ----------
@@ -365,6 +421,58 @@ onMounted(() => {
                     class="text-11.5px text-[var(--app-text-muted)] whitespace-pre-wrap break-all max-h-32 overflow-y-auto"
                     >{{ JSON.stringify(call.result, null, 2) }}</pre>
                 </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 确认操作卡片 -->
+        <div v-if="pendingApproval" class="flex justify-center">
+          <div
+            class="w-full max-w-lg rounded-lg border border-orange-500/30 bg-orange-500/5 overflow-hidden"
+          >
+            <div
+              class="flex items-center justify-between px-4 py-3 bg-orange-500/10 border-b border-orange-500/20"
+            >
+              <div class="flex items-center gap-2">
+                <ShieldAlert :size="16" class="text-orange-500" />
+                <span class="text-13.5px font-600 text-orange-600">需要确认操作</span>
+              </div>
+              <LewTag
+                :type="'light'"
+                :color="riskColor(pendingApproval.riskLevel)"
+                size="small"
+              >
+                {{ riskText(pendingApproval.riskLevel) }}
+              </LewTag>
+            </div>
+            <div class="px-4 py-3">
+              <!-- 预览 -->
+              <div v-if="pendingApproval.preview" class="mb-3">
+                <div class="text-12px text-[var(--app-text-muted)] mb-1">操作预览</div>
+                <div class="text-13px font-500">
+                  {{ pendingApproval.preview.summary }}
+                </div>
+                <div class="text-12px text-[var(--app-text-muted)] mt-1">
+                  影响数量：{{ pendingApproval.preview.affectedCount }}
+                </div>
+              </div>
+              <div class="text-12.5px text-[var(--app-text-muted)] mb-3">
+                工具：{{ pendingApproval.toolName }}
+              </div>
+              <div class="flex justify-end gap-2">
+                <LewButton size="small" :disabled="confirming" @click="handleReject">
+                  取消
+                </LewButton>
+                <LewButton
+                  type="fill"
+                  size="small"
+                  :loading="confirming"
+                  @click="handleConfirm"
+                >
+                  <template #icon><ShieldCheck :size="14" /></template>
+                  确认执行
+                </LewButton>
               </div>
             </div>
           </div>

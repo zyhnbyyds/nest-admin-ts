@@ -1,4 +1,4 @@
-import { DataScope, RiskLevel, ToolLimits } from '../ai.types';
+import { ApprovalPolicy, DataScope, RiskLevel, ToolLimits } from '../ai.types';
 
 /** Policy 评估上下文 */
 export interface PolicyContext {
@@ -15,8 +15,8 @@ export interface PolicyContext {
   requiredPermission: string;
   /** Tool 基础风险 */
   baseRisk: RiskLevel;
-  /** 动态风险（由 Risk Engine 计算，第一阶段默认等于基础风险） */
-  dynamicRisk?: RiskLevel;
+  /** Tool 审批策略 */
+  approvalPolicy?: ApprovalPolicy;
   /** 入参 */
   input: Record<string, unknown>;
 }

@@ -1,12 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { AiActor, AiErrorCode, AiException, RiskLevel } from '../ai.types';
+import { ActionIntentService } from '../approval/action-intent.service';
 import { AuditService } from '../audit/audit.service';
 import { ContextBuilder } from '../context/context.builder';
 import { ContextSanitizer } from '../context/context.sanitizer';
 import { LlmMessage } from '../llm/llm.interface';
 import { LlmService } from '../llm/llm.service';
 import { PolicyEngine } from '../policy/policy.engine';
-import { ToolContext } from '../tools/tool.interface';
+import { ToolContext, ToolPreview } from '../tools/tool.interface';
 import { ToolExecutor } from '../tools/tool.executor';
 import { ToolRegistry } from '../tools/tool.registry';
 import { AgentContext, AgentResult } from './agent.types';
@@ -22,9 +23,12 @@ export type AgentEvent =
   | {
       type: 'approval_required';
       data: {
+        intentId: number;
+        confirmToken: string;
         toolName: string;
         input: Record<string, unknown>;
         riskLevel: RiskLevel;
+        preview?: ToolPreview;
       };
     }
   | { type: 'message'; data: { content: string } }
@@ -57,6 +61,7 @@ export class AgentService {
     private readonly contextBuilder: ContextBuilder,
     private readonly sanitizer: ContextSanitizer,
     private readonly audit: AuditService,
+    private readonly actionIntentService: ActionIntentService,
   ) {}
 
   async run(
@@ -115,6 +120,7 @@ export class AgentService {
           toolName: tool.name,
           requiredPermission: tool.permission,
           baseRisk: tool.riskLevel,
+          approvalPolicy: tool.approvalPolicy,
           input: toolCall.arguments,
         });
 
@@ -139,22 +145,57 @@ export class AgentService {
           );
         }
 
-        // 需要审批（L2/L3）：第一阶段 MVP 返回等待审批，不执行
+        // 需要审批：创建 ActionIntent，返回 confirmToken + preview
         if (decision.requiresApproval) {
+          const confirmToken = ActionIntentService.generateToken();
+          const toolContextForPreview: ToolContext = {
+            actor,
+            sessionId: context.sessionId,
+            scope: { kind: 'all' },
+            requestId: (context.metadata?.requestId as string) ?? '',
+          };
+          let preview: ToolPreview | undefined;
+          if (tool.preview) {
+            preview = await tool.preview(
+              toolCall.arguments,
+              toolContextForPreview,
+            );
+          }
+          const intent = await this.actionIntentService.create({
+            sessionId: Number(context.sessionId),
+            userId: actor.id,
+            toolName: tool.name,
+            input: toolCall.arguments,
+            riskLevel: decision.riskLevel,
+            confirmToken,
+            // TOCTOU 防护：记录预览时的数据快照
+            beforeHash: preview?.before
+              ? ActionIntentService.hashValue(preview.before)
+              : undefined,
+          });
+          if (!intent) {
+            throw new AiException(
+              AiErrorCode.BUSINESS_ERROR,
+              '创建操作意图失败',
+            );
+          }
           waitingApproval = true;
           riskLevel = decision.riskLevel;
           onEvent?.({
             type: 'approval_required',
             data: {
+              intentId: intent.id,
+              confirmToken,
               toolName: tool.name,
               input: toolCall.arguments,
               riskLevel: decision.riskLevel,
+              ...(preview ? { preview } : {}),
             },
           });
           toolCalls.push({
             name: tool.name,
             arguments: toolCall.arguments,
-            result: { status: 'waiting_approval' },
+            result: { status: 'waiting_approval', intentId: intent.id },
           });
           continue;
         }
@@ -227,5 +268,112 @@ export class AgentService {
       waitingApproval,
       riskLevel,
     };
+  }
+
+  /**
+   * 用户确认后执行 ActionIntent。
+   *
+   * 流程：验证 ActionIntent（token/有效期/userId/toolName/inputHash）→
+   * 重新评估 Policy（TOCTOU 防护）→ 执行 Tool → 标记 EXECUTED。
+   */
+  async confirmAndExecute(
+    intentId: number,
+    confirmToken: string,
+    actor: AiActor,
+  ): Promise<{ result: unknown; toolName: string }> {
+    const intent = await this.actionIntentService.getById(intentId);
+    if (!intent) {
+      throw new AiException(AiErrorCode.ACTION_EXPIRED, '操作意图不存在');
+    }
+
+    // 验证 ActionIntent（token/有效期/userId/toolName/inputHash）
+    await this.actionIntentService.validate({
+      intentId,
+      confirmToken,
+      userId: actor.id,
+      toolName: intent.toolName,
+      input: intent.input as Record<string, unknown>,
+    });
+
+    const tool = this.toolRegistry.get(intent.toolName);
+    if (!tool) {
+      throw new AiException(
+        AiErrorCode.TOOL_NOT_FOUND,
+        `工具 ${intent.toolName} 不存在`,
+      );
+    }
+
+    // 重新执行 Policy 评估（防止确认期间权限变化）
+    const decision = await this.policy.evaluate({
+      actor,
+      toolName: tool.name,
+      requiredPermission: tool.permission,
+      baseRisk: tool.riskLevel,
+      approvalPolicy: tool.approvalPolicy,
+      input: intent.input as Record<string, unknown>,
+    });
+    if (!decision.allowed) {
+      throw new AiException(
+        AiErrorCode.PERMISSION_DENIED,
+        decision.reason ?? '权限不足',
+      );
+    }
+
+    // TOCTOU 防护：重新获取数据快照并与 beforeHash 比对
+    if (intent.beforeHash && tool.preview) {
+      const toolContextForPreview: ToolContext = {
+        actor,
+        sessionId: intent.sessionId ? String(intent.sessionId) : '',
+        scope: { kind: 'all' },
+        requestId: '',
+      };
+      const currentPreview = await tool.preview(
+        intent.input as Record<string, unknown>,
+        toolContextForPreview,
+      );
+      const currentHash = currentPreview.before
+        ? ActionIntentService.hashValue(currentPreview.before)
+        : ActionIntentService.hashValue(undefined);
+      if (intent.beforeHash !== currentHash) {
+        throw new AiException(
+          AiErrorCode.ACTION_STALE,
+          '数据已变化，请重新预览后再执行',
+        );
+      }
+    }
+
+    // 执行 Tool
+    const toolContext: ToolContext = {
+      actor,
+      sessionId: intent.sessionId ? String(intent.sessionId) : '',
+      scope: { kind: 'all' },
+      requestId: '',
+    };
+    const result = await this.toolExecutor.execute(
+      tool.name,
+      intent.input,
+      toolContext,
+    );
+    const sanitized = this.sanitizer.sanitize(result);
+
+    // 标记为 EXECUTED
+    await this.actionIntentService.updateStatus(
+      intentId,
+      'EXECUTED',
+      new Date(),
+    );
+
+    await this.audit.log({
+      userId: actor.id,
+      action: 'tool_execute',
+      toolName: tool.name,
+      riskLevel: decision.riskLevel,
+      permission: tool.permission,
+      scope: decision.scope,
+      result: 'allowed',
+      metadata: { input: intent.input, intentId },
+    });
+
+    return { result: sanitized, toolName: tool.name };
   }
 }

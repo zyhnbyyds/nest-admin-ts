@@ -158,6 +158,23 @@ export interface AiSseEvent {
   data: unknown;
 }
 
+export interface AiApprovalPreview {
+  summary: string;
+  affectedCount: number;
+  before?: unknown;
+  after?: unknown;
+  undoable?: boolean;
+}
+
+export interface AiApprovalRequired {
+  intentId: number;
+  confirmToken: string;
+  toolName: string;
+  input: Record<string, unknown>;
+  riskLevel: "L0" | "L1" | "L2" | "L3";
+  preview?: AiApprovalPreview;
+}
+
 // ============ roles ============
 
 export type DataScope = "all" | "custom" | "dept" | "dept_and_children" | "self";

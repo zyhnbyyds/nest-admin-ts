@@ -495,6 +495,76 @@ export const aiAuditLogs = mysqlTable(
   ],
 );
 
+/** AI 操作意图：记录待审批的 AI 操作 */
+export const aiActionIntents = mysqlTable(
+  'ai_action_intent',
+  {
+    id: int('id', { unsigned: true }).autoincrement().primaryKey(),
+    sessionId: int('session_id', { unsigned: true }),
+    userId: int('user_id', { unsigned: true }).notNull(),
+    toolName: varchar('tool_name', { length: 100 }).notNull(),
+    input: json('input'),
+    inputHash: varchar('input_hash', { length: 64 }).notNull(),
+    beforeHash: varchar('before_hash', { length: 64 }),
+    confirmToken: varchar('confirm_token', { length: 128 }),
+    riskLevel: varchar('risk_level', { length: 10 }).notNull(),
+    status: mysqlEnum('status', [
+      'PENDING',
+      'APPROVED',
+      'REJECTED',
+      'EXPIRED',
+      'EXECUTED',
+      'CANCELLED',
+    ])
+      .default('PENDING')
+      .notNull(),
+    expiresAt: datetime('expires_at').notNull(),
+    executedAt: datetime('executed_at'),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+  },
+  (table) => [
+    index('idx_ai_action_intent_user').on(table.userId),
+    index('idx_ai_action_intent_status').on(table.status),
+    index('idx_ai_action_intent_token').on(table.confirmToken),
+    foreignKey({
+      columns: [table.sessionId],
+      foreignColumns: [aiSessions.id],
+      name: 'fk_ai_action_intent_session',
+    }).onDelete('set null'),
+    foreignKey({
+      columns: [table.userId],
+      foreignColumns: [users.id],
+      name: 'fk_ai_action_intent_user',
+    }).onDelete('cascade'),
+  ],
+);
+
+/** AI 审批记录 */
+export const aiApprovals = mysqlTable(
+  'ai_approval',
+  {
+    id: int('id', { unsigned: true }).autoincrement().primaryKey(),
+    actionIntentId: int('action_intent_id', { unsigned: true }).notNull(),
+    approverId: int('approver_id', { unsigned: true }).notNull(),
+    status: mysqlEnum('status', ['APPROVED', 'REJECTED']).notNull(),
+    reason: varchar('reason', { length: 500 }),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+  },
+  (table) => [
+    index('idx_ai_approval_intent').on(table.actionIntentId),
+    foreignKey({
+      columns: [table.actionIntentId],
+      foreignColumns: [aiActionIntents.id],
+      name: 'fk_ai_approval_intent',
+    }).onDelete('cascade'),
+    foreignKey({
+      columns: [table.approverId],
+      foreignColumns: [users.id],
+      name: 'fk_ai_approval_approver',
+    }).onDelete('cascade'),
+  ],
+);
+
 export const relations = defineRelations(
   {
     departments,
@@ -518,6 +588,8 @@ export const relations = defineRelations(
     aiSessions,
     aiMessages,
     aiAuditLogs,
+    aiActionIntents,
+    aiApprovals,
   },
   ({
     departments,
@@ -533,6 +605,8 @@ export const relations = defineRelations(
     aiSessions,
     aiMessages,
     aiAuditLogs,
+    aiActionIntents,
+    aiApprovals,
     one,
     many,
   }) => ({
@@ -607,6 +681,27 @@ export const relations = defineRelations(
       session: one.aiSessions({
         from: aiAuditLogs.sessionId,
         to: aiSessions.id,
+      }),
+    },
+    aiActionIntents: {
+      user: one.users({ from: aiActionIntents.userId, to: users.id }),
+      session: one.aiSessions({
+        from: aiActionIntents.sessionId,
+        to: aiSessions.id,
+      }),
+      approvals: many.aiApprovals({
+        from: aiActionIntents.id,
+        to: aiApprovals.actionIntentId,
+      }),
+    },
+    aiApprovals: {
+      intent: one.aiActionIntents({
+        from: aiApprovals.actionIntentId,
+        to: aiActionIntents.id,
+      }),
+      approver: one.users({
+        from: aiApprovals.approverId,
+        to: users.id,
       }),
     },
   }),
