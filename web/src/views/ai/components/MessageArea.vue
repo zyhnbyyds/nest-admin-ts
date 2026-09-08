@@ -86,10 +86,7 @@ function scrollToBottom() {
           </div>
 
           <!-- 文本内容：生成中用打字机，否则 markdown 直接渲染 -->
-          <div
-            v-if="message.content"
-            class="px-3.5 py-2.5 rounded-lg text-14px leading-relaxed bg-[var(--app-bg-hover)]"
-          >
+          <div v-if="message.content" class="px-3.5 py-2.5 rounded-lg text-14px leading-relaxed">
             <TypewriterText
               v-if="isFresh(message)"
               :text="message.content"

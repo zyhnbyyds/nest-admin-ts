@@ -20,7 +20,7 @@
     "echarts": "^6.0.0",
     "lew-ui": "^2.8.2",
     "lucide-vue-next": "^0.534.0",
-    "md-editor-v3": "^6.5.6",
+    "marked": "^18.0.12",
     "pinia": "^3.0.3",
     "vue": "^3.5.30",
     "vue-router": "^5.0.3"

@@ -1,39 +1,22 @@
 /**
- * AI markdown 预览主题覆盖（MessageArea / TypewriterText 共用）。
+ * AI Markdown 预览样式（MarkdownContent.vue 渲染出的纯 HTML 排版）。
  *
- * 让 md-editor-v3 的 MdPreview 颜色匹配项目主题（CSS 变量），
- * 字号与系统统一（14px）。
- *
- * 注意：md-editor-v3 的暗色变量定义在 `.md-editor-dark`（单 class，特异性 0,1,0），
- * 与 `.ai-md-preview` 特异性相同，后加载者胜出。因此这里用双 class
- * `.md-editor.ai-md-preview` 提高特异性（0,2,0），确保覆盖 md-editor 默认值。
+ * MarkdownContent 使用 marked + DOMPurify 输出 HTML，容器 class 为 .ai-md-preview；
+ * 此处统一样式并跟随项目主题 CSS 变量（暗色自动适配），与 md-editor-v3 无关。
  */
-.md-editor.ai-md-preview {
-  --md-color: var(--app-text-primary);
-  --md-border-color: var(--app-border);
-  --md-bk-color: transparent;
-  --md-bk-color-light: var(--app-bg-hover);
-  --md-bk-color-lighter: var(--app-bg-hover);
-  --md-theme: var(--app-text-primary);
+.ai-md-preview {
   font-size: 14px;
   line-height: 1.7;
+  color: var(--app-text-primary);
+  word-break: break-word;
 }
 
-/* 暗色模式：显式覆盖 md-editor 的暗色默认变量（#999 等），跟随项目主题 */
-.md-editor-dark.md-editor.ai-md-preview {
-  --md-color: var(--app-text-primary);
-  --md-hover-color: var(--app-text-primary);
-  --md-bk-color: transparent;
-  --md-bk-color-outstand: var(--app-bg-hover);
-  --md-bk-hover-color: var(--app-bg-hover);
-  --md-border-color: var(--app-border);
-  --md-border-hover-color: var(--app-border);
-  --md-border-active-color: var(--lew-color-primary);
-  --md-theme: var(--app-text-primary);
+.ai-md-preview > :first-child {
+  margin-top: 0;
 }
 
-.ai-md-preview .md-editor-preview-wrapper {
-  padding: 0;
+.ai-md-preview > :last-child {
+  margin-bottom: 0;
 }
 .ai-md-preview h1,
 .ai-md-preview h2,
