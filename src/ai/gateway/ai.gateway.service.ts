@@ -81,6 +81,16 @@ export class AiGatewayService {
     return this.getSession(sessionId, userId);
   }
 
+  /** 更新会话标题 */
+  async updateSessionTitle(id: number, userId: number, title: string) {
+    await this.getSession(id, userId);
+    await this.database.db
+      .update(aiSessions)
+      .set({ title, updatedAt: new Date() })
+      .where(and(eq(aiSessions.id, id), eq(aiSessions.userId, userId)));
+    return this.getSession(id, userId);
+  }
+
   async listSessions(userId: number) {
     return this.database.db
       .select()

@@ -4,6 +4,7 @@ import {
   Get,
   Param,
   ParseIntPipe,
+  Patch,
   Post,
   Req,
   Res,
@@ -22,6 +23,7 @@ import {
   createSessionSchema,
   rejectSchema,
   sendMessageSchema,
+  updateSessionTitleSchema,
 } from '../dto/ai-chat.dto';
 import { AiGatewayService } from './ai.gateway.service';
 
@@ -73,6 +75,19 @@ export class AiGatewayController {
     @Req() request: AuthRequest,
   ) {
     return this.gateway.getSession(id, request.user.id);
+  }
+
+  @Patch('sessions/:id')
+  @RequirePermissions('ai:chat')
+  @ApiOperation({ summary: '更新 AI 会话标题' })
+  @ApiResponse({ status: 200, description: '成功' })
+  updateSessionTitle(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() body: unknown,
+    @Req() request: AuthRequest,
+  ) {
+    const parsed = updateSessionTitleSchema.parse(body);
+    return this.gateway.updateSessionTitle(id, request.user.id, parsed.title);
   }
 
   @Get('sessions/:id/messages')

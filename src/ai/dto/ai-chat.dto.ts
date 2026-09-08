@@ -10,6 +10,15 @@ export const createSessionSchema = z.object({
     .openapi({ example: '查询用户', description: '会话标题' }),
 });
 
+/** 更新 AI 会话标题 */
+export const updateSessionTitleSchema = z.object({
+  title: z
+    .string()
+    .min(1)
+    .max(200)
+    .openapi({ example: '查询用户', description: '会话标题' }),
+});
+
 /** 发送 AI 消息 */
 export const sendMessageSchema = z.object({
   content: z
