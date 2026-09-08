@@ -9,7 +9,10 @@
 import { Injectable, Logger, OnApplicationShutdown } from '@nestjs/common';
 import { AppConfigService } from '../../config/app-config.service';
 
-type RedisClient = InstanceType<typeof Bun.RedisClient>;
+export type RedisClient = InstanceType<typeof Bun.RedisClient>;
+export type RedisClientOptions = NonNullable<
+  ConstructorParameters<typeof Bun.RedisClient>[1]
+>;
 
 @Injectable()
 export class RedisService implements OnApplicationShutdown {
@@ -18,6 +21,17 @@ export class RedisService implements OnApplicationShutdown {
 
   constructor(private readonly config: AppConfigService) {}
 
+  /**
+   * 创建底层 Redis 客户端。单独抽出便于单测覆写注入 mock；
+   * 默认使用快速失败语义（与旧 ioredis maxRetriesPerRequest:1 对齐）。
+   */
+  protected createClient(
+    url: string,
+    options: RedisClientOptions,
+  ): RedisClient {
+    return new Bun.RedisClient(url, options);
+  }
+
   get enabled(): boolean {
     return Boolean(this.config.redisUrl);
   }
@@ -25,10 +39,10 @@ export class RedisService implements OnApplicationShutdown {
   private connection(): RedisClient | null {
     if (!this.config.redisUrl) return null;
     if (!this.client) {
-      this.client = new Bun.RedisClient(this.config.redisUrl, {
+      this.client = this.createClient(this.config.redisUrl, {
         // 快速失败而非排队堆积：与旧 ioredis maxRetriesPerRequest:1 语义对齐
-        maxRetries: 10,
-        enableOfflineQueue: true,
+        maxRetries: 1,
+        enableOfflineQueue: false,
       });
       this.client.onclose = (error: Error) =>
         this.logger.warn(`Redis error: ${error.message}`);

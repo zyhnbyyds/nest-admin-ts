@@ -35,8 +35,16 @@ function sseResponse(chunks: string[]): Response {
   });
 }
 
+// 不依赖 vitest 专有的 vi.stubGlobal，手动替换 globalThis.fetch，
+// 使测试同时兼容 vitest 与 bun test 两种运行器。
+const realFetch = globalThis.fetch;
+
+function stubFetch(mock: typeof fetch) {
+  (globalThis as { fetch: typeof fetch }).fetch = mock;
+}
+
 afterEach(() => {
-  vi.unstubAllGlobals();
+  (globalThis as { fetch: typeof fetch }).fetch = realFetch;
 });
 
 describe('DeepSeekProvider.chat（非流式）', () => {
@@ -59,7 +67,7 @@ describe('DeepSeekProvider.chat（非流式）', () => {
         ],
       }),
     );
-    vi.stubGlobal('fetch', fetchMock);
+    stubFetch(fetchMock);
 
     const provider = new DeepSeekProvider(makeConfig());
     const result = await provider.chat({ messages: [] });
@@ -72,10 +80,11 @@ describe('DeepSeekProvider.chat（非流式）', () => {
   });
 
   it('请求体带 stream=false，并把 assistant 的 reasoning_content 原样回传', async () => {
-    const fetchMock = vi.fn(async () =>
-      jsonResponse({ choices: [{ message: { content: 'ok' } }] }),
+    const fetchMock = vi.fn(
+      async (_input: RequestInfo | URL, _init?: RequestInit) =>
+        jsonResponse({ choices: [{ message: { content: 'ok' } }] }),
     );
-    vi.stubGlobal('fetch', fetchMock);
+    stubFetch(fetchMock);
 
     const provider = new DeepSeekProvider(makeConfig());
     await provider.chat({
@@ -96,10 +105,7 @@ describe('DeepSeekProvider.chat（非流式）', () => {
   });
 
   it('HTTP 错误时抛出包含状态码的异常', async () => {
-    vi.stubGlobal(
-      'fetch',
-      vi.fn(async () => new Response('bad request', { status: 400 })),
-    );
+    stubFetch(vi.fn(async () => new Response('bad request', { status: 400 })));
     const provider = new DeepSeekProvider(makeConfig());
     await expect(provider.chat({ messages: [] })).rejects.toThrow(
       /DeepSeek API error: 400/,
@@ -109,8 +115,7 @@ describe('DeepSeekProvider.chat（非流式）', () => {
 
 describe('DeepSeekProvider.chat（流式）', () => {
   it('content 增量实时回调，reasoning/tool_calls 分片拼装正确', async () => {
-    vi.stubGlobal(
-      'fetch',
+    stubFetch(
       vi.fn(async () =>
         sseResponse([
           'data: {"choices":[{"delta":{"content":"你"}}]}',
@@ -150,15 +155,16 @@ describe('DeepSeekProvider.chat（流式）', () => {
   });
 
   it('流式请求体会携带 stream=true', async () => {
-    const fetchMock = vi.fn(async () =>
-      sseResponse([
-        'data: {"choices":[{"delta":{"content":"hi"}}]}',
-        '',
-        'data: [DONE]',
-        '',
-      ]),
+    const fetchMock = vi.fn(
+      async (_input: RequestInfo | URL, _init?: RequestInit) =>
+        sseResponse([
+          'data: {"choices":[{"delta":{"content":"hi"}}]}',
+          '',
+          'data: [DONE]',
+          '',
+        ]),
     );
-    vi.stubGlobal('fetch', fetchMock);
+    stubFetch(fetchMock);
 
     const provider = new DeepSeekProvider(makeConfig());
     await provider.chat({ messages: [], stream: true, onDelta: () => {} });
