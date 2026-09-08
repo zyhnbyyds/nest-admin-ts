@@ -4,19 +4,31 @@ import { useRoute } from "vue-router";
 import { ChevronsLeft, ChevronsRight } from "lucide-vue-next";
 import { usePermissionStore } from "~/store/permission";
 import { useSettingsStore } from "~/store/settings";
+import type { SidebarItem } from "~/types/app";
 import SidebarMenu from "./components/SidebarMenu.vue";
 import AppHeader from "./components/AppHeader.vue";
 import TabsBar from "./components/TabsBar.vue";
 import ThemePanel from "./components/ThemePanel.vue";
+import AiChatPanel from "./components/AiChatPanel.vue";
 
 const route = useRoute();
 const settings = useSettingsStore();
 const permissionStore = usePermissionStore();
 const themeVisible = ref(false);
+const aiVisible = ref(false);
 
 const sidebarWidth = computed(() =>
   settings.collapsed ? "var(--app-sidebar-collapsed-width)" : "var(--app-sidebar-width)",
 );
+
+/** 侧边栏菜单：AI 整页入口改由悬浮球承载，故从菜单中移除 /ai */
+const sidebarItems = computed<SidebarItem[]>(() => {
+  const dropAi = (list: SidebarItem[]): SidebarItem[] =>
+    list
+      .filter((item) => item.path !== "/ai")
+      .map((item) => (item.children ? { ...item, children: dropAi(item.children) } : item));
+  return dropAi(permissionStore.sidebar);
+});
 
 /** 页面过渡：JS 驱动淡入（不依赖 transitionend，避免路由切换卡死） */
 const pageTransition = {
@@ -69,7 +81,7 @@ const pageTransition = {
           Nest Admin
         </span>
       </div>
-      <SidebarMenu :items="permissionStore.sidebar" :collapsed="settings.collapsed" />
+      <SidebarMenu :items="sidebarItems" :collapsed="settings.collapsed" />
       <div
         class="flex items-center justify-center h-36px shrink-0 cursor-pointer text-[var(--app-text-muted)] border-t border-[var(--app-border)] transition-colors duration-200 hover:text-[var(--app-text-primary)] hover:bg-[var(--app-bg-hover)]"
         @click="settings.toggleCollapsed()"
@@ -81,7 +93,7 @@ const pageTransition = {
 
     <!-- 主区域 -->
     <div class="flex flex-col flex-1 min-w-0 overflow-hidden">
-      <AppHeader @open-theme="themeVisible = true" />
+      <AppHeader @open-theme="themeVisible = true" @open-ai="aiVisible = true" />
       <TabsBar />
       <main class="flex-1 overflow-y-auto p-5">
         <RouterView v-slot="{ Component }">
@@ -98,5 +110,8 @@ const pageTransition = {
     </div>
 
     <ThemePanel v-model:visible="themeVisible" />
+
+    <!-- AI 操作助手弹出面板（Header 图标触发） -->
+    <AiChatPanel v-model:visible="aiVisible" />
   </div>
 </template>

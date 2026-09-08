@@ -180,7 +180,10 @@ export class DeepSeekProvider implements LlmProvider {
     let content = '';
     let reasoningContent = '';
     // 工具调用增量按 index 累积（name/arguments 可能分片到达）
-    const toolAcc: Record<number, { id: string; name: string; argsRaw: string }> = {};
+    const toolAcc: Record<
+      number,
+      { id: string; name: string; argsRaw: string }
+    > = {};
 
     while (true) {
       const { done, value } = await reader.read();
@@ -214,16 +217,21 @@ export class DeepSeekProvider implements LlmProvider {
             content += delta.content;
             request.onDelta?.(delta.content);
           }
-          if (typeof delta.reasoning_content === 'string' && delta.reasoning_content) {
+          if (
+            typeof delta.reasoning_content === 'string' &&
+            delta.reasoning_content
+          ) {
             reasoningContent += delta.reasoning_content;
           }
           for (const toolCall of delta.tool_calls ?? []) {
             const index = toolCall.index ?? 0;
             const acc =
-              toolAcc[index] ?? (toolAcc[index] = { id: '', name: '', argsRaw: '' });
+              toolAcc[index] ??
+              (toolAcc[index] = { id: '', name: '', argsRaw: '' });
             if (toolCall.id) acc.id = toolCall.id;
             if (toolCall.function?.name) acc.name += toolCall.function.name;
-            if (toolCall.function?.arguments) acc.argsRaw += toolCall.function.arguments;
+            if (toolCall.function?.arguments)
+              acc.argsRaw += toolCall.function.arguments;
           }
         } catch {
           // 忽略无法解析的中间行
@@ -235,7 +243,11 @@ export class DeepSeekProvider implements LlmProvider {
       .sort((a, b) => Number(a) - Number(b))
       .map((key) => {
         const acc = toolAcc[Number(key)]!;
-        return { id: acc.id, name: acc.name, arguments: safeParse(acc.argsRaw) };
+        return {
+          id: acc.id,
+          name: acc.name,
+          arguments: safeParse(acc.argsRaw),
+        };
       });
 
     return { content, toolCalls, reasoningContent };

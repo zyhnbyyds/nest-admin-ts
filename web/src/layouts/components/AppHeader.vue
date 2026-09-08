@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useRouter } from "vue-router";
-import { Github, Moon, Palette, Sun } from "lucide-vue-next";
+import { Bot, Github, Moon, Palette, Sun } from "lucide-vue-next";
 import { LewDropdown, LewMessage } from "lew-ui";
 import type { LewContextMenusOption } from "lew-ui";
 import { logout as logoutApi } from "~/api/auth";
@@ -8,7 +8,7 @@ import { useUserStore } from "~/store/user";
 import { useSettingsStore } from "~/store/settings";
 import { resetRouteFlag } from "~/router/guard";
 
-const emit = defineEmits<{ openTheme: [] }>();
+const emit = defineEmits<{ openTheme: []; openAi: [] }>();
 
 const router = useRouter();
 const userStore = useUserStore();
@@ -57,6 +57,11 @@ function toggleDark() {
       <!-- 主题面板 -->
       <button class="icon-btn" title="主题设置" @click="emit('openTheme')">
         <Palette :size="17" />
+      </button>
+
+      <!-- AI 助手 -->
+      <button v-permission="'ai:chat'" class="icon-btn" title="AI 助手" @click="emit('openAi')">
+        <Bot :size="17" />
       </button>
 
       <!-- GitHub 链接 -->

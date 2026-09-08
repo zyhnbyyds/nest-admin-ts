@@ -105,8 +105,7 @@ function prettyJson(value: unknown): string {
             <div class="text-11px text-[var(--app-text-muted)] mb-1">参数</div>
             <pre
               class="text-11.5px text-[var(--app-text-primary)] whitespace-pre-wrap break-all max-h-28 overflow-y-auto rounded-md bg-[var(--app-bg-hover)] p-2"
-              >{{ prettyJson(args) }}</pre
-            >
+              >{{ prettyJson(args) }}</pre>
           </div>
 
           <!-- 结果 -->
@@ -122,8 +121,7 @@ function prettyJson(value: unknown): string {
             <div class="text-11px text-[var(--app-text-muted)] mb-1">状态</div>
             <pre
               class="text-11.5px text-[var(--app-text-muted)] whitespace-pre-wrap break-all max-h-32 overflow-y-auto rounded-md bg-[var(--app-bg-hover)] p-2"
-              >{{ prettyJson(result) }}</pre
-            >
+              >{{ prettyJson(result) }}</pre>
           </div>
 
           <div v-else>
@@ -186,8 +184,7 @@ function prettyJson(value: unknown): string {
             <pre
               v-else
               class="text-11.5px text-[var(--app-text-muted)] whitespace-pre-wrap break-all max-h-40 overflow-y-auto rounded-md bg-[var(--app-bg-hover)] p-2"
-              >{{ prettyJson(result) }}</pre
-            >
+              >{{ prettyJson(result) }}</pre>
           </div>
 
           <!-- 错误/取消结果 -->

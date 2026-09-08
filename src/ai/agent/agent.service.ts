@@ -121,7 +121,8 @@ export class AgentService {
       toolChoice: 'auto',
       stream: true,
       // 真流式：文本增量逐块通过 SSE 推送，供前端边收边渲染
-      onDelta: (delta) => onEvent?.({ type: 'message', data: { content: delta } }),
+      onDelta: (delta) =>
+        onEvent?.({ type: 'message', data: { content: delta } }),
     });
 
     const toolCalls: Array<{
@@ -470,7 +471,8 @@ export class AgentService {
         tools: aiContext.tools,
         toolChoice: 'auto',
         stream: true,
-        onDelta: (delta) => onEvent?.({ type: 'message', data: { content: delta } }),
+        onDelta: (delta) =>
+          onEvent?.({ type: 'message', data: { content: delta } }),
       });
     }
 
