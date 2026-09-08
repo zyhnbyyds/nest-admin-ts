@@ -165,10 +165,7 @@ export class AuthService {
       .from(users)
       .where(and(eq(users.id, userId), isNull(users.deletedAt)))
       .limit(1);
-    if (
-      !user ||
-      !(await verifyPassword(input.oldPassword, user.passwordHash))
-    )
+    if (!user || !(await verifyPassword(input.oldPassword, user.passwordHash)))
       throw new UnauthorizedException('原密码不正确');
     const passwordHash = await hashPassword(input.newPassword);
     await this.database.db
@@ -217,6 +214,14 @@ export class AuthService {
       userAgent: meta.userAgent,
       status: 'success',
     });
+    // 回填最近登录时间/IP：供用户管理“最近登录”列与个人中心展示
+    await this.database.db
+      .update(users)
+      .set({
+        loginAt: new Date(),
+        ...(meta.ip ? { loginIp: meta.ip } : {}),
+      })
+      .where(eq(users.id, user.id));
     const tokens = await this.issueTokens(user.id, user.username);
     await this.online.track(
       {

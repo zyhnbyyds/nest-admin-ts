@@ -87,7 +87,24 @@ const columns: LewTableColumn[] = [
       return h("span", { class: "text-12.5px" }, names.length ? names.join("、") : "-");
     },
   },
-  { title: "邮箱", field: "email" },
+  {
+    title: "邮箱",
+    field: "email",
+    width: 180,
+    customRender: ({ row }) => {
+      const email = (row as unknown as User).email;
+      if (!email) return "-";
+      // 超出列宽时省略显示，悬停用 tooltip 查看完整邮箱
+      return h(
+        "span",
+        {
+          class: "block w-full truncate align-middle cursor-default",
+          title: email,
+        },
+        email,
+      );
+    },
+  },
   { title: "手机号", field: "phone", width: 120 },
   {
     title: "状态",

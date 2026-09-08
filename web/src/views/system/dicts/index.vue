@@ -36,9 +36,14 @@ const typeColumns: LewTableColumn[] = [
 
 const selectedType = ref<DictType | null>(null);
 
-function selectType(row: DictType) {
-  console.log(1);
-  selectedType.value = row;
+function selectType(selected: unknown) {
+  // lew-ui 的 selectChange 返回选中行 key（非行对象）：按 row-key=id 映射回行
+  if (selected && typeof selected === "object") {
+    selectedType.value = selected as DictType;
+  } else {
+    const key = selected == null ? undefined : Number(selected);
+    selectedType.value = typeTable.items.value.find((row) => row.id === key) ?? null;
+  }
   void dataSearch();
 }
 
@@ -196,11 +201,12 @@ async function handleDataSubmit() {
     return;
   }
   const values = (dataFormRef.value?.getForm?.() ?? dataForm.value) as typeof dataForm.value;
+  // LewForm 的数字输入可能以字符串返回，后端 schema 要求 number，这里强制数值化
   const body: CreateDictDataBody = {
     type: selectedType.value.type,
     label: values.label,
     value: values.value,
-    sort: values.sort,
+    sort: Number(values.sort ?? 0),
     status: values.status ? "active" : "disabled",
     cssClass: values.cssClass || undefined,
     listClass: values.listClass || undefined,
@@ -258,6 +264,7 @@ function handleDataDelete(row: DictData) {
           :data-source="typeTable.items.value"
           :loading="typeTable.loading.value"
           size="small"
+          row-key="id"
           checkable
           @selectChange="selectType"
         >
