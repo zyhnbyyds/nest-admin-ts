@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { Bot, ChevronsLeft, ChevronsRight, Plus } from "lucide-vue-next";
-import { LewButton } from "lew-ui";
+import { ref } from "vue";
+import { Bot, ChevronsLeft, ChevronsRight, Pencil, Plus } from "lucide-vue-next";
+import { LewButton, LewInput } from "lew-ui";
 import { formatDateTime } from "~/composables/useFormat";
 import type { AiSession } from "~/types/api";
 
@@ -14,7 +15,29 @@ const emit = defineEmits<{
   (e: "create"): void;
   (e: "select", id: number): void;
   (e: "toggle"): void;
+  (e: "rename", id: number, title: string): void;
 }>();
+
+/** 正在编辑标题的会话 id */
+const editingId = ref<number | null>(null);
+const editingTitle = ref("");
+
+function startEdit(session: AiSession) {
+  editingId.value = session.id;
+  editingTitle.value = session.title;
+}
+
+function commitEdit() {
+  const title = editingTitle.value.trim();
+  if (editingId.value !== null && title) {
+    emit("rename", editingId.value, title);
+  }
+  editingId.value = null;
+}
+
+function cancelEdit() {
+  editingId.value = null;
+}
 </script>
 
 <template>
@@ -67,7 +90,30 @@ const emit = defineEmits<{
             />
           </div>
           <div class="flex-1 min-w-0">
-            <div class="truncate">{{ session.title }}</div>
+            <!-- 编辑态：输入框 -->
+            <LewInput
+              v-if="editingId === session.id"
+              v-model="editingTitle"
+              size="small"
+              :max-length="200"
+              autofocus
+              @blur="commitEdit"
+              @keydown.enter="commitEdit"
+              @keydown.esc="cancelEdit"
+            />
+            <!-- 展示态：双击标题可重命名 -->
+            <div v-else class="group flex items-center gap-1" @dblclick.stop="startEdit(session)">
+              <span class="truncate">{{ session.title }}</span>
+              <Pencil
+                :size="11"
+                class="shrink-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                :class="
+                  currentSession?.id === session.id
+                    ? 'text-white/70'
+                    : 'text-[var(--app-text-muted)]'
+                "
+              />
+            </div>
             <div
               class="text-11px mt-0.5"
               :class="

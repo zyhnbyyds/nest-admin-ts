@@ -23,7 +23,6 @@ const {
   waitingApproval,
   riskLevel,
   pendingApproval,
-  confirming,
   currentTaskId,
   taskSteps,
   taskStatus,
@@ -31,10 +30,9 @@ const {
   taskHistory,
   handleCreateSession,
   selectSession,
+  handleRenameSession,
   handleSend,
   finishFreshMessage,
-  handleConfirm,
-  handleReject,
   handleRollbackTask,
 } = useAiChat();
 </script>
@@ -48,6 +46,7 @@ const {
       :collapsed="leftCollapsed"
       @create="handleCreateSession"
       @select="selectSession"
+      @rename="handleRenameSession"
       @toggle="leftCollapsed = !leftCollapsed"
     />
 
@@ -67,9 +66,6 @@ const {
         :messages="messages"
         :thinking="thinking"
         :pending-approval="pendingApproval"
-        :confirming="confirming"
-        @confirm="handleConfirm"
-        @reject="handleReject"
         @typed="finishFreshMessage"
       />
 

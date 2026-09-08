@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref } from "vue";
-import { ShieldCheck, Sparkles } from "lucide-vue-next";
-import { LewAlert, LewButton, LewTag } from "lew-ui";
+import { Sparkles } from "lucide-vue-next";
+import { LewAlert, LewTag } from "lew-ui";
 import type { AiApprovalRequired, AiMessage, AiToolCall } from "~/types/api";
 import { riskColor, riskText } from "../utils/display";
 import MarkdownContent from "./MarkdownContent.vue";
@@ -12,12 +12,9 @@ defineProps<{
   messages: AiMessage[];
   thinking: boolean;
   pendingApproval: AiApprovalRequired | null;
-  confirming: boolean;
 }>();
 
 const emit = defineEmits<{
-  (e: "confirm"): void;
-  (e: "reject"): void;
   /** 生成中的消息已完整打完字，父级将其标记为完成 */
   (e: "typed", messageId: number): void;
 }>();
@@ -70,7 +67,7 @@ function scrollToBottom() {
         <!-- 用户消息气泡 -->
         <div
           v-if="message.role === 'user'"
-          class="px-3.5 py-2.5 rounded-lg text-13.5px leading-relaxed whitespace-pre-wrap bg-[var(--lew-color-primary)] text-white"
+          class="px-3.5 py-2.5 rounded-lg text-14px leading-relaxed whitespace-pre-wrap bg-[var(--lew-color-primary)] text-white"
         >
           {{ message.content }}
         </div>
@@ -80,7 +77,7 @@ function scrollToBottom() {
           <!-- 生成中占位：tool 步骤可能先到、文本未到时显示光标 -->
           <div
             v-if="isFresh(message) && !message.content"
-            class="flex items-center gap-1.5 text-12.5px text-[var(--app-text-muted)] px-1 py-0.5"
+            class="flex items-center gap-1.5 text-13px text-[var(--app-text-muted)] px-1 py-0.5"
           >
             <span class="w-1.5 h-1.5 rounded-full bg-current animate-pulse" />
             <span v-if="message.toolCalls?.length">正在处理...</span>
@@ -90,7 +87,7 @@ function scrollToBottom() {
           <!-- 文本内容：生成中用打字机，否则 markdown 直接渲染 -->
           <div
             v-if="message.content"
-            class="px-3.5 py-2.5 rounded-lg text-13.5px leading-relaxed bg-[var(--app-bg-hover)]"
+            class="px-3.5 py-2.5 rounded-lg text-14px leading-relaxed bg-[var(--app-bg-hover)]"
           >
             <TypewriterText
               v-if="isFresh(message)"
@@ -117,16 +114,16 @@ function scrollToBottom() {
       </div>
     </div>
 
-    <!-- 确认操作卡片 -->
+    <!-- 待确认提示（确认操作已通过弹窗完成） -->
     <div v-if="pendingApproval" class="flex justify-center">
       <div class="w-full max-w-lg">
-        <LewAlert type="warning" title="需要确认操作" :closable="false" class="mb-3">
+        <LewAlert type="warning" title="等待确认操作" :closable="false" class="mb-3">
           <template #default>
             <div class="flex items-center gap-2 mt-1">
               <LewTag :type="'light'" :color="riskColor(pendingApproval.riskLevel)" size="small">
                 {{ riskText(pendingApproval.riskLevel) }}
               </LewTag>
-              <span class="text-12.5px text-[var(--app-text-muted)]">
+              <span class="text-13px text-[var(--app-text-muted)]">
                 工具：{{ pendingApproval.toolName }}
               </span>
             </div>
@@ -137,14 +134,8 @@ function scrollToBottom() {
                 影响数量：{{ pendingApproval.preview.affectedCount }}
               </div>
             </div>
-            <div class="flex justify-end gap-2 mt-3">
-              <LewButton size="small" :disabled="confirming" @click="emit('reject')">
-                取消
-              </LewButton>
-              <LewButton type="fill" size="small" :loading="confirming" @click="emit('confirm')">
-                <template #icon><ShieldCheck :size="14" /></template>
-                确认执行
-              </LewButton>
+            <div class="text-12px text-[var(--app-text-muted)] mt-2">
+              请在弹窗中确认或取消该操作
             </div>
           </template>
         </LewAlert>

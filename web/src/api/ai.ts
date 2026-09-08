@@ -1,10 +1,15 @@
-import { get, post } from "~/request";
+import { get, patch, post } from "~/request";
 import { useUserStore } from "~/store/user";
 import type { AiMessage, AiResult, AiSession, AiSseEvent } from "~/types/api";
 
 /** 创建 AI 会话 */
 export function createSession(title?: string) {
   return post<AiSession>("/ai/sessions", { title });
+}
+
+/** 更新 AI 会话标题 */
+export function updateSessionTitle(id: number, title: string) {
+  return patch<AiSession>(`/ai/sessions/${id}`, { title });
 }
 
 /** 获取 AI 会话列表 */

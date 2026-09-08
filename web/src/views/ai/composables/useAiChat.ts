@@ -1,5 +1,5 @@
 import { nextTick, onMounted, ref } from "vue";
-import { LewMessage } from "lew-ui";
+import { LewDialog, LewMessage } from "lew-ui";
 import {
   confirmAction,
   createSession,
@@ -9,6 +9,7 @@ import {
   rejectAction,
   rollbackTask,
   sendMessage,
+  updateSessionTitle,
 } from "~/api/ai";
 import type {
   AiApprovalRequired,
@@ -19,6 +20,7 @@ import type {
   AiTaskStep,
   AiToolCall,
 } from "~/types/api";
+import { riskText } from "../utils/display";
 
 /**
  * AI 操作页核心逻辑。
@@ -42,7 +44,6 @@ export function useAiChat() {
   const waitingApproval = ref(false);
   const riskLevel = ref<string>("");
   const pendingApproval = ref<AiApprovalRequired | null>(null);
-  const confirming = ref(false);
 
   // ---------- 任务时间线 ----------
   const currentTaskId = ref<number | null>(null);
@@ -71,7 +72,24 @@ export function useAiChat() {
     toolCalls.value = [];
     waitingApproval.value = false;
     riskLevel.value = "";
+    pendingApproval.value = null;
+    currentTaskId.value = null;
+    taskSteps.value = [];
+    taskStatus.value = "";
     await scrollToBottom();
+  }
+
+  /** 重命名会话标题 */
+  async function handleRenameSession(id: number, title: string) {
+    try {
+      const updated = await updateSessionTitle(id, title);
+      const idx = sessions.value.findIndex((s) => s.id === id);
+      if (idx !== -1) sessions.value[idx] = updated;
+      if (currentSession.value?.id === id) currentSession.value = updated;
+      LewMessage.success("标题已更新");
+    } catch (error) {
+      LewMessage.error(error instanceof Error ? error.message : "更新标题失败");
+    }
   }
 
   // ---------- 发送消息 ----------
@@ -182,6 +200,7 @@ export function useAiChat() {
         pendingApproval.value = data;
         waitingApproval.value = true;
         riskLevel.value = data.riskLevel;
+        showApprovalDialog(data);
         break;
       }
       case "message": {
@@ -244,49 +263,73 @@ export function useAiChat() {
   }
 
   // ---------- 确认/取消操作 ----------
-  async function handleConfirm() {
-    if (!pendingApproval.value || confirming.value) return;
-    confirming.value = true;
-    try {
-      const { toolName } = await confirmAction(
-        pendingApproval.value.intentId,
-        pendingApproval.value.confirmToken,
+
+  /** 更新指定工具步骤的执行状态（同步 toolCalls 与占位消息） */
+  function updateToolStepStatus(toolName: string, result: unknown) {
+    toolCalls.value.forEach((c) => {
+      if (c.name === toolName) c.result = result;
+    });
+    messages.value
+      .filter((m) => m._fresh)
+      .forEach((m) =>
+        m.toolCalls?.forEach((c) => {
+          if (c.name === toolName) c.result = result;
+        }),
       );
-      LewMessage.success("操作已执行");
-      const result = { status: "executed" as const };
-      // 同步更新 toolCalls 与占位 assistant 消息中对应步骤
-      toolCalls.value.forEach((c) => {
-        if (c.name === toolName) c.result = result;
-      });
-      messages.value
-        .filter((m) => m._fresh)
-        .forEach((m) =>
-          m.toolCalls?.forEach((c) => {
-            if (c.name === toolName) c.result = result;
-          }),
-        );
-      pendingApproval.value = null;
-      waitingApproval.value = false;
-    } catch (error) {
-      LewMessage.error(error instanceof Error ? error.message : "确认失败");
-    } finally {
-      confirming.value = false;
-    }
   }
 
-  async function handleReject() {
-    if (!pendingApproval.value || confirming.value) return;
-    confirming.value = true;
-    try {
-      await rejectAction(pendingApproval.value.intentId, "用户取消");
-      LewMessage.info("已取消操作");
-      pendingApproval.value = null;
-      waitingApproval.value = false;
-    } catch (error) {
-      LewMessage.error(error instanceof Error ? error.message : "取消失败");
-    } finally {
-      confirming.value = false;
+  /** 弹出操作确认对话框（LewDialog），每个弹窗闭包捕获自己的 intent */
+  function showApprovalDialog(data: AiApprovalRequired) {
+    const preview = data.preview;
+    const contentLines = [`工具：${data.toolName}`, `风险等级：${riskText(data.riskLevel)}`];
+    if (preview) {
+      contentLines.push(`操作预览：${preview.summary}`);
+      contentLines.push(`影响数量：${preview.affectedCount}`);
     }
+    LewDialog.warning({
+      title: "需要确认操作",
+      content: contentLines.join("\n"),
+      closeByEsc: true,
+      closeOnClickOverlay: false,
+      footerButtons: [
+        {
+          props: {
+            text: "取消",
+            color: "gray",
+            type: "light",
+            size: "small",
+            request: async () => {
+              try {
+                await rejectAction(data.intentId, "用户取消");
+                LewMessage.info("已取消操作");
+                updateToolStepStatus(data.toolName, { status: "cancelled" });
+              } catch (error) {
+                LewMessage.error(error instanceof Error ? error.message : "取消失败");
+              }
+              return true;
+            },
+          },
+        },
+        {
+          props: {
+            text: "确认执行",
+            type: "fill",
+            size: "small",
+            color: "info",
+            request: async () => {
+              try {
+                const { toolName } = await confirmAction(data.intentId, data.confirmToken);
+                LewMessage.success("操作已执行");
+                updateToolStepStatus(toolName, { status: "executed" });
+              } catch (error) {
+                LewMessage.error(error instanceof Error ? error.message : "确认失败");
+              }
+              return true;
+            },
+          },
+        },
+      ],
+    });
   }
 
   // ---------- 撤销任务（Undo） ----------
@@ -316,6 +359,7 @@ export function useAiChat() {
     messages,
     handleCreateSession,
     selectSession,
+    handleRenameSession,
     // 发送
     input,
     sending,
@@ -327,9 +371,6 @@ export function useAiChat() {
     waitingApproval,
     riskLevel,
     pendingApproval,
-    confirming,
-    handleConfirm,
-    handleReject,
     // 任务
     currentTaskId,
     taskSteps,
