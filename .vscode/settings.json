@@ -13,6 +13,7 @@
     "newpassword",
     "operlog",
     "rollbacking",
+    "TOCTOU",
     "undoable",
     "varchar"
   ]

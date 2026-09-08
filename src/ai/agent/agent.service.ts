@@ -184,64 +184,84 @@ export class AgentService {
 
         // 需要审批：创建 ActionIntent，返回 confirmToken + preview
         if (decision.requiresApproval) {
-          const confirmToken = ActionIntentService.generateToken();
-          const toolContextForPreview: ToolContext = {
-            actor,
-            sessionId: context.sessionId,
-            scope: { kind: 'all' },
-            requestId: (context.metadata?.requestId as string) ?? '',
-          };
-          let preview: ToolPreview | undefined;
-          if (tool.preview) {
-            preview = await tool.preview(
-              toolCall.arguments,
-              toolContextForPreview,
+          const inputHash = ActionIntentService.hashInput(
+            toolCall.arguments as Record<string, unknown>,
+          );
+          // 去重：同一会话、同一工具、相同参数已有 PENDING intent 时复用，避免重复创建
+          const existingIntent =
+            await this.actionIntentService.findPendingByHash(
+              Number(context.sessionId),
+              tool.name,
+              inputHash,
             );
-          }
-          // 审批操作也纳入任务时间线：创建任务 + 步骤（WAITING_APPROVAL）
-          if (taskId === undefined) {
-            const task = await this.taskService.create({
+          let intent = existingIntent;
+          let confirmToken = existingIntent?.confirmToken ?? '';
+          let preview: ToolPreview | undefined;
+          if (!existingIntent) {
+            confirmToken = ActionIntentService.generateToken();
+            const toolContextForPreview: ToolContext = {
+              actor,
+              sessionId: context.sessionId,
+              scope: { kind: 'all' },
+              requestId: (context.metadata?.requestId as string) ?? '',
+            };
+            if (tool.preview) {
+              preview = await tool.preview(
+                toolCall.arguments,
+                toolContextForPreview,
+              );
+            }
+            // 审批操作也纳入任务时间线：创建任务 + 步骤（WAITING_APPROVAL）
+            if (taskId === undefined) {
+              const task = await this.taskService.create({
+                sessionId: Number(context.sessionId),
+                userId: actor.id,
+                goal: context.message.slice(0, 500),
+                riskLevel: decision.riskLevel,
+              });
+              taskId = task.id;
+              await this.taskService.start(taskId);
+              onEvent?.({
+                type: 'task_created',
+                data: {
+                  taskId: task.id,
+                  goal: context.message.slice(0, 500),
+                  stepCount: 1,
+                },
+              });
+            }
+            const taskStepId = await this.taskService.addStep(
+              taskId,
+              {
+                toolName: tool.name,
+                input: toolCall.arguments,
+                riskLevel: decision.riskLevel,
+              },
+              toolCalls.length,
+            );
+            await this.taskService.updateStep(taskStepId, 'WAITING_APPROVAL');
+            intent = await this.actionIntentService.create({
               sessionId: Number(context.sessionId),
               userId: actor.id,
-              goal: context.message.slice(0, 500),
-              riskLevel: decision.riskLevel,
-            });
-            taskId = task.id;
-            await this.taskService.start(taskId);
-            onEvent?.({
-              type: 'task_created',
-              data: {
-                taskId: task.id,
-                goal: context.message.slice(0, 500),
-                stepCount: 1,
-              },
-            });
-          }
-          const taskStepId = await this.taskService.addStep(
-            taskId,
-            {
               toolName: tool.name,
               input: toolCall.arguments,
               riskLevel: decision.riskLevel,
-            },
-            toolCalls.length,
-          );
-          await this.taskService.updateStep(taskStepId, 'WAITING_APPROVAL');
-          const intent = await this.actionIntentService.create({
-            sessionId: Number(context.sessionId),
-            userId: actor.id,
-            toolName: tool.name,
-            input: toolCall.arguments,
-            riskLevel: decision.riskLevel,
-            confirmToken,
-            // TOCTOU 防护：记录预览时的数据快照
-            beforeHash: preview?.before
-              ? ActionIntentService.hashValue(preview.before)
-              : undefined,
-            // 关联任务与步骤，确认执行后更新并保存 undo 快照
-            taskId,
-            taskStepId,
-          });
+              confirmToken,
+              // TOCTOU 防护：记录预览时的数据快照
+              beforeHash: preview?.before
+                ? ActionIntentService.hashValue(preview.before)
+                : undefined,
+              // 关联任务与步骤，确认执行后更新并保存 undo 快照
+              taskId,
+              taskStepId,
+            });
+            if (!intent) {
+              throw new AiException(
+                AiErrorCode.BUSINESS_ERROR,
+                '创建操作意图失败',
+              );
+            }
+          }
           if (!intent) {
             throw new AiException(
               AiErrorCode.BUSINESS_ERROR,

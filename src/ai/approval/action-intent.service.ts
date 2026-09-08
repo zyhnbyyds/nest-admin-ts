@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { eq } from 'drizzle-orm';
+import { and, eq } from 'drizzle-orm';
 import { createHash, randomBytes } from 'node:crypto';
 import { DatabaseService } from '../../database/database.service';
 import { aiActionIntents } from '../../database/schema/index';
@@ -110,6 +110,32 @@ export class ActionIntentService {
       .select()
       .from(aiActionIntents)
       .where(eq(aiActionIntents.id, id))
+      .limit(1);
+    return intent;
+  }
+
+  /**
+   * 查找同一会话、同一工具、相同参数下仍处于 PENDING 的 ActionIntent。
+   *
+   * 用于避免 LLM 重复调用同一审批操作时创建多个重复 intent。
+   */
+  async findPendingByHash(
+    sessionId: number,
+    toolName: string,
+    inputHash: string,
+  ) {
+    const [intent] = await this.database.db
+      .select()
+      .from(aiActionIntents)
+      .where(
+        and(
+          eq(aiActionIntents.sessionId, sessionId),
+          eq(aiActionIntents.toolName, toolName),
+          eq(aiActionIntents.inputHash, inputHash),
+          eq(aiActionIntents.status, 'PENDING'),
+        ),
+      )
+      .orderBy(aiActionIntents.id)
       .limit(1);
     return intent;
   }
