@@ -518,6 +518,10 @@ export const aiActionIntents = mysqlTable(
     ])
       .default('PENDING')
       .notNull(),
+    /** 关联任务（审批操作也纳入任务时间线） */
+    taskId: int('task_id', { unsigned: true }),
+    /** 关联任务步骤（确认执行后更新步骤状态与 undo 快照） */
+    taskStepId: int('task_step_id', { unsigned: true }),
     expiresAt: datetime('expires_at').notNull(),
     executedAt: datetime('executed_at'),
     createdAt: timestamp('created_at').defaultNow().notNull(),
@@ -536,6 +540,16 @@ export const aiActionIntents = mysqlTable(
       foreignColumns: [users.id],
       name: 'fk_ai_action_intent_user',
     }).onDelete('cascade'),
+    foreignKey({
+      columns: [table.taskId],
+      foreignColumns: [aiTasks.id],
+      name: 'fk_ai_action_intent_task',
+    }).onDelete('set null'),
+    foreignKey({
+      columns: [table.taskStepId],
+      foreignColumns: [aiTaskSteps.id],
+      name: 'fk_ai_action_intent_task_step',
+    }).onDelete('set null'),
   ],
 );
 
@@ -565,6 +579,80 @@ export const aiApprovals = mysqlTable(
   ],
 );
 
+/** AI 任务：记录一个完整的 AI 多步任务 */
+export const aiTasks = mysqlTable(
+  'ai_task',
+  {
+    id: int('id', { unsigned: true }).autoincrement().primaryKey(),
+    sessionId: int('session_id', { unsigned: true }),
+    userId: int('user_id', { unsigned: true }).notNull(),
+    status: mysqlEnum('status', [
+      'PENDING',
+      'RUNNING',
+      'SUCCESS',
+      'FAILED',
+      'CANCELLED',
+    ])
+      .default('PENDING')
+      .notNull(),
+    riskLevel: varchar('risk_level', { length: 10 }).notNull(),
+    goal: varchar('goal', { length: 500 }).notNull(),
+    error: varchar('error', { length: 1000 }),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+    startedAt: timestamp('started_at'),
+    completedAt: timestamp('completed_at'),
+  },
+  (table) => [
+    index('idx_ai_task_session').on(table.sessionId),
+    index('idx_ai_task_user').on(table.userId),
+    foreignKey({
+      columns: [table.sessionId],
+      foreignColumns: [aiSessions.id],
+      name: 'fk_ai_task_session',
+    }).onDelete('set null'),
+    foreignKey({
+      columns: [table.userId],
+      foreignColumns: [users.id],
+      name: 'fk_ai_task_user',
+    }).onDelete('cascade'),
+  ],
+);
+
+/** AI 任务步骤：记录任务中的每一步 */
+export const aiTaskSteps = mysqlTable(
+  'ai_task_step',
+  {
+    id: int('id', { unsigned: true }).autoincrement().primaryKey(),
+    taskId: int('task_id', { unsigned: true }).notNull(),
+    stepIndex: int('step_index').notNull(),
+    toolName: varchar('tool_name', { length: 100 }).notNull(),
+    input: json('input'),
+    output: json('output'),
+    status: mysqlEnum('status', [
+      'PENDING',
+      'RUNNING',
+      'SUCCESS',
+      'FAILED',
+      'SKIPPED',
+      'WAITING_APPROVAL',
+    ])
+      .default('PENDING')
+      .notNull(),
+    riskLevel: varchar('risk_level', { length: 10 }).notNull(),
+    error: varchar('error', { length: 1000 }),
+    startedAt: timestamp('started_at'),
+    completedAt: timestamp('completed_at'),
+  },
+  (table) => [
+    index('idx_ai_task_step_task').on(table.taskId),
+    foreignKey({
+      columns: [table.taskId],
+      foreignColumns: [aiTasks.id],
+      name: 'fk_ai_task_step_task',
+    }).onDelete('cascade'),
+  ],
+);
+
 export const relations = defineRelations(
   {
     departments,
@@ -590,6 +678,8 @@ export const relations = defineRelations(
     aiAuditLogs,
     aiActionIntents,
     aiApprovals,
+    aiTasks,
+    aiTaskSteps,
   },
   ({
     departments,
@@ -607,6 +697,8 @@ export const relations = defineRelations(
     aiAuditLogs,
     aiActionIntents,
     aiApprovals,
+    aiTasks,
+    aiTaskSteps,
     one,
     many,
   }) => ({
@@ -702,6 +794,23 @@ export const relations = defineRelations(
       approver: one.users({
         from: aiApprovals.approverId,
         to: users.id,
+      }),
+    },
+    aiTasks: {
+      user: one.users({ from: aiTasks.userId, to: users.id }),
+      session: one.aiSessions({
+        from: aiTasks.sessionId,
+        to: aiSessions.id,
+      }),
+      steps: many.aiTaskSteps({
+        from: aiTasks.id,
+        to: aiTaskSteps.taskId,
+      }),
+    },
+    aiTaskSteps: {
+      task: one.aiTasks({
+        from: aiTaskSteps.taskId,
+        to: aiTasks.id,
       }),
     },
   }),

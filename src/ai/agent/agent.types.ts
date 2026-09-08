@@ -11,6 +11,8 @@ export interface AgentContext {
   };
   message: string;
   metadata?: Record<string, unknown>;
+  /** 关联的任务 ID（多步任务） */
+  taskId?: number;
 }
 
 /** Agent 结果 */
@@ -27,6 +29,8 @@ export interface AgentResult {
   waitingApproval: boolean;
   /** 风险等级 */
   riskLevel: RiskLevel;
+  /** 关联任务（多步任务时存在） */
+  taskId?: number;
 }
 
 /** Agent 接口 */

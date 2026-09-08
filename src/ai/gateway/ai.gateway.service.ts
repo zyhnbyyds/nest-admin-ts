@@ -6,6 +6,7 @@ import { AgentEvent, AgentService } from '../agent/agent.service';
 import { AgentContext } from '../agent/agent.types';
 import { ApprovalService } from '../approval/approval.service';
 import { AiActor } from '../ai.types';
+import { TaskService } from '../task/task.service';
 
 /**
  * AI 网关服务：管理 AI 会话与消息。
@@ -14,6 +15,7 @@ import { AiActor } from '../ai.types';
  * - 创建/查询会话
  * - 发送消息（调用 Agent）
  * - 审批操作（approve/reject/confirm）
+ * - 任务查询与撤销（Task/TaskStep/Undo）
  * - 保存消息历史
  */
 @Injectable()
@@ -22,6 +24,7 @@ export class AiGatewayService {
     private readonly database: DatabaseService,
     private readonly agent: AgentService,
     private readonly approval: ApprovalService,
+    private readonly taskService: TaskService,
   ) {}
 
   /** 批准操作意图 */
@@ -37,6 +40,36 @@ export class AiGatewayService {
   /** 用户确认后执行操作意图 */
   async confirmAction(intentId: number, confirmToken: string, actor: AiActor) {
     return this.agent.confirmAndExecute(intentId, confirmToken, actor);
+  }
+
+  /** 获取任务详情（含步骤） */
+  async getTask(taskId: number, userId: number) {
+    const task = await this.taskService.getById(taskId);
+    if (task.userId !== userId) {
+      throw new NotFoundException('任务不存在');
+    }
+    const steps = await this.taskService.getSteps(taskId);
+    return { ...task, steps };
+  }
+
+  /** 获取用户的任务列表 */
+  listTasks(actor: AiActor) {
+    return this.taskService.listByUser(actor.id);
+  }
+
+  /** 撤销任务（Undo） */
+  async rollbackTask(taskId: number, actor: AiActor) {
+    const task = await this.taskService.getById(taskId);
+    if (task.userId !== actor.id) {
+      throw new NotFoundException('任务不存在');
+    }
+    const rolledBack = await this.taskService.rollbackTask(taskId, {
+      actor,
+      sessionId: task.sessionId ? String(task.sessionId) : '',
+      scope: { kind: 'all' },
+      requestId: '',
+    });
+    return { taskId, rolledBack };
   }
 
   async createSession(userId: number, title?: string) {

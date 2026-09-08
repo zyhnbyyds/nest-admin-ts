@@ -105,3 +105,43 @@ export function confirmAction(intentId: number, confirmToken: string) {
     confirmToken,
   });
 }
+
+// ---------- 任务（Task / TaskStep / Undo） ----------
+
+export interface AiTaskStepItem {
+  id: number;
+  taskId: number;
+  stepIndex: number;
+  toolName: string;
+  status: "PENDING" | "RUNNING" | "SUCCESS" | "FAILED" | "SKIPPED" | "WAITING_APPROVAL";
+  input?: unknown;
+  output?: unknown;
+  riskLevel: string;
+  error?: string | null;
+}
+
+export interface AiTaskItem {
+  id: number;
+  status: "PENDING" | "RUNNING" | "SUCCESS" | "FAILED" | "CANCELLED";
+  riskLevel: string;
+  goal: string;
+  error?: string | null;
+  createdAt: string;
+  completedAt?: string | null;
+  steps?: AiTaskStepItem[];
+}
+
+/** 获取 AI 任务列表 */
+export function listTasks() {
+  return get<AiTaskItem[]>("/ai/tasks");
+}
+
+/** 获取 AI 任务详情（含步骤） */
+export function getTask(taskId: number) {
+  return get<AiTaskItem>(`/ai/tasks/${taskId}`);
+}
+
+/** 撤销任务（Undo） */
+export function rollbackTask(taskId: number) {
+  return post<{ taskId: number; rolledBack: number }>(`/ai/tasks/${taskId}/rollback`, {});
+}

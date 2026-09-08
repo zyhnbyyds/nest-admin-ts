@@ -4,6 +4,7 @@ import { AgentService } from './agent/agent.service';
 import { ActionIntentService } from './approval/action-intent.service';
 import { ApprovalService } from './approval/approval.service';
 import { AuditService } from './audit/audit.service';
+import { CapabilityService } from './capability/capability.service';
 import { ContextBuilder } from './context/context.builder';
 import { ContextSanitizer } from './context/context.sanitizer';
 import { AiGatewayController } from './gateway/ai.gateway.controller';
@@ -12,6 +13,7 @@ import { LlmService } from './llm/llm.service';
 import { PermissionService } from './policy/permission.service';
 import { PolicyEngine } from './policy/policy.engine';
 import { RiskEngine } from './risk/risk.engine';
+import { TaskService } from './task/task.service';
 import { ToolExecutor } from './tools/tool.executor';
 import { ToolRegistry } from './tools/tool.registry';
 import { UserCreateTool } from './tools/user/user.create.tool';
@@ -31,6 +33,7 @@ import { UserUpdateTool } from './tools/user/user.update.tool';
     LlmService,
     ToolRegistry,
     ToolExecutor,
+    CapabilityService,
     PermissionService,
     RiskEngine,
     PolicyEngine,
@@ -39,6 +42,7 @@ import { UserUpdateTool } from './tools/user/user.update.tool';
     AuditService,
     ActionIntentService,
     ApprovalService,
+    TaskService,
     AgentService,
     AiGatewayService,
     UserListTool,

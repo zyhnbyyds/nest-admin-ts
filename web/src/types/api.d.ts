@@ -175,6 +175,45 @@ export interface AiApprovalRequired {
   preview?: AiApprovalPreview;
 }
 
+export interface AiTaskStep {
+  id: number;
+  taskId: number;
+  stepIndex: number;
+  toolName: string;
+  status: "PENDING" | "RUNNING" | "SUCCESS" | "FAILED" | "SKIPPED" | "WAITING_APPROVAL";
+  input?: unknown;
+  output?: unknown;
+  riskLevel: string;
+  error?: string | null;
+  startedAt?: string | null;
+  completedAt?: string | null;
+}
+
+export interface AiTaskInfo {
+  id: number;
+  status: "PENDING" | "RUNNING" | "SUCCESS" | "FAILED" | "CANCELLED";
+  riskLevel: string;
+  goal: string;
+  error?: string | null;
+  createdAt: string;
+  completedAt?: string | null;
+  steps?: AiTaskStep[];
+}
+
+export interface AiTaskSseEvent {
+  type: "task_created" | "task_step" | "task_completed";
+  data: {
+    taskId: number;
+    goal?: string;
+    stepCount?: number;
+    index?: number;
+    toolName?: string;
+    status?: string;
+    result?: unknown;
+    error?: string;
+  };
+}
+
 // ============ roles ============
 
 export type DataScope = "all" | "custom" | "dept" | "dept_and_children" | "self";

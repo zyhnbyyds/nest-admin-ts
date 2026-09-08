@@ -46,12 +46,12 @@ export class RiskEngine {
   }
 
   /** 是否为批量操作 */
-  private isBatch(input: Record<string, unknown>): boolean {
+  isBatch(input: Record<string, unknown>): boolean {
     return Array.isArray(input?.ids) || Array.isArray(input?.userId);
   }
 
   /** 影响数量（从入参估算） */
-  private affectedCount(input: Record<string, unknown>): number {
+  affectedCount(input: Record<string, unknown>): number {
     if (Array.isArray(input?.ids)) return (input.ids as unknown[]).length;
     if (typeof input?.id === 'number') return 1;
     if (typeof input?.userId === 'number') return 1;

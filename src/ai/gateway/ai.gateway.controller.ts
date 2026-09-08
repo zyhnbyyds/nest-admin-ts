@@ -164,4 +164,34 @@ export class AiGatewayController {
       request.user,
     );
   }
+
+  @Get('tasks')
+  @RequirePermissions('ai:chat')
+  @ApiOperation({ summary: '获取 AI 任务列表' })
+  @ApiResponse({ status: 200, description: '成功' })
+  listTasks(@Req() request: AuthRequest) {
+    return this.gateway.listTasks(request.user);
+  }
+
+  @Get('tasks/:id')
+  @RequirePermissions('ai:chat')
+  @ApiOperation({ summary: '获取 AI 任务详情（含步骤）' })
+  @ApiResponse({ status: 200, description: '成功' })
+  getTask(
+    @Param('id', ParseIntPipe) id: number,
+    @Req() request: AuthRequest,
+  ) {
+    return this.gateway.getTask(id, request.user.id);
+  }
+
+  @Post('tasks/:id/rollback')
+  @RequirePermissions('ai:chat')
+  @ApiOperation({ summary: '撤销任务（Undo）' })
+  @ApiResponse({ status: 200, description: '成功' })
+  rollbackTask(
+    @Param('id', ParseIntPipe) id: number,
+    @Req() request: AuthRequest,
+  ) {
+    return this.gateway.rollbackTask(id, request.user);
+  }
 }

@@ -17,8 +17,12 @@ export interface PolicyContext {
   baseRisk: RiskLevel;
   /** Tool 审批策略 */
   approvalPolicy?: ApprovalPolicy;
+  /** Tool 限制 */
+  limits?: ToolLimits;
   /** 入参 */
   input: Record<string, unknown>;
+  /** 是否生成解释信息（Policy Explain） */
+  explain?: boolean;
 }
 
 /** Policy 决策结果 */
@@ -29,6 +33,8 @@ export interface PolicyDecision {
   requiresApproval: boolean;
   scope: DataScope;
   limits?: ToolLimits;
+  /** 决策说明（explain=true 时返回，用于前端展示权限原因） */
+  explanation?: string;
 }
 
 /** Policy Engine 接口 */

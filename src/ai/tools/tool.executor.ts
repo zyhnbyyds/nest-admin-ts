@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { AiErrorCode, AiException } from '../ai.types';
+import { CapabilityService } from '../capability/capability.service';
 import { ToolContext } from './tool.interface';
 import { ToolRegistry } from './tool.registry';
 
@@ -11,7 +12,10 @@ import { ToolRegistry } from './tool.registry';
  */
 @Injectable()
 export class ToolExecutor {
-  constructor(private readonly registry: ToolRegistry) {}
+  constructor(
+    private readonly registry: ToolRegistry,
+    private readonly capability: CapabilityService,
+  ) {}
 
   async execute(
     name: string,
@@ -22,6 +26,23 @@ export class ToolExecutor {
     if (!tool) {
       throw new AiException(AiErrorCode.TOOL_NOT_FOUND, `工具 ${name} 不存在`);
     }
+
+    // 携带 capabilityToken 时必须验证（Capability Token 机制）
+    if (context.capabilityToken) {
+      const payload = this.capability.authorize(
+        context.capabilityToken,
+        name,
+        context.actor,
+      );
+      // 批量限制校验
+      const items = Array.isArray((input as { ids?: unknown[] })?.ids)
+        ? ((input as { ids: unknown[] }).ids.length)
+        : Number((input as { id?: number })?.id) > 0
+          ? 1
+          : 0;
+      this.capability.assertItemCount(payload, items);
+    }
+
     return tool.execute(input, context);
   }
 }

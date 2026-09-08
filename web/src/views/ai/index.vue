@@ -7,6 +7,7 @@ import {
   Database,
   PanelRight,
   Plus,
+  RotateCcw,
   Send,
   ShieldAlert,
   ShieldCheck,
@@ -19,11 +20,21 @@ import {
   createSession,
   listMessages,
   listSessions,
+  listTasks,
   rejectAction,
+  rollbackTask,
   sendMessage,
 } from "~/api/ai";
 import { formatDateTime } from "~/composables/useFormat";
-import type { AiApprovalRequired, AiMessage, AiSession, AiSseEvent, AiToolCall } from "~/types/api";
+import type {
+  AiApprovalRequired,
+  AiMessage,
+  AiSession,
+  AiSseEvent,
+  AiTaskInfo,
+  AiTaskStep,
+  AiToolCall,
+} from "~/types/api";
 
 // ---------- 布局折叠状态 ----------
 const leftCollapsed = ref(false);
@@ -43,9 +54,19 @@ const waitingApproval = ref(false);
 const riskLevel = ref<string>("");
 const pendingApproval = ref<AiApprovalRequired | null>(null);
 const confirming = ref(false);
+// 任务时间线（第三阶段）
+const currentTaskId = ref<number | null>(null);
+const taskSteps = ref<AiTaskStep[]>([]);
+const taskStatus = ref<string>("");
+const rollbacking = ref(false);
+const taskHistory = ref<AiTaskInfo[]>([]);
 
 async function loadSessions() {
   sessions.value = await listSessions();
+}
+
+async function loadTaskHistory() {
+  taskHistory.value = await listTasks();
 }
 
 async function handleCreateSession() {
@@ -74,6 +95,9 @@ async function handleSend() {
   toolCalls.value = [];
   waitingApproval.value = false;
   pendingApproval.value = null;
+  currentTaskId.value = null;
+  taskSteps.value = [];
+  taskStatus.value = "";
 
   messages.value.push({
     id: Date.now(),
@@ -137,6 +161,49 @@ function handleSseEvent(event: AiSseEvent) {
     case "error":
       LewMessage.error((event.data as { message?: string })?.message ?? "AI 处理失败");
       break;
+    // ---------- 任务时间线（第三阶段） ----------
+    case "task_created": {
+      const data = event.data as {
+        taskId: number;
+        goal: string;
+        stepCount: number;
+      };
+      currentTaskId.value = data.taskId;
+      taskSteps.value = [];
+      taskStatus.value = "RUNNING";
+      break;
+    }
+    case "task_step": {
+      const data = event.data as {
+        taskId: number;
+        index: number;
+        toolName: string;
+        status: "RUNNING" | "SUCCESS" | "FAILED";
+        result?: unknown;
+      };
+      const existing = taskSteps.value.find((s) => s.stepIndex === data.index);
+      if (existing) {
+        existing.status = data.status;
+        existing.output = data.result;
+      } else {
+        taskSteps.value.push({
+          id: data.index,
+          taskId: data.taskId,
+          stepIndex: data.index,
+          toolName: data.toolName,
+          status: data.status,
+          output: data.result,
+          riskLevel: "",
+        });
+      }
+      break;
+    }
+    case "task_completed": {
+      const data = event.data as { taskId: number; status: string; error?: string };
+      taskStatus.value = data.status;
+      if (data.error) LewMessage.error(data.error);
+      break;
+    }
   }
 }
 
@@ -182,6 +249,42 @@ async function handleReject() {
   }
 }
 
+// ---------- 撤销任务（Undo） ----------
+async function handleRollbackTask(taskId: number) {
+  if (rollbacking.value) return;
+  rollbacking.value = true;
+  try {
+    await rollbackTask(taskId);
+    LewMessage.success("已撤销操作");
+    // 刷新任务历史
+    taskHistory.value = await listTasks();
+  } catch (error) {
+    LewMessage.error(error instanceof Error ? error.message : "撤销失败");
+  } finally {
+    rollbacking.value = false;
+  }
+}
+
+/** 任务步骤状态颜色 */
+function stepColor(status: string): "success" | "warning" | "danger" | "info" {
+  if (status === "SUCCESS") return "success";
+  if (status === "FAILED") return "danger";
+  if (status === "RUNNING") return "warning";
+  return "info";
+}
+
+function stepText(status: string): string {
+  const map: Record<string, string> = {
+    PENDING: "等待中",
+    RUNNING: "执行中",
+    SUCCESS: "成功",
+    FAILED: "失败",
+    SKIPPED: "已跳过",
+    WAITING_APPROVAL: "等待确认",
+  };
+  return map[status] ?? status;
+}
+
 // ---------- 数据展示辅助 ----------
 /** 判断 Tool 返回结果是否为分页用户列表 */
 function isUserList(result: unknown): boolean {
@@ -223,6 +326,7 @@ function riskText(level: string): string {
 
 onMounted(() => {
   void loadSessions();
+  void loadTaskHistory();
 });
 </script>
 
@@ -583,6 +687,91 @@ onMounted(() => {
               </div>
             </div>
             <div v-else class="text-12px text-[var(--app-text-muted)]">暂无</div>
+          </div>
+
+          <!-- 任务时间线（第三阶段） -->
+          <div v-if="currentTaskId" class="rounded-lg border border-[var(--app-border)] p-3">
+            <div class="flex items-center justify-between mb-1.5">
+              <span class="text-12px text-[var(--app-text-muted)]">任务时间线 #{{ currentTaskId }}</span>
+              <LewTag
+                :type="'light'"
+                :color="stepColor(taskStatus || 'RUNNING')"
+                size="small"
+              >
+                {{ stepText(taskStatus || "RUNNING") }}
+              </LewTag>
+            </div>
+            <!-- 整体撤销按钮 -->
+            <LewButton
+              v-if="taskStatus === 'SUCCESS'"
+              type="light"
+              size="small"
+              :loading="rollbacking"
+              @click="handleRollbackTask(currentTaskId)"
+            >
+              <template #icon><RotateCcw :size="12" /></template>
+              撤销操作
+            </LewButton>
+            <!-- 步骤列表 -->
+            <div class="mt-2 space-y-1.5">
+              <div
+                v-for="step in [...taskSteps].sort((a, b) => a.stepIndex - b.stepIndex)"
+                :key="step.stepIndex"
+                class="flex items-center gap-2 text-12px"
+              >
+                <span
+                  class="w-1.5 h-1.5 rounded-full shrink-0"
+                  :class="{
+                    'bg-green-500': step.status === 'SUCCESS',
+                    'bg-orange-500': step.status === 'RUNNING',
+                    'bg-red-500': step.status === 'FAILED',
+                    'bg-[var(--app-border)]': step.status === 'PENDING',
+                  }"
+                />
+                <span class="text-[var(--app-text-muted)] font-mono">#{{ step.stepIndex }}</span>
+                <span class="truncate">{{ step.toolName }}</span>
+                <span class="ml-auto shrink-0 text-[var(--app-text-muted)]">
+                  {{ stepText(step.status) }}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 任务历史 -->
+          <div class="rounded-lg border border-[var(--app-border)] p-3">
+            <div class="text-12px text-[var(--app-text-muted)] mb-1.5">任务历史</div>
+            <div v-if="taskHistory.length" class="space-y-2">
+              <div
+                v-for="task in taskHistory.slice(0, 5)"
+                :key="task.id"
+                class="text-12px rounded-md border border-[var(--app-border)] p-2"
+              >
+                <div class="flex items-center gap-1.5">
+                  <span class="font-600 text-[var(--lew-color-primary)]">#{{ task.id }}</span>
+                  <LewTag
+                    :type="'light'"
+                    :color="stepColor(task.status)"
+                    size="small"
+                  >
+                    {{ stepText(task.status) }}
+                  </LewTag>
+                  <button
+                    v-if="task.status === 'SUCCESS'"
+                    class="ml-auto flex items-center gap-0.5 text-[var(--app-text-muted)] hover:text-[var(--lew-color-primary)]"
+                    :disabled="rollbacking"
+                    title="撤销任务"
+                    @click="handleRollbackTask(task.id)"
+                  >
+                    <RotateCcw :size="12" />
+                  </button>
+                </div>
+                <div class="text-[var(--app-text-muted)] mt-1 truncate">{{ task.goal }}</div>
+                <div class="text-11px text-[var(--app-text-muted)] mt-0.5">
+                  {{ formatDateTime(task.completedAt ?? task.createdAt) }}
+                </div>
+              </div>
+            </div>
+            <div v-else class="text-12px text-[var(--app-text-muted)]">暂无任务</div>
           </div>
         </div>
       </template>

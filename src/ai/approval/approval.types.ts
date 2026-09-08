@@ -18,6 +18,10 @@ export interface CreateActionIntentInput {
   riskLevel: RiskLevel;
   confirmToken: string;
   beforeHash?: string | undefined;
+  /** 关联任务（审批操作纳入任务时间线） */
+  taskId?: number | undefined;
+  /** 关联任务步骤（确认执行后更新步骤状态与 undo 快照） */
+  taskStepId?: number | undefined;
 }
 
 /** 验证操作意图（确认执行时） */

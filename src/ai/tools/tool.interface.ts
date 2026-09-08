@@ -18,6 +18,8 @@ export interface ToolContext {
   };
   /** 请求 ID（用于日志追踪） */
   requestId: string;
+  /** Capability Token（Policy 通过后生成，Tool 执行时携带） */
+  capabilityToken?: string;
 }
 
 /** Tool 预览结果（用于 L2/L3 操作确认） */
@@ -54,6 +56,6 @@ export interface AiTool<TInput = unknown, TResult = unknown> {
   preview?(input: TInput, context: ToolContext): Promise<ToolPreview>;
   /** 执行 */
   execute(input: TInput, context: ToolContext): Promise<TResult>;
-  /** 回滚（可选） */
-  rollback?(input: TInput, context: ToolContext): Promise<void>;
+  /** 回滚（可选，返回结果或 void） */
+  rollback?(input: TInput, context: ToolContext): Promise<unknown>;
 }

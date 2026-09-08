@@ -57,6 +57,8 @@ export class ActionIntentService {
       status: 'PENDING',
       expiresAt,
       beforeHash: input.beforeHash,
+      taskId: input.taskId,
+      taskStepId: input.taskStepId,
     });
     const id = Number(result.insertId);
     return this.getById(id);

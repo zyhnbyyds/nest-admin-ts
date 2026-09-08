@@ -2,11 +2,13 @@ import { Injectable } from '@nestjs/common';
 import { AiActor, AiErrorCode, AiException, RiskLevel } from '../ai.types';
 import { ActionIntentService } from '../approval/action-intent.service';
 import { AuditService } from '../audit/audit.service';
+import { CapabilityService } from '../capability/capability.service';
 import { ContextBuilder } from '../context/context.builder';
 import { ContextSanitizer } from '../context/context.sanitizer';
 import { LlmMessage } from '../llm/llm.interface';
 import { LlmService } from '../llm/llm.service';
 import { PolicyEngine } from '../policy/policy.engine';
+import { TaskService } from '../task/task.service';
 import { ToolContext, ToolPreview } from '../tools/tool.interface';
 import { ToolExecutor } from '../tools/tool.executor';
 import { ToolRegistry } from '../tools/tool.registry';
@@ -32,7 +34,22 @@ export type AgentEvent =
       };
     }
   | { type: 'message'; data: { content: string } }
-  | { type: 'error'; data: { code: AiErrorCode; message: string } };
+  | { type: 'error'; data: { code: AiErrorCode; message: string } }
+  | {
+      type: 'task_created';
+      data: { taskId: number; goal: string; stepCount: number };
+    }
+  | {
+      type: 'task_step';
+      data: {
+        taskId: number;
+        index: number;
+        toolName: string;
+        status: 'RUNNING' | 'SUCCESS' | 'FAILED';
+        result?: unknown;
+      };
+    }
+  | { type: 'task_completed'; data: { taskId: number; status: string; error?: string } };
 
 /**
  * Agent：整个 AI 系统的大脑。
@@ -62,6 +79,8 @@ export class AgentService {
     private readonly sanitizer: ContextSanitizer,
     private readonly audit: AuditService,
     private readonly actionIntentService: ActionIntentService,
+    private readonly capability: CapabilityService,
+    private readonly taskService: TaskService,
   ) {}
 
   async run(
@@ -97,6 +116,8 @@ export class AgentService {
     }> = [];
     let waitingApproval = false;
     let riskLevel = RiskLevel.L0;
+    // 任务时间线（多步操作时创建）
+    let taskId: number | undefined;
 
     // 处理 tool calls（最多 5 轮）
     for (let round = 0; round < 5; round++) {
@@ -121,6 +142,7 @@ export class AgentService {
           requiredPermission: tool.permission,
           baseRisk: tool.riskLevel,
           approvalPolicy: tool.approvalPolicy,
+          ...(tool.limits ? { limits: tool.limits } : {}),
           input: toolCall.arguments,
         });
 
@@ -135,6 +157,7 @@ export class AgentService {
           metadata: {
             input: toolCall.arguments,
             reason: decision.reason,
+            ...(decision.explanation ? { explanation: decision.explanation } : {}),
           },
         });
 
@@ -161,6 +184,35 @@ export class AgentService {
               toolContextForPreview,
             );
           }
+          // 审批操作也纳入任务时间线：创建任务 + 步骤（WAITING_APPROVAL）
+          if (taskId === undefined) {
+            const task = await this.taskService.create({
+              sessionId: Number(context.sessionId),
+              userId: actor.id,
+              goal: context.message.slice(0, 500),
+              riskLevel: decision.riskLevel,
+            });
+            taskId = task.id;
+            await this.taskService.start(taskId);
+            onEvent?.({
+              type: 'task_created',
+              data: {
+                taskId: task.id,
+                goal: context.message.slice(0, 500),
+                stepCount: 1,
+              },
+            });
+          }
+          const taskStepId = await this.taskService.addStep(
+            taskId,
+            {
+              toolName: tool.name,
+              input: toolCall.arguments,
+              riskLevel: decision.riskLevel,
+            },
+            toolCalls.length,
+          );
+          await this.taskService.updateStep(taskStepId, 'WAITING_APPROVAL');
           const intent = await this.actionIntentService.create({
             sessionId: Number(context.sessionId),
             userId: actor.id,
@@ -172,6 +224,9 @@ export class AgentService {
             beforeHash: preview?.before
               ? ActionIntentService.hashValue(preview.before)
               : undefined,
+            // 关联任务与步骤，确认执行后更新并保存 undo 快照
+            taskId,
+            taskStepId,
           });
           if (!intent) {
             throw new AiException(
@@ -200,26 +255,121 @@ export class AgentService {
           continue;
         }
 
-        // 执行 Tool
+        // 执行 Tool（首次执行时创建任务时间线）
+        if (taskId === undefined) {
+          const task = await this.taskService.create({
+            sessionId: Number(context.sessionId),
+            userId: actor.id,
+            goal: context.message.slice(0, 500),
+            riskLevel: decision.riskLevel,
+          });
+          taskId = task.id;
+          await this.taskService.start(taskId);
+          onEvent?.({
+            type: 'task_created',
+            data: {
+              taskId: task.id,
+              goal: context.message.slice(0, 500),
+              stepCount: 1,
+            },
+          });
+        }
+        // 持久化任务步骤（用于状态查询与 Undo）
+        const stepId = await this.taskService.addStep(
+          taskId,
+          {
+            toolName: tool.name,
+            input: toolCall.arguments,
+            riskLevel: decision.riskLevel,
+          },
+          toolCalls.length,
+        );
+        await this.taskService.updateStep(stepId, 'RUNNING');
+        onEvent?.({
+          type: 'task_step',
+          data: {
+            taskId,
+            index: toolCalls.length,
+            toolName: tool.name,
+            status: 'RUNNING',
+          },
+        });
         onEvent?.({
           type: 'tool_call',
           data: { name: tool.name, arguments: toolCall.arguments },
+        });
+        // Capability Token：Policy 通过后生成，Tool Executor 执行前验证
+        const capabilityToken = this.capability.issue({
+          tool: tool.name,
+          user: { id: actor.id, username: actor.username },
+          scope: `scope:${decision.scope}`,
+          maxItems: tool.limits?.maxItems ?? 100,
+          riskLevel: decision.riskLevel,
+          exp: Date.now() + 5 * 60 * 1000,
         });
         const toolContext: ToolContext = {
           actor,
           sessionId: context.sessionId,
           scope: { kind: 'all' },
           requestId: (context.metadata?.requestId as string) ?? '',
+          capabilityToken,
         };
-        const result = await this.toolExecutor.execute(
-          tool.name,
-          toolCall.arguments,
-          toolContext,
-        );
+        let result: unknown;
+        try {
+          result = await this.toolExecutor.execute(
+            tool.name,
+            toolCall.arguments,
+            toolContext,
+          );
+        } catch (error) {
+          await this.taskService.updateStep(
+            stepId,
+            'FAILED',
+            undefined,
+            error instanceof Error ? error.message : '执行失败',
+          );
+          onEvent?.({
+            type: 'task_step',
+            data: {
+              taskId,
+              index: toolCalls.length,
+              toolName: tool.name,
+              status: 'FAILED',
+            },
+          });
+          if (taskId !== undefined) {
+            await this.taskService.complete(
+              taskId,
+              'FAILED',
+              error instanceof Error ? error.message : '执行失败',
+            );
+            onEvent?.({
+              type: 'task_completed',
+              data: {
+                taskId,
+                status: 'FAILED',
+                error: error instanceof Error ? error.message : '执行失败',
+              },
+            });
+          }
+          throw error;
+        }
         const sanitized = this.sanitizer.sanitize(result);
         onEvent?.({
           type: 'tool_result',
           data: { name: tool.name, result: sanitized },
+        });
+        // 持久化步骤成功（含 undo 快照，供 TaskService.rollbackTask 使用）
+        await this.taskService.updateStep(stepId, 'SUCCESS', sanitized);
+        onEvent?.({
+          type: 'task_step',
+          data: {
+            taskId,
+            index: toolCalls.length,
+            toolName: tool.name,
+            status: 'SUCCESS',
+            result: sanitized,
+          },
         });
 
         await this.audit.log({
@@ -260,6 +410,15 @@ export class AgentService {
       });
     }
 
+    // 完成任务时间线
+    if (taskId !== undefined && !waitingApproval) {
+      await this.taskService.complete(taskId, 'SUCCESS');
+      onEvent?.({
+        type: 'task_completed',
+        data: { taskId, status: 'SUCCESS' },
+      });
+    }
+
     onEvent?.({ type: 'message', data: { content: response.content } });
 
     return {
@@ -267,6 +426,7 @@ export class AgentService {
       toolCalls,
       waitingApproval,
       riskLevel,
+      ...(taskId !== undefined ? { taskId } : {}),
     };
   }
 
@@ -362,6 +522,12 @@ export class AgentService {
       'EXECUTED',
       new Date(),
     );
+
+    // 更新关联的任务步骤为 SUCCESS（并保存 undo 快照供撤销）
+    if (intent.taskId && intent.taskStepId) {
+      await this.taskService.updateStep(intent.taskStepId, 'SUCCESS', sanitized);
+      await this.taskService.complete(intent.taskId, 'SUCCESS');
+    }
 
     await this.audit.log({
       userId: actor.id,
