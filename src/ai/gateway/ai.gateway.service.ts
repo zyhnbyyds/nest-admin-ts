@@ -54,6 +54,13 @@ export class AiGatewayService {
           sessionId: intent.sessionId,
           role: 'assistant',
           content,
+          toolResults: [
+            {
+              type: 'approval_result',
+              outcome: 'cancelled',
+              toolName: intent.toolName,
+            },
+          ],
         });
         return { ...result, content };
       }
@@ -118,11 +125,12 @@ export class AiGatewayService {
     }
     if (!content) content = `操作「${toolName}」已执行完成。`;
 
-    // 总结落库：刷新会话后依然可见
+    // 总结落库：刷新会话后依然可见（附审批结果元数据，前端据此还原结果条）
     await this.database.db.insert(aiMessages).values({
       sessionId,
       role: 'assistant',
       content,
+      toolResults: [{ type: 'approval_result', outcome: 'success', toolName }],
     });
 
     return { result, toolName, content };

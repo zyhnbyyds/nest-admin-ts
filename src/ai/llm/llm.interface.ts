@@ -17,6 +17,8 @@ export interface LlmMessage {
   toolCallId?: string;
   /** assistant 消息携带的 tool 调用（用于多轮 tool 调用历史） */
   toolCalls?: LlmToolCall[];
+  /** DeepSeek 思考模式的思考内容：模型返回后若再次请求必须原样回传，否则报 400 */
+  reasoningContent?: string;
 }
 
 /** LLM Tool 定义（提供给 LLM 的 JSON Schema） */
@@ -43,12 +45,18 @@ export interface LlmChatRequest {
   toolChoice?: 'auto' | 'none' | 'required';
   temperature?: number;
   maxTokens?: number;
+  /** 是否流式返回：开启后文本增量通过 onDelta 实时回调（内部实现用，不随请求体上送） */
+  stream?: boolean;
+  /** 流式文本增量回调（request.stream 为 true 时逐块调用） */
+  onDelta?: (content: string) => void;
 }
 
 /** LLM 聊天响应 */
 export interface LlmChatResponse {
   content: string;
   toolCalls: LlmToolCall[];
+  /** DeepSeek 思考内容（reasoning_content），供后续 assistant 轮原样回传 */
+  reasoningContent?: string;
   /** 原始响应（用于审计/调试） */
   raw?: unknown;
 }

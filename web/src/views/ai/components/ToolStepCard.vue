@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
-import { Check, Clock, Database, Loader2, X } from "lucide-vue-next";
+import { Check, ChevronRight, Clock, Database, Loader2, X } from "lucide-vue-next";
 import { LewCollapse, LewCollapseItem, LewTag } from "lew-ui";
 import {
   USER_TABLE_COLUMNS,
@@ -26,6 +26,9 @@ const props = withDefaults(
 
 // 默认闭合：LewCollapse 的 modelValue 控制展开的 key 集合
 const expandedKeys = ref<string[]>([]);
+
+/** 当前卡片是否展开（标题右侧箭头据此旋转） */
+const expanded = computed(() => expandedKeys.value.includes(props.name));
 
 const isWaiting = computed(() => {
   const r = props.result as { status?: string } | undefined;
@@ -87,6 +90,11 @@ function prettyJson(value: unknown): string {
             <span v-else-if="isRunning" class="shrink-0 text-11px text-[var(--lew-color-primary)]">
               执行中
             </span>
+            <ChevronRight
+              :size="14"
+              class="ml-0.5 shrink-0 text-[var(--app-text-muted)] transition-transform duration-200"
+              :class="expanded ? 'rotate-90' : ''"
+            />
           </div>
         </template>
 

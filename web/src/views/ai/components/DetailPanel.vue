@@ -1,5 +1,8 @@
 <script setup lang="ts">
+import { computed } from "vue";
 import {
+  Check,
+  Clock,
   Database,
   Loader2,
   PanelRight,
@@ -13,7 +16,7 @@ import { formatDateTime } from "~/composables/useFormat";
 import type { AiTaskInfo, AiTaskStep, AiToolCall } from "~/types/api";
 import { formatArgs, isUserList, riskColor, riskText, stepColor, stepText } from "../utils/display";
 
-defineProps<{
+const props = defineProps<{
   collapsed: boolean;
   riskLevel: string;
   waitingApproval: boolean;
@@ -25,10 +28,59 @@ defineProps<{
   taskHistory: AiTaskInfo[];
 }>();
 
+/** 任务历史：最近 5 条（按 id 降序，最新在前） */
+const recentTasks = computed(() => [...props.taskHistory].sort((a, b) => b.id - a.id).slice(0, 5));
+
 const emit = defineEmits<{
   (e: "toggle"): void;
   (e: "rollback", taskId: number): void;
 }>();
+
+// ---------- 状态口径（与消息区 ToolStepCard 保持一致，保证返显一致） ----------
+
+type CallStatus = "running" | "waiting" | "success" | "cancelled" | "error";
+
+function callStatus(call: AiToolCall): CallStatus {
+  if (call.result === undefined) return "running";
+  const status = (call.result as { status?: string })?.status;
+  if (status === "waiting_approval") return "waiting";
+  if (status === "cancelled") return "cancelled";
+  if (status === "error") return "error";
+  return "success";
+}
+
+function callStatusText(call: AiToolCall): string {
+  const s = callStatus(call);
+  if (s === "running") return "执行中...";
+  if (s === "waiting") return "等待确认";
+  if (s === "cancelled") return "已取消";
+  if (s === "error") return "执行失败";
+  return isUserList(call.result)
+    ? `返回 ${(call.result as { items: unknown[] }).items.length} 条`
+    : "已执行";
+}
+
+function callStatusClass(s: CallStatus): string {
+  if (s === "running") return "text-[var(--lew-color-primary)]";
+  if (s === "waiting") return "text-orange-500";
+  if (s === "cancelled") return "text-[var(--app-text-muted)]";
+  if (s === "error") return "text-red-500";
+  return "text-green-500";
+}
+
+/** 任务步骤圆点颜色（覆盖 SKIPPED / WAITING_APPROVAL / CANCELLED） */
+function stepDot(status: string): string {
+  const map: Record<string, string> = {
+    SUCCESS: "bg-green-500",
+    FAILED: "bg-red-500",
+    RUNNING: "bg-orange-500",
+    PENDING: "bg-[var(--app-border)]",
+    SKIPPED: "bg-[var(--app-border)]",
+    CANCELLED: "bg-[var(--app-border)]",
+    WAITING_APPROVAL: "bg-orange-500",
+  };
+  return map[status] ?? "bg-[var(--app-border)]";
+}
 </script>
 
 <template>
@@ -87,7 +139,7 @@ const emit = defineEmits<{
                   :color="waitingApproval ? 'warning' : 'success'"
                   size="small"
                 >
-                  {{ waitingApproval ? "等待确认" : "自动执行" }}
+                  {{ waitingApproval ? "等待确认" : "无待确认" }}
                 </LewTag>
               </div>
             </div>
@@ -102,39 +154,35 @@ const emit = defineEmits<{
                 class="text-12.5px rounded-md border border-[var(--app-border)] p-2"
               >
                 <div class="flex items-center gap-1.5">
+                  <Database :size="13" class="shrink-0 text-[var(--lew-color-primary)]" />
+                  <span class="font-600 text-[var(--lew-color-primary)]">{{ call.name }}</span>
                   <Loader2
-                    v-if="call.result === undefined"
+                    v-if="callStatus(call) === 'running'"
                     :size="12"
                     class="shrink-0 text-[var(--lew-color-primary)] animate-spin"
                   />
-                  <Database :size="13" class="shrink-0 text-[var(--lew-color-primary)]" />
-                  <span class="font-600 text-[var(--lew-color-primary)]">{{ call.name }}</span>
+                  <Clock
+                    v-else-if="callStatus(call) === 'waiting'"
+                    :size="12"
+                    class="shrink-0 text-orange-500"
+                  />
+                  <X
+                    v-else-if="callStatus(call) === 'cancelled'"
+                    :size="12"
+                    class="shrink-0 text-[var(--app-text-muted)]"
+                  />
+                  <X
+                    v-else-if="callStatus(call) === 'error'"
+                    :size="12"
+                    class="shrink-0 text-red-500"
+                  />
+                  <Check v-else :size="12" class="shrink-0 text-green-500" />
                 </div>
                 <div class="text-[var(--app-text-muted)] mt-1 break-all">
                   {{ formatArgs(call.arguments) }}
                 </div>
-                <div
-                  v-if="call.result === undefined"
-                  class="mt-1 text-11px text-[var(--lew-color-primary)]"
-                >
-                  执行中...
-                </div>
-                <div
-                  v-else-if="call.result !== undefined"
-                  class="mt-1 text-11px"
-                  :class="
-                    (call.result as { status?: string })?.status === 'waiting_approval'
-                      ? 'text-orange-500'
-                      : 'text-green-500'
-                  "
-                >
-                  {{
-                    (call.result as { status?: string })?.status === "waiting_approval"
-                      ? "等待确认"
-                      : isUserList(call.result)
-                        ? `返回 ${(call.result as { items: unknown[] }).items.length} 条`
-                        : "已执行"
-                  }}
+                <div class="mt-1 text-11px" :class="callStatusClass(callStatus(call))">
+                  {{ callStatusText(call) }}
                 </div>
               </div>
             </div>
@@ -172,15 +220,7 @@ const emit = defineEmits<{
                   :key="step.stepIndex"
                   class="flex items-center gap-2 text-12px"
                 >
-                  <span
-                    class="w-1.5 h-1.5 rounded-full shrink-0"
-                    :class="{
-                      'bg-green-500': step.status === 'SUCCESS',
-                      'bg-orange-500': step.status === 'RUNNING',
-                      'bg-red-500': step.status === 'FAILED',
-                      'bg-[var(--app-border)]': step.status === 'PENDING',
-                    }"
-                  />
+                  <span class="w-1.5 h-1.5 rounded-full shrink-0" :class="stepDot(step.status)" />
                   <span class="text-[var(--app-text-muted)] font-mono">#{{ step.stepIndex }}</span>
                   <span class="truncate">{{ step.toolName }}</span>
                   <span class="ml-auto shrink-0 text-[var(--app-text-muted)]">
@@ -193,9 +233,9 @@ const emit = defineEmits<{
 
           <!-- 任务历史 -->
           <LewCollapseItem collapse-key="history" title="任务历史" :radius="'8px'">
-            <div v-if="taskHistory.length" class="space-y-2 p-1">
+            <div v-if="recentTasks.length" class="space-y-2 p-1">
               <div
-                v-for="task in taskHistory.slice(0, 5)"
+                v-for="task in recentTasks"
                 :key="task.id"
                 class="text-12px rounded-md border border-[var(--app-border)] p-2"
               >

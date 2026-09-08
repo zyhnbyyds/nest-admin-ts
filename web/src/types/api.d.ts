@@ -136,12 +136,20 @@ export interface AiToolCall {
   result?: unknown;
 }
 
+/** 审批结果元数据：存于收尾 assistant 消息的 toolResults[0]（持久化，刷新后仍可还原结果条） */
+export interface AiApprovalResult {
+  type: "approval_result";
+  outcome: "success" | "cancelled" | "error";
+  toolName?: string;
+}
+
 export interface AiMessage {
   id: number;
   sessionId: number;
   role: "user" | "assistant" | "tool" | "system";
   content: string | null;
   toolCalls: AiToolCall[] | null;
+  /** 附加结果元数据：审批收尾消息为 [AiApprovalResult]，持久化于 toolResults 列 */
   toolResults: unknown[] | null;
   createdAt: string;
   /** 前端本地标记：本条为「生成中」消息（打字机动画 + 实时 tool 步骤），不持久化 */

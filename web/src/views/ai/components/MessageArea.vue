@@ -1,25 +1,27 @@
 <script setup lang="ts">
-import { ref } from "vue";
-import { Sparkles } from "lucide-vue-next";
-import { LewAlert, LewTag } from "lew-ui";
+import { computed } from "vue";
+import { CircleAlert, CircleCheck, CircleX, Sparkles } from "lucide-vue-next";
 import type { AiApprovalRequired, AiMessage, AiToolCall } from "~/types/api";
-import { riskColor, riskText } from "../utils/display";
+import { approvalResultOf, isPlainOutcome } from "../utils/display";
+import ApprovalPanel from "./ApprovalPanel.vue";
 import MarkdownContent from "./MarkdownContent.vue";
 import ToolStepCard from "./ToolStepCard.vue";
-import TypewriterText from "./TypewriterText.vue";
 
-defineProps<{
+const props = defineProps<{
   messages: AiMessage[];
   thinking: boolean;
+  /** 当前等待确认的操作（内嵌在对应消息底部展示） */
   pendingApproval: AiApprovalRequired | null;
+  /** 确认/取消按钮处理中 */
+  approving: "confirm" | "cancel" | null;
 }>();
 
 const emit = defineEmits<{
-  /** 生成中的消息已完整打完字，父级将其标记为完成 */
-  (e: "typed", messageId: number): void;
+  /** 确认当前待审批操作 */
+  (e: "confirm"): void;
+  /** 取消当前待审批操作 */
+  (e: "cancel"): void;
 }>();
-
-const listEl = ref<HTMLElement | null>(null);
 
 /** 判断消息是否为「正在生成中」 */
 function isFresh(message: AiMessage): boolean {
@@ -36,15 +38,45 @@ function toolStatus(call: AiToolCall): "running" | "success" | "approval" | "err
   return "success";
 }
 
-/** 滚动到底部（打字机播放中跟随） */
-function scrollToBottom() {
-  const el = listEl.value;
-  if (el) el.scrollTop = el.scrollHeight;
+/** 消息中是否含有「等待审批」的步骤 */
+function hasWaitingApproval(message: AiMessage): boolean {
+  return !!message.toolCalls?.some((c) => toolStatus(c) === "approval");
+}
+
+/** 找到携带「等待审批」步骤的消息（内嵌确认条挂载于此） */
+const approvalMessageId = computed<number | null>(() => {
+  const list = props.messages;
+  for (let i = list.length - 1; i >= 0; i--) {
+    const msg = list[i]!;
+    if (
+      msg.role === "assistant" &&
+      msg.toolCalls?.some(
+        (c) => (c.result as { status?: string } | undefined)?.status === "waiting_approval",
+      )
+    ) {
+      return msg.id;
+    }
+  }
+  return null;
+});
+
+/** 审批结果标题文案 */
+function outcomeLabel(outcome: "success" | "cancelled" | "error"): string {
+  if (outcome === "success") return "操作已执行完成";
+  if (outcome === "cancelled") return "操作已取消";
+  return "操作执行失败";
+}
+
+/** 审批结果消息：正文为后端兜底短句时隐藏正文（结果条标题已表达） */
+function shouldShowContent(message: AiMessage): boolean {
+  if (!message.content) return false;
+  const meta = approvalResultOf(message);
+  return !(meta && isPlainOutcome(message.content));
 }
 </script>
 
 <template>
-  <div ref="listEl" id="ai-messages" class="flex-1 overflow-y-auto p-4 space-y-4">
+  <div id="ai-messages" class="flex-1 overflow-y-auto p-4 space-y-4">
     <!-- 空态引导 -->
     <div
       v-if="!messages.length && !thinking"
@@ -75,26 +107,51 @@ function scrollToBottom() {
 
         <!-- assistant 消息 -->
         <template v-else-if="message.role === 'assistant'">
+          <!-- 审批结果条：图标 + 状态标题（读持久化 toolResults 元数据，刷新后一致） -->
+          <div
+            v-if="approvalResultOf(message)"
+            class="flex items-center gap-1.5 px-3.5 pt-2.5"
+            :class="
+              approvalResultOf(message)?.outcome === 'success'
+                ? 'text-green-600'
+                : approvalResultOf(message)?.outcome === 'cancelled'
+                  ? 'text-[var(--app-text-muted)]'
+                  : 'text-red-500'
+            "
+          >
+            <CircleCheck
+              v-if="approvalResultOf(message)?.outcome === 'success'"
+              :size="18"
+              class="shrink-0"
+            />
+            <CircleX
+              v-else-if="approvalResultOf(message)?.outcome === 'cancelled'"
+              :size="18"
+              class="shrink-0"
+            />
+            <CircleAlert v-else :size="18" class="shrink-0" />
+            <span class="text-14px font-600">
+              {{ outcomeLabel(approvalResultOf(message)?.outcome ?? "success") }}
+            </span>
+          </div>
+
           <!-- 生成中占位：tool 步骤可能先到、文本未到时显示光标 -->
           <div
             v-if="isFresh(message) && !message.content"
             class="flex items-center gap-1.5 text-13px text-[var(--app-text-muted)] px-1 py-0.5"
           >
             <span class="w-1.5 h-1.5 rounded-full bg-current animate-pulse" />
-            <span v-if="message.toolCalls?.length">正在处理...</span>
+            <span v-if="hasWaitingApproval(message)"> 等待你的确认... </span>
+            <span v-else-if="message.toolCalls?.length">正在处理...</span>
             <span v-else>AI 正在分析...</span>
           </div>
 
-          <!-- 文本内容：生成中用打字机，否则 markdown 直接渲染 -->
-          <div v-if="message.content" class="px-3.5 py-2.5 rounded-lg text-14px leading-relaxed">
-            <TypewriterText
-              v-if="isFresh(message)"
-              :text="message.content"
-              :active="true"
-              @done="emit('typed', message.id)"
-              @scroll="scrollToBottom"
-            />
-            <MarkdownContent v-else :content="message.content" />
+          <!-- 文本内容：真流式（后端增量推送）→ 实时渲染 Markdown -->
+          <div
+            v-if="shouldShowContent(message)"
+            class="px-3.5 py-2.5 rounded-lg text-14px leading-relaxed"
+          >
+            <MarkdownContent :content="message.content ?? ''" />
           </div>
 
           <!-- 操作步骤（tool 调用）：折叠卡片，默认闭合 -->
@@ -108,35 +165,17 @@ function scrollToBottom() {
               :status="toolStatus(call)"
             />
           </div>
-        </template>
-      </div>
-    </div>
 
-    <!-- 待确认提示（确认操作已通过弹窗完成） -->
-    <div v-if="pendingApproval" class="flex justify-center">
-      <div class="w-full max-w-lg">
-        <LewAlert type="warning" title="等待确认操作" :closable="false" class="mb-3">
-          <template #default>
-            <div class="flex items-center gap-2 mt-1">
-              <LewTag :type="'light'" :color="riskColor(pendingApproval.riskLevel)" size="small">
-                {{ riskText(pendingApproval.riskLevel) }}
-              </LewTag>
-              <span class="text-13px text-[var(--app-text-muted)]">
-                工具：{{ pendingApproval.toolName }}
-              </span>
-            </div>
-            <div v-if="pendingApproval.preview" class="mt-2">
-              <div class="text-12px text-[var(--app-text-muted)] mb-1">操作预览</div>
-              <div class="text-13px font-500">{{ pendingApproval.preview.summary }}</div>
-              <div class="text-12px text-[var(--app-text-muted)] mt-1">
-                影响数量：{{ pendingApproval.preview.affectedCount }}
-              </div>
-            </div>
-            <div class="text-12px text-[var(--app-text-muted)] mt-2">
-              请在弹窗中确认或取消该操作
-            </div>
-          </template>
-        </LewAlert>
+          <!-- 待审批操作：内嵌确认条（替代弹窗/悬浮提示），置于消息底部 -->
+          <ApprovalPanel
+            v-if="pendingApproval && message.id === approvalMessageId"
+            :approval="pendingApproval"
+            :loading="approving"
+            class="mt-2"
+            @confirm="$emit('confirm')"
+            @cancel="$emit('cancel')"
+          />
+        </template>
       </div>
     </div>
 

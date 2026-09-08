@@ -23,6 +23,7 @@ const {
   waitingApproval,
   riskLevel,
   pendingApproval,
+  approving,
   currentTaskId,
   taskSteps,
   taskStatus,
@@ -32,7 +33,8 @@ const {
   selectSession,
   handleRenameSession,
   handleSend,
-  finishFreshMessage,
+  handleApprove,
+  handleReject,
   handleRollbackTask,
 } = useAiChat();
 </script>
@@ -66,7 +68,9 @@ const {
         :messages="messages"
         :thinking="thinking"
         :pending-approval="pendingApproval"
-        @typed="finishFreshMessage"
+        :approving="approving"
+        @confirm="handleApprove"
+        @cancel="handleReject"
       />
 
       <ChatInput

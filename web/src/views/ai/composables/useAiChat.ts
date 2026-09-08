@@ -1,5 +1,5 @@
 import { nextTick, onMounted, ref } from "vue";
-import { LewDialog, LewMessage } from "lew-ui";
+import { LewMessage } from "lew-ui";
 import {
   confirmAction,
   createSession,
@@ -21,7 +21,7 @@ import type {
   AiTaskStep,
   AiToolCall,
 } from "~/types/api";
-import { riskText } from "../utils/display";
+import { isPlainOutcome } from "../utils/display";
 
 /**
  * AI 操作页核心逻辑。
@@ -45,8 +45,8 @@ export function useAiChat() {
   const waitingApproval = ref(false);
   const riskLevel = ref<string>("");
   const pendingApproval = ref<AiApprovalRequired | null>(null);
-  /** 审批收尾进行中（防止弹窗按钮连点导致重复收尾/重复追加消息） */
-  const approvalBusy = ref(false);
+  /** 内嵌确认条交互中：'confirm' | 'cancel'（按钮 loading / 互斥防连点） */
+  const approving = ref<"confirm" | "cancel" | null>(null);
 
   // ---------- 任务时间线 ----------
   const currentTaskId = ref<number | null>(null);
@@ -79,6 +79,8 @@ export function useAiChat() {
     currentTaskId.value = null;
     taskSteps.value = [];
     taskStatus.value = "";
+    // 任务历史为该用户全局数据：切换会话时一并刷新，避免展示滞后
+    void loadTaskHistory();
     await scrollToBottom();
   }
 
@@ -138,12 +140,12 @@ export function useAiChat() {
 
     try {
       const result = await sendMessage(currentSession.value.id, content, handleSseEvent);
-      // SSE 收尾：以最终结果为准原地回填占位消息（保持对象引用稳定，避免 vnode 重建）
+      // SSE 收尾：内容已在流式中实时累积，此处回填工具结果并结束「生成中」状态
       const freshMsg = messages.value.find((m) => m.id === freshId);
       if (freshMsg) {
-        freshMsg.content = result.content || freshMsg.content || null;
         freshMsg.toolCalls = result.toolCalls;
-        freshMsg._fresh = true;
+        freshMsg.content = freshMsg.content || result.content || null;
+        freshMsg._fresh = false;
       }
       riskLevel.value = result.riskLevel;
       waitingApproval.value = result.waitingApproval;
@@ -154,14 +156,10 @@ export function useAiChat() {
     } finally {
       sending.value = false;
       thinking.value = false;
+      // 发送结束（无论是否审批）后刷新任务历史，保证最新任务立即可见
+      void loadTaskHistory();
       await scrollToBottom();
     }
-  }
-
-  /** 将生成中的占位消息标记为「已完成」（打字机播完后由父组件调用） */
-  function finishFreshMessage(id: number) {
-    const msg = messages.value.find((m) => m.id === id);
-    if (msg) msg._fresh = false;
   }
 
   function handleSseEvent(event: AiSseEvent) {
@@ -203,15 +201,28 @@ export function useAiChat() {
         pendingApproval.value = data;
         waitingApproval.value = true;
         riskLevel.value = data.riskLevel;
-        showApprovalDialog(data);
+        // 立即将相关工具调用标记为“待审批”，让消息内确认条即时出现
+        const markWaiting = (list?: AiToolCall[] | null) => {
+          if (!list) return;
+          for (let i = list.length - 1; i >= 0; i--) {
+            if (list[i]?.name === data.toolName && list[i]?.result === undefined) {
+              list[i]!.result = { status: "waiting_approval", intentId: data.intentId };
+              break;
+            }
+          }
+        };
+        markWaiting(toolCalls.value);
+        markWaiting(freshMsg?.toolCalls);
         break;
       }
       case "message": {
-        // 文本完整到达 → 触发打字机
+        // 真流式：文本增量到达即追加到占位消息（实时渲染，无需假打字机）
         const data = event.data as { content?: string };
         thinking.value = false;
-        if (freshMsg && data.content) freshMsg.content = data.content;
-        void scrollToBottom();
+        if (freshMsg && data.content) {
+          freshMsg.content = (freshMsg.content ?? "") + data.content;
+          void scrollToBottom();
+        }
         break;
       }
       case "error":
@@ -267,77 +278,73 @@ export function useAiChat() {
 
   // ---------- 确认/取消操作 ----------
 
-  /** 更新指定工具步骤的执行状态（同步 toolCalls 与占位消息） */
-  function updateToolStepStatus(toolName: string, result: unknown) {
+  /**
+   * 更新「等待审批」步骤的执行状态（同步 toolCalls 与各消息中的步骤）。
+   *
+   * 只匹配仍处于 waiting_approval、且 intentId（提供时）一致的调用，避免误覆盖
+   * 历史中同名但已完结的步骤。不依赖占位消息的 _fresh 状态——审批等待期间
+   * 占位消息可能已被打字机完成事件标记为 _fresh=false，仍需能精确回填。
+   */
+  function updateToolStepStatus(toolName: string, result: unknown, intentId?: number) {
+    const isTarget = (c: AiToolCall) => {
+      if (c.name !== toolName) return false;
+      const r = c.result as { status?: string; intentId?: number } | undefined;
+      if (r?.status !== "waiting_approval") return false;
+      return intentId === undefined || r.intentId === intentId;
+    };
     toolCalls.value.forEach((c) => {
-      if (c.name === toolName) c.result = result;
+      if (isTarget(c)) c.result = result;
     });
-    messages.value
-      .filter((m) => m._fresh)
-      .forEach((m) =>
-        m.toolCalls?.forEach((c) => {
-          if (c.name === toolName) c.result = result;
-        }),
-      );
+    messages.value.forEach((m) => {
+      if (m.role !== "assistant") return;
+      m.toolCalls?.forEach((c) => {
+        if (isTarget(c)) c.result = result;
+      });
+    });
   }
 
-  /** 弹出操作确认对话框（LewDialog），每个弹窗闭包捕获自己的 intent */
-  function showApprovalDialog(data: AiApprovalRequired) {
-    const preview = data.preview;
-    const contentLines = [`工具：${data.toolName}`, `风险等级：${riskText(data.riskLevel)}`];
-    if (preview) {
-      contentLines.push(`操作预览：${preview.summary}`);
-      contentLines.push(`影响数量：${preview.affectedCount}`);
+  /**
+   * 内嵌确认条：确认执行当前待审批操作。
+   *
+   * 与取消共用 approving 互斥锁，避免按钮连点导致重复请求/重复收尾。
+   */
+  async function handleApprove() {
+    const approval = pendingApproval.value;
+    if (!approval || approving.value) return;
+    approving.value = "confirm";
+    try {
+      const { toolName, result, content } = await confirmAction(
+        approval.intentId,
+        approval.confirmToken,
+      );
+      await finishApproval(toolName, result ?? { status: "executed" }, content, approval.intentId);
+    } catch {
+      // 错误提示已由请求拦截器统一弹出，这里把步骤标记为失败并收尾
+      await finishApproval(approval.toolName, { status: "error" }, undefined, approval.intentId);
+    } finally {
+      approving.value = null;
     }
-    LewDialog.warning({
-      title: "需要确认操作",
-      content: contentLines.join("\n"),
-      closeByEsc: true,
-      closeOnClickOverlay: false,
-      footerButtons: [
-        {
-          props: {
-            text: "取消",
-            color: "gray",
-            type: "light",
-            size: "small",
-            request: async () => {
-              try {
-                const { content } = await rejectAction(data.intentId, "用户取消");
-                LewMessage.info("已取消操作");
-                await finishApproval(data.toolName, { status: "cancelled" }, content);
-              } catch {
-                // 错误提示已由请求拦截器统一弹出，这里只做状态收尾
-                await finishApproval(data.toolName, { status: "cancelled" });
-              }
-              return true;
-            },
-          },
-        },
-        {
-          props: {
-            text: "确认执行",
-            type: "fill",
-            size: "small",
-            color: "info",
-            request: async () => {
-              try {
-                const { toolName, result, content } = await confirmAction(
-                  data.intentId,
-                  data.confirmToken,
-                );
-                LewMessage.success("操作已执行");
-                await finishApproval(toolName, result ?? { status: "executed" }, content);
-              } catch {
-                // 错误提示已由请求拦截器统一弹出，这里把步骤标记为失败并收尾
-                await finishApproval(data.toolName, { status: "error" });
-              }
-              return true;
-            },
-          },
-        },
-      ],
-    });
+  }
+
+  /** 内嵌确认条：取消当前待审批操作 */
+  async function handleReject() {
+    const approval = pendingApproval.value;
+    if (!approval || approving.value) return;
+    approving.value = "cancel";
+    try {
+      const { content } = await rejectAction(approval.intentId, "用户取消");
+      await finishApproval(approval.toolName, { status: "cancelled" }, content, approval.intentId);
+    } catch {
+      // 错误提示已由请求拦截器统一弹出，这里只做状态收尾
+      await finishApproval(
+        approval.toolName,
+        { status: "cancelled" },
+        undefined,
+        approval.intentId,
+      );
+    } finally {
+      approving.value = null;
+    }
   }
 
   /**
@@ -345,57 +352,60 @@ export function useAiChat() {
    * 清理等待状态 → 结束「生成中」占位消息 → 更新步骤卡片
    * → 追加收尾文案（确认总结/取消提示） → 刷新任务时间线。
    */
-  async function finishApproval(toolName: string, result: unknown, summary?: string) {
-    // 防止弹窗按钮连点/重复回调导致重复收尾或重复追加消息
-    if (approvalBusy.value) return;
-    approvalBusy.value = true;
-    try {
-      pendingApproval.value = null;
-      waitingApproval.value = false;
-      updateToolStepStatus(toolName, result);
+  async function finishApproval(
+    toolName: string,
+    result: unknown,
+    summary?: string,
+    intentId?: number,
+  ) {
+    pendingApproval.value = null;
+    waitingApproval.value = false;
+    updateToolStepStatus(toolName, result, intentId);
 
-      // 仅当本次步骤仍在本会话消息中才就地收尾，避免会话切换后误写入其它会话
-      const hasStep = messages.value.some(
-        (m) => m.role === "assistant" && m.toolCalls?.some((c) => c.name === toolName),
-      );
-      if (hasStep) {
-        // 结束「生成中」占位消息：步骤已定稿，避免残留“正在处理...”动画
-        messages.value
-          .filter((m) => m._fresh && m.toolCalls?.some((c) => c.name === toolName))
-          .forEach((m) => {
-            m._fresh = false;
-          });
+    // 仅当本次步骤仍在本会话消息中才就地收尾，避免会话切换后误写入其它会话
+    const hasStep = messages.value.some(
+      (m) => m.role === "assistant" && m.toolCalls?.some((c) => c.name === toolName),
+    );
+    if (hasStep) {
+      // 结束「生成中」占位消息：步骤已定稿，避免残留“正在处理...”动画
+      messages.value
+        .filter((m) => m._fresh && m.toolCalls?.some((c) => c.name === toolName))
+        .forEach((m) => {
+          m._fresh = false;
+        });
 
-        // 收尾文案作为对话下文展示（刷新后由历史记录中的同文案承载）
-        if (summary && currentSession.value) {
-          messages.value.push({
-            id: Date.now(),
-            sessionId: currentSession.value.id,
-            role: "assistant",
-            content: summary,
-            toolCalls: null,
-            toolResults: null,
-            createdAt: new Date().toISOString(),
-            _fresh: true,
-          });
-          await scrollToBottom();
-        }
+      // 审批结果作为对话下文展示：结果条（图标 + 标题）+ 实质正文
+      if (summary && currentSession.value) {
+        const status = (result as { status?: string } | undefined)?.status;
+        const outcome: "success" | "cancelled" | "error" =
+          status === "cancelled" ? "cancelled" : status === "error" ? "error" : "success";
+        // 后端兜底单句（如“操作「xxx」已执行完成。”）不再重复正文，仅由结果条表达
+        const body = isPlainOutcome(summary) ? null : summary;
+        messages.value.push({
+          id: Date.now(),
+          sessionId: currentSession.value.id,
+          role: "assistant",
+          content: body,
+          toolCalls: null,
+          // 审批结果元数据持久化于 toolResults，刷新会话后仍能还原结果条
+          toolResults: [{ type: "approval_result", outcome, toolName }],
+          createdAt: new Date().toISOString(),
+        });
+        await scrollToBottom();
       }
-
-      // 刷新任务时间线与历史，反映最终状态
-      if (currentTaskId.value) {
-        try {
-          const task = await getTask(currentTaskId.value);
-          taskSteps.value = task.steps ?? [];
-          taskStatus.value = task.status;
-        } catch {
-          // 任务可能已不存在，忽略
-        }
-      }
-      void loadTaskHistory();
-    } finally {
-      approvalBusy.value = false;
     }
+
+    // 刷新任务时间线与历史，反映最终状态
+    if (currentTaskId.value) {
+      try {
+        const task = await getTask(currentTaskId.value);
+        taskSteps.value = task.steps ?? [];
+        taskStatus.value = task.status;
+      } catch {
+        // 任务可能已不存在，忽略
+      }
+    }
+    void loadTaskHistory();
   }
 
   // ---------- 撤销任务（Undo） ----------
@@ -432,11 +442,13 @@ export function useAiChat() {
     thinking,
     toolCalls,
     handleSend,
-    finishFreshMessage,
     // 审批
     waitingApproval,
     riskLevel,
     pendingApproval,
+    approving,
+    handleApprove,
+    handleReject,
     // 任务
     currentTaskId,
     taskSteps,

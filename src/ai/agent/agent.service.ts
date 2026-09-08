@@ -119,6 +119,9 @@ export class AgentService {
       messages,
       tools: aiContext.tools,
       toolChoice: 'auto',
+      stream: true,
+      // 真流式：文本增量逐块通过 SSE 推送，供前端边收边渲染
+      onDelta: (delta) => onEvent?.({ type: 'message', data: { content: delta } }),
     });
 
     const toolCalls: Array<{
@@ -292,6 +295,9 @@ export class AgentService {
             role: 'assistant',
             content: response.content,
             toolCalls: [toolCall],
+            ...(response.reasoningContent
+              ? { reasoningContent: response.reasoningContent }
+              : {}),
           });
           messages.push({
             role: 'tool',
@@ -447,6 +453,9 @@ export class AgentService {
           role: 'assistant',
           content: response.content,
           toolCalls: [toolCall],
+          ...(response.reasoningContent
+            ? { reasoningContent: response.reasoningContent }
+            : {}),
         });
         messages.push({
           role: 'tool',
@@ -455,11 +464,13 @@ export class AgentService {
         });
       }
 
-      // 再次调用 LLM 生成最终回复
+      // 再次调用 LLM 生成最终回复（真流式：文本增量经 SSE 推送）
       response = await this.llm.chat({
         messages,
         tools: aiContext.tools,
         toolChoice: 'auto',
+        stream: true,
+        onDelta: (delta) => onEvent?.({ type: 'message', data: { content: delta } }),
       });
     }
 
@@ -471,8 +482,6 @@ export class AgentService {
         data: { taskId, status: 'SUCCESS' },
       });
     }
-
-    onEvent?.({ type: 'message', data: { content: response.content } });
 
     return {
       content: response.content,

@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { and, asc, eq } from 'drizzle-orm';
+import { and, asc, desc, eq } from 'drizzle-orm';
 import { DatabaseService } from '../../database/database.service';
 import { aiTaskSteps, aiTasks } from '../../database/schema/index';
 import { AiErrorCode, AiException, RiskLevel } from '../ai.types';
@@ -236,7 +236,7 @@ export class TaskService {
       .select()
       .from(aiTasks)
       .where(and(eq(aiTasks.userId, userId)))
-      .orderBy(asc(aiTasks.id));
+      .orderBy(desc(aiTasks.id));
   }
 
   /** 撤销任务：逆序执行所有成功步骤的 rollback（Undo）。需要从步骤 output 中取出 before 快照 */

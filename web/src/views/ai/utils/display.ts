@@ -1,3 +1,20 @@
+import type { AiApprovalResult, AiMessage } from "~/types/api";
+
+// ---------- 审批结果元数据 ----------
+
+/** 是否为后端生成的兜底短句（无实质正文，仅需结果条标题即可） */
+export function isPlainOutcome(content: string): boolean {
+  const t = content.trim();
+  if (!t) return true;
+  return !t.includes("\n") && t.length <= 50 && /^操作「.+」已(执行完成|取消)/.test(t);
+}
+
+/** 提取消息中持久化的审批结果元数据（存于 toolResults[0]，用于结果条展示） */
+export function approvalResultOf(message: AiMessage): AiApprovalResult | undefined {
+  const first = message.toolResults?.[0] as AiApprovalResult | undefined;
+  return first && first.type === "approval_result" ? first : undefined;
+}
+
 /**
  * AI 操作页展示辅助函数。
  *
