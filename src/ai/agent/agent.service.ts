@@ -101,8 +101,17 @@ export class AgentService {
     const aiContext = this.contextBuilder.build(actor);
     onEvent?.({ type: 'thinking', data: { message: '正在分析你的请求...' } });
 
+    // 注入会话历史（纯文本轮次，最多保留最近 20 条避免超长）
+    const history: LlmMessage[] = (context.history ?? [])
+      .slice(-20)
+      .map((item) => ({
+        role: item.role,
+        content: item.content,
+      }));
+
     const messages: LlmMessage[] = [
       { role: 'system', content: aiContext.systemPrompt },
+      ...history,
       { role: 'user', content: context.message },
     ];
 

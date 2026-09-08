@@ -121,6 +121,25 @@ export class AiGatewayService {
   ) {
     await this.getSession(sessionId, actor.id);
 
+    // 加载该会话历史（插入当前消息之前查询，避免包含本次 user 消息）
+    const historyRows = await this.database.db
+      .select()
+      .from(aiMessages)
+      .where(eq(aiMessages.sessionId, sessionId))
+      .orderBy(asc(aiMessages.createdAt));
+    // 仅取纯文本轮次（user/assistant），按时间正序
+    const history = historyRows
+      .filter(
+        (row) =>
+          (row.role === 'user' || row.role === 'assistant') &&
+          typeof row.content === 'string' &&
+          row.content.trim(),
+      )
+      .map((row) => ({
+        role: row.role as 'user' | 'assistant',
+        content: row.content as string,
+      }));
+
     // 保存用户消息
     await this.database.db.insert(aiMessages).values({
       sessionId,
@@ -138,6 +157,7 @@ export class AiGatewayService {
         permissions: actor.permissions,
       },
       message: content,
+      history,
     };
 
     const result = await this.agent.run(agentContext, onEvent);
