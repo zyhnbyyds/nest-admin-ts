@@ -159,7 +159,7 @@ web/
 - **缓存**：Bun.RedisClient（可选，未配置自动降级）
 - **调度**：@nestjs/schedule + cron
 - **文档**：@nestjs/swagger
-- **测试**：vitest + @vitest/coverage-v8
+- **测试**：bun test（Bun 内置运行器）· 断言/mock 沿用 vitest API
 - **Lint**：oxlint + oxfmt
 
 ### 前端
@@ -305,11 +305,13 @@ bun run lint             # oxlint
 ## 测试
 
 ```bash
-bun run test             # vitest 单元测试
-bun run test:watch       # 监听模式
+bun test                 # 单元测试（Bun 内置运行器，秒级完成）
+bun test --watch         # 监听模式
+bun test --coverage      # 覆盖率（text / lcov 到 coverage/）
 ```
 
-vitest 单元测试覆盖 Controller、Service、Guard、Interceptor、工具函数与 AI 模块（LLM 流式/思考解析、审批 hash 等），每个测试完全隔离，不依赖数据库。
+bun test 单元测试覆盖 Controller、Service、Guard、Interceptor、工具函数与 AI 模块（LLM 流式/思考解析、审批 hash 等），每个测试完全隔离，不依赖数据库。
+`.spec.ts` 中 `from 'vitest'` 的导入仅用作断言/mock 库，由 bun test 直接执行、不经过 vitest runner，因此没有其性能开销。
 
 ## License
 

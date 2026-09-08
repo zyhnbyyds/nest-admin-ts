@@ -140,7 +140,7 @@ web/
 - **Cache**: Bun.RedisClient (optional, auto-degrades if not configured)
 - **Scheduler**: @nestjs/schedule + cron
 - **Docs**: @nestjs/swagger
-- **Testing**: vitest + @vitest/coverage-v8
+- **Testing**: bun test (Bun's built-in runner) · assertion/mock via the vitest API
 - **Lint**: oxlint + oxfmt
 
 ### Frontend
@@ -282,11 +282,13 @@ bun run lint             # oxlint
 ## Testing
 
 ```bash
-bun run test             # vitest unit tests
-bun run test:watch       # Watch mode
+bun test                 # Unit tests (Bun's built-in runner, seconds)
+bun test --watch         # Watch mode
+bun test --coverage      # Coverage (text / lcov into coverage/)
 ```
 
-Vitest unit tests cover every Controller, Service, Guard, Interceptor, and utility function (**295 test cases**). Each test is fully isolated and does not depend on a database.
+bun test unit tests cover every Controller, Service, Guard, Interceptor, and utility function (**295 test cases**). Each test is fully isolated and does not depend on a database.
+The `from 'vitest'` imports in `.spec.ts` files are used only as a lightweight assertion/mock library, executed directly by bun test (no vitest runner overhead).
 
 ## License
 

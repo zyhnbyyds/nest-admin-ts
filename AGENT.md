@@ -20,7 +20,7 @@
 | 调度              | `@nestjs/schedule` + `cron`                                       |
 | API 文档          | `@nestjs/swagger`（开启时路径：`/api/v1/docs`）                   |
 | 日志              | `pino`（Fastify 内置）                                            |
-| 测试              | `vitest` 4.x + `@vitest/coverage-v8`                              |
+| 测试              | `bun test`（Bun 内置运行器）· 断言/mock 沿用 vitest API                              |
 | Lint / 格式化     | `oxlint`、`oxfmt`（不用 ESLint / Prettier）                       |
 | 语言              | TypeScript 5.9，`moduleResolution: NodeNext`，ESM `.js` 后缀导入  |
 
@@ -34,8 +34,8 @@ bun run typecheck          # 类型检查（tsc --noEmit）
 bun run lint               # 代码检查（oxlint）
 bun run lint:fix           # 自动修复 lint 问题
 bun run format             # 格式化代码（oxfmt --write）
-bun run test               # 跑测试（单次）
-bun run test:watch         # 测试监听模式
+bun run test               # 跑测试（bun test，秒级单次）
+bun run test:watch         # 测试监听模式（bun test --watch）
 bun run db:generate        # 生成 Drizzle 迁移文件
 bun run db:migrate         # 执行数据库迁移
 bun run db:seed            # 初始化管理员账号
@@ -177,17 +177,24 @@ import { UsersService } from './users.service.js';
 
 ### 运行测试
 
+测试统一用 Bun 内置运行器（秒级完成，不再经 vitest runner）：
+
 ```bash
-bun run test          # 单次运行
-bun run test:watch    # 监听模式
+bun test               # 单次运行
+bun test --watch       # 监听模式
+bun test --coverage    # 覆盖率（text / lcov 到 coverage/）
+bun run test           # 等价 bun test（经 package.json scripts）
 ```
+
+> `.spec.ts` 内 `import { describe, expect, it, vi } from 'vitest'` 只是把 vitest 当轻量
+> 断言/mock 库导入，由 `bun test` 直接执行、不启动 vitest runner，因此没有其性能开销。
 
 ### 测试结构
 
 - 测试文件与源文件同目录：`src/modules/system/users/users.service.spec.ts`
-- 使用 `vitest` + `describe`/`it`/`expect`/`vi`
+- 使用 `describe`/`it`/`expect`/`vi`（导入自 `vitest`，运行器为 `bun test`）
 - 全部 269 个测试用例完全隔离——每个 Service 测试都 mock 了 `DatabaseService`（必要时还有 `RedisService`、`AppConfigService`、`SchedulerRegistry`）
-- 覆盖率：`vitest.config.ts` 启用了 `@vitest/coverage-v8`（输出 `text` 和 `lcov`）
+- 覆盖率：`bun test --coverage`（Bun 内置，输出 `text` 与 `lcov` 到 `coverage/`）
 
 ### Mock 模板
 
