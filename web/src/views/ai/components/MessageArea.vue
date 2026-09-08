@@ -1,14 +1,16 @@
 <script setup lang="ts">
 import { Database, ShieldCheck, Sparkles } from "lucide-vue-next";
 import { LewAlert, LewButton, LewTag } from "lew-ui";
+import { MdPreview } from "md-editor-v3";
+import "md-editor-v3/lib/style.css";
+import DOMPurify from "dompurify";
 import type { AiApprovalRequired, AiMessage } from "~/types/api";
+import { useSettingsStore } from "~/store/settings";
 import {
   USER_TABLE_COLUMNS,
   formatArgs,
-  hasMarkdownTable,
   isStatusColumn,
   isUserList,
-  renderAssistantContent,
   riskColor,
   riskText,
   userCellValue,
@@ -25,6 +27,11 @@ const emit = defineEmits<{
   (e: "confirm"): void;
   (e: "reject"): void;
 }>();
+
+const settings = useSettingsStore();
+
+/** XSS 过滤：AI 返回内容渲染前经 DOMPurify 清洗 */
+const sanitize = (html: string) => DOMPurify.sanitize(html);
 </script>
 
 <template>
@@ -52,15 +59,21 @@ const emit = defineEmits<{
         <!-- 文本气泡 -->
         <div
           v-if="message.content"
-          class="px-3.5 py-2.5 rounded-lg text-13.5px leading-relaxed whitespace-pre-wrap"
+          class="px-3.5 py-2.5 rounded-lg text-13.5px leading-relaxed"
           :class="
             message.role === 'user'
-              ? 'bg-[var(--lew-color-primary)] text-white'
+              ? 'bg-[var(--lew-color-primary)] text-white whitespace-pre-wrap'
               : 'bg-[var(--app-bg-hover)]'
           "
         >
-          <template v-if="message.role === 'assistant' && hasMarkdownTable(message.content)">
-            <div v-html="renderAssistantContent(message.content)"></div>
+          <template v-if="message.role === 'assistant'">
+            <MdPreview
+              :model-value="message.content"
+              :theme="settings.isDark ? 'dark' : 'light'"
+              :sanitize="sanitize"
+              preview-theme="github"
+              class="ai-md-preview"
+            />
           </template>
           <template v-else>{{ message.content }}</template>
         </div>
@@ -142,7 +155,8 @@ const emit = defineEmits<{
               <pre
                 v-else
                 class="text-11.5px text-[var(--app-text-muted)] whitespace-pre-wrap break-all max-h-32 overflow-y-auto"
-                >{{ JSON.stringify(call.result, null, 2) }}</pre>
+                >{{ JSON.stringify(call.result, null, 2) }}</pre
+              >
             </div>
           </div>
         </div>
@@ -196,3 +210,98 @@ const emit = defineEmits<{
     </div>
   </div>
 </template>
+
+<style scoped>
+/* 覆盖 md-editor-v3 预览样式，匹配项目主题 */
+.ai-md-preview {
+  --md-color: var(--app-text-primary);
+  --md-border-color: var(--app-border);
+  --md-bk-color: transparent;
+  --md-bk-color-light: var(--app-bg-hover);
+  --md-bk-color-lighter: var(--app-bg-hover);
+  --md-theme: var(--app-text-primary);
+  font-size: 13.5px;
+  line-height: 1.7;
+}
+.ai-md-preview :deep(.md-editor-preview-wrapper) {
+  padding: 0;
+}
+.ai-md-preview :deep(h1),
+.ai-md-preview :deep(h2),
+.ai-md-preview :deep(h3),
+.ai-md-preview :deep(h4) {
+  color: var(--app-text-primary);
+  font-weight: 600;
+  margin: 0.6em 0 0.4em;
+}
+.ai-md-preview :deep(h1) {
+  font-size: 1.35em;
+}
+.ai-md-preview :deep(h2) {
+  font-size: 1.2em;
+}
+.ai-md-preview :deep(h3) {
+  font-size: 1.1em;
+}
+.ai-md-preview :deep(p) {
+  margin: 0.35em 0;
+}
+.ai-md-preview :deep(ul),
+.ai-md-preview :deep(ol) {
+  padding-left: 1.4em;
+  margin: 0.35em 0;
+}
+.ai-md-preview :deep(li) {
+  margin: 0.15em 0;
+}
+.ai-md-preview :deep(a) {
+  color: var(--lew-color-primary);
+}
+.ai-md-preview :deep(code) {
+  background: var(--app-bg-hover);
+  color: var(--lew-color-primary);
+  border-radius: 4px;
+  padding: 0.1em 0.35em;
+  font-size: 0.92em;
+}
+.ai-md-preview :deep(pre) {
+  background: var(--app-bg-hover);
+  border: 1px solid var(--app-border);
+  border-radius: 6px;
+  padding: 0.6em 0.8em;
+  overflow-x: auto;
+  margin: 0.5em 0;
+}
+.ai-md-preview :deep(pre code) {
+  background: transparent;
+  color: var(--app-text-primary);
+  padding: 0;
+}
+.ai-md-preview :deep(blockquote) {
+  border-left: 3px solid var(--lew-color-primary);
+  background: var(--app-bg-hover);
+  margin: 0.5em 0;
+  padding: 0.3em 0.8em;
+  color: var(--app-text-muted);
+  border-radius: 0 6px 6px 0;
+}
+.ai-md-preview :deep(table) {
+  border-collapse: collapse;
+  margin: 0.5em 0;
+  width: 100%;
+}
+.ai-md-preview :deep(th),
+.ai-md-preview :deep(td) {
+  border: 1px solid var(--app-border);
+  padding: 0.35em 0.6em;
+  text-align: left;
+}
+.ai-md-preview :deep(th) {
+  background: var(--app-bg-hover);
+  font-weight: 600;
+}
+.ai-md-preview :deep(hr) {
+  border-color: var(--app-border);
+  margin: 0.8em 0;
+}
+</style>

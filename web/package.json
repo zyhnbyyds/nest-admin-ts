@@ -16,14 +16,17 @@
     "@vueuse/core": "^14.2.1",
     "axios": "^1.13.2",
     "dayjs": "^1.11.13",
+    "dompurify": "^3.4.15",
     "echarts": "^6.0.0",
     "lew-ui": "^2.8.2",
     "lucide-vue-next": "^0.534.0",
+    "md-editor-v3": "^6.5.6",
     "pinia": "^3.0.3",
     "vue": "^3.5.30",
     "vue-router": "^5.0.3"
   },
   "devDependencies": {
+    "@types/dompurify": "^3.2.0",
     "@types/node": "^25.5.0",
     "@unocss/reset": "^66.6.7",
     "@vitejs/plugin-vue": "^6.0.5",
