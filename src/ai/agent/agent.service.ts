@@ -49,7 +49,10 @@ export type AgentEvent =
         result?: unknown;
       };
     }
-  | { type: 'task_completed'; data: { taskId: number; status: string; error?: string } };
+  | {
+      type: 'task_completed';
+      data: { taskId: number; status: string; error?: string };
+    };
 
 /**
  * Agent：整个 AI 系统的大脑。
@@ -157,7 +160,9 @@ export class AgentService {
           metadata: {
             input: toolCall.arguments,
             reason: decision.reason,
-            ...(decision.explanation ? { explanation: decision.explanation } : {}),
+            ...(decision.explanation
+              ? { explanation: decision.explanation }
+              : {}),
           },
         });
 
@@ -525,7 +530,11 @@ export class AgentService {
 
     // 更新关联的任务步骤为 SUCCESS（并保存 undo 快照供撤销）
     if (intent.taskId && intent.taskStepId) {
-      await this.taskService.updateStep(intent.taskStepId, 'SUCCESS', sanitized);
+      await this.taskService.updateStep(
+        intent.taskStepId,
+        'SUCCESS',
+        sanitized,
+      );
       await this.taskService.complete(intent.taskId, 'SUCCESS');
     }
 

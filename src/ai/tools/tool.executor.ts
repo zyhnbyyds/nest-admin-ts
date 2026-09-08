@@ -36,7 +36,7 @@ export class ToolExecutor {
       );
       // 批量限制校验
       const items = Array.isArray((input as { ids?: unknown[] })?.ids)
-        ? ((input as { ids: unknown[] }).ids.length)
+        ? (input as { ids: unknown[] }).ids.length
         : Number((input as { id?: number })?.id) > 0
           ? 1
           : 0;

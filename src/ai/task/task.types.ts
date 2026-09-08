@@ -36,8 +36,14 @@ export interface CreateTaskInput {
 
 /** 任务执行回调（用于 SSE 推送步骤状态） */
 export interface TaskProgressCallback {
-  onStepStart?: (
-    step: { index: number; toolName: string; input: Record<string, unknown> },
-  ) => void;
-  onStepResult?: (step: { index: number; toolName: string; result: unknown }) => void;
+  onStepStart?: (step: {
+    index: number;
+    toolName: string;
+    input: Record<string, unknown>;
+  }) => void;
+  onStepResult?: (step: {
+    index: number;
+    toolName: string;
+    result: unknown;
+  }) => void;
 }

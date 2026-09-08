@@ -46,9 +46,7 @@ export interface PolicyExplain {
 export function formatPolicyExplain(explain: PolicyExplain): string {
   const lines: string[] = [];
   lines.push(`当前用户：${explain.actor.username}（ID: ${explain.actor.id}）`);
-  lines.push(
-    `RBAC：${explain.rbac.required} ${explain.rbac.has ? '✓' : '✗'}`,
-  );
+  lines.push(`RBAC：${explain.rbac.required} ${explain.rbac.has ? '✓' : '✗'}`);
   lines.push(
     `AI Policy：${explain.aiPolicy.approvalPolicy ?? 'NONE'}（${
       explain.aiPolicy.applies ? '生效' : '不生效'

@@ -185,7 +185,15 @@ export class UserUpdateTool implements AiTool {
   private async findUsersInScope(
     ids: number[],
     context: ToolContext,
-  ): Promise<Array<{ id: number; username: string; displayName: string; email: string | null; status: string }>> {
+  ): Promise<
+    Array<{
+      id: number;
+      username: string;
+      displayName: string;
+      email: string | null;
+      status: string;
+    }>
+  > {
     const result = await this.users.list(1, 1000, { actor: context.actor });
     const idSet = new Set(ids);
     return result.items.filter((item) => idSet.has(item.id));

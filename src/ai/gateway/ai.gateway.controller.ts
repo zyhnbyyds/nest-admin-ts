@@ -177,10 +177,7 @@ export class AiGatewayController {
   @RequirePermissions('ai:chat')
   @ApiOperation({ summary: '获取 AI 任务详情（含步骤）' })
   @ApiResponse({ status: 200, description: '成功' })
-  getTask(
-    @Param('id', ParseIntPipe) id: number,
-    @Req() request: AuthRequest,
-  ) {
+  getTask(@Param('id', ParseIntPipe) id: number, @Req() request: AuthRequest) {
     return this.gateway.getTask(id, request.user.id);
   }
 

@@ -53,7 +53,11 @@ export class TaskService {
   }
 
   /** 完成任务 */
-  async complete(taskId: number, status: TaskStatus, error?: string): Promise<void> {
+  async complete(
+    taskId: number,
+    status: TaskStatus,
+    error?: string,
+  ): Promise<void> {
     await this.database.db
       .update(aiTasks)
       .set({
@@ -207,7 +211,9 @@ export class TaskService {
     input: Record<string, unknown>,
   ): void {
     if (maxItems === undefined) return;
-    const items = Array.isArray(input?.ids) ? (input.ids as unknown[]).length : 0;
+    const items = Array.isArray(input?.ids)
+      ? (input.ids as unknown[]).length
+      : 0;
     if (items > maxItems) {
       throw new AiException(
         AiErrorCode.RISK_DENIED,

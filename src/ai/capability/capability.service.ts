@@ -59,17 +59,19 @@ export class CapabilityService {
   }
 
   /** 校验 Capability 是否允许某操作 */
-  authorize(
-    token: string,
-    tool: string,
-    actor: AiActor,
-  ): CapabilityPayload {
+  authorize(token: string, tool: string, actor: AiActor): CapabilityPayload {
     const payload = this.verify(token);
     if (payload.tool !== tool) {
-      throw new AiException(AiErrorCode.PERMISSION_DENIED, '能力令牌不匹配工具');
+      throw new AiException(
+        AiErrorCode.PERMISSION_DENIED,
+        '能力令牌不匹配工具',
+      );
     }
     if (payload.user.id !== actor.id) {
-      throw new AiException(AiErrorCode.PERMISSION_DENIED, '能力令牌不匹配用户');
+      throw new AiException(
+        AiErrorCode.PERMISSION_DENIED,
+        '能力令牌不匹配用户',
+      );
     }
     return payload;
   }

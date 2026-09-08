@@ -104,7 +104,8 @@ export class PolicyEngine {
       scope: args.scope,
     };
     if (args.reason !== undefined) decision.reason = args.reason;
-    if (args.context.limits !== undefined) decision.limits = args.context.limits;
+    if (args.context.limits !== undefined)
+      decision.limits = args.context.limits;
     if (args.context.explain) {
       const explain: PolicyExplain = {
         actor: { ...args.context.actor },
