@@ -266,7 +266,26 @@ export class AgentService {
             arguments: toolCall.arguments,
             result: { status: 'waiting_approval', intentId: intent.id },
           });
-          continue;
+
+          // 将 tool 调用与「等待审批」结果反馈给 LLM，避免 LLM 重复调用同一工具
+          messages.push({
+            role: 'assistant',
+            content: response.content,
+            toolCalls: [toolCall],
+          });
+          messages.push({
+            role: 'tool',
+            content: JSON.stringify({
+              status: 'waiting_approval',
+              intentId: intent.id,
+              message: `操作「${tool.name}」已提交审批，等待用户确认，请勿重复调用。`,
+            }),
+            toolCallId: toolCall.id,
+          });
+
+          // 已进入等待审批状态：终止循环，不再让 LLM 继续调用工具
+          round = 5;
+          break;
         }
 
         // 执行 Tool（首次执行时创建任务时间线）
