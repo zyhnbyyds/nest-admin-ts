@@ -76,8 +76,7 @@ const columns: LewTableColumn[] = [
     title: "部门",
     field: "deptName",
     width: 130,
-    customRender: ({ row }) =>
-      (row as unknown as User).deptName ?? "-",
+    customRender: ({ row }) => (row as unknown as User).deptName ?? "-",
   },
   {
     title: "角色",

@@ -1,14 +1,7 @@
 <script setup lang="ts">
 import { nextTick, ref } from "vue";
 import { FileClock, Pencil, Play, Plus, Trash2 } from "lucide-vue-next";
-import {
-  LewButton,
-  LewForm,
-  LewMessage,
-  LewModal,
-  LewPagination,
-  LewTable,
-} from "lew-ui";
+import { LewButton, LewForm, LewMessage, LewModal, LewPagination, LewTable } from "lew-ui";
 import type { LewTableColumn } from "lew-ui";
 import { clearJobLogs, createJob, deleteJob, listJobLogs, runJob, updateJob } from "~/api/jobs";
 import { useTable } from "~/composables/useTable";

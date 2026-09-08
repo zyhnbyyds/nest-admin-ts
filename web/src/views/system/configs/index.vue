@@ -1,14 +1,7 @@
 <script setup lang="ts">
 import { nextTick, ref } from "vue";
 import { Pencil, Plus, Trash2 } from "lucide-vue-next";
-import {
-  LewButton,
-  LewForm,
-  LewMessage,
-  LewModal,
-  LewPagination,
-  LewTable,
-} from "lew-ui";
+import { LewButton, LewForm, LewMessage, LewModal, LewPagination, LewTable } from "lew-ui";
 import type { LewTableColumn } from "lew-ui";
 import { createConfig, deleteConfig, updateConfig } from "~/api/system/configs";
 import { useTable } from "~/composables/useTable";

@@ -83,9 +83,7 @@ const columns: LewTableColumn[] = [
       return h(
         "span",
         {
-          class: success
-            ? "text-[var(--lew-color-success)]"
-            : "text-[var(--lew-color-error)]",
+          class: success ? "text-[var(--lew-color-success)]" : "text-[var(--lew-color-error)]",
           style: "font-weight: 600",
         },
         success ? "成功" : "失败",
@@ -234,43 +232,81 @@ function handleClear() {
     </div>
 
     <!-- 详情弹窗 -->
-    <LewModal v-model:visible="detailVisible" title="操作日志详情" width="680px" :hide-footer="true">
+    <LewModal
+      v-model:visible="detailVisible"
+      title="操作日志详情"
+      width="680px"
+      :hide-footer="true"
+    >
       <div class="max-h-480px overflow-auto p-5">
         <!-- 基本信息 -->
         <div class="mb-3 grid grid-cols-2 gap-x-4 gap-y-2 text-13px">
-          <div><span class="text-[var(--app-text-muted)]">操作人：</span>{{ detail?.username ?? "-" }}（
-            <span class="text-[var(--app-text-muted)]">ID:</span> {{ detail?.userId ?? "-" }}）</div>
+          <div>
+            <span class="text-[var(--app-text-muted)]">操作人：</span
+            >{{ detail?.username ?? "-" }}（ <span class="text-[var(--app-text-muted)]">ID:</span>
+            {{ detail?.userId ?? "-" }}）
+          </div>
           <div><span class="text-[var(--app-text-muted)]">模块：</span>{{ moduleOf(detail) }}</div>
-          <div><span class="text-[var(--app-text-muted)]">操作：</span>{{ detail ? actionOf(detail) : "-" }}</div>
-          <div><span class="text-[var(--app-text-muted)]">方法：</span>{{ detail?.requestMethod ?? "-" }}</div>
-          <div class="col-span-2"><span class="text-[var(--app-text-muted)]">路径：</span>{{ detail?.url ?? "-" }}</div>
+          <div>
+            <span class="text-[var(--app-text-muted)]">操作：</span
+            >{{ detail ? actionOf(detail) : "-" }}
+          </div>
+          <div>
+            <span class="text-[var(--app-text-muted)]">方法：</span
+            >{{ detail?.requestMethod ?? "-" }}
+          </div>
+          <div class="col-span-2">
+            <span class="text-[var(--app-text-muted)]">路径：</span>{{ detail?.url ?? "-" }}
+          </div>
           <div>
             <span class="text-[var(--app-text-muted)]">状态：</span>
-            <span :class="detail?.status === 'success' ? 'text-[var(--lew-color-success)]' : 'text-[var(--lew-color-error)]'" class="font-600">
+            <span
+              :class="
+                detail?.status === 'success'
+                  ? 'text-[var(--lew-color-success)]'
+                  : 'text-[var(--lew-color-error)]'
+              "
+              class="font-600"
+            >
               {{ detail?.status === "success" ? "成功" : "失败" }}
             </span>
           </div>
-          <div><span class="text-[var(--app-text-muted)]">耗时：</span>{{ detail?.durationMs ?? "-" }} ms</div>
+          <div>
+            <span class="text-[var(--app-text-muted)]">耗时：</span
+            >{{ detail?.durationMs ?? "-" }} ms
+          </div>
           <div><span class="text-[var(--app-text-muted)]">IP：</span>{{ detail?.ip || "-" }}</div>
-          <div><span class="text-[var(--app-text-muted)]">时间：</span>{{ detail ? formatDateTime(detail.createdAt) : "-" }}</div>
+          <div>
+            <span class="text-[var(--app-text-muted)]">时间：</span
+            >{{ detail ? formatDateTime(detail.createdAt) : "-" }}
+          </div>
         </div>
 
         <!-- 请求参数 -->
         <div v-if="detail?.requestBody != null" class="mb-3">
           <div class="mb-1 text-13px font-600">请求参数</div>
-          <pre class="m-0 rounded-lg bg-[var(--app-bg-hover)] p-3 text-12px whitespace-pre-wrap break-all">{{ formatJson(detail.requestBody) }}</pre>
+          <pre
+            class="m-0 rounded-lg bg-[var(--app-bg-hover)] p-3 text-12px whitespace-pre-wrap break-all"
+            >{{ formatJson(detail.requestBody) }}</pre
+          >
         </div>
 
         <!-- 返回参数 -->
         <div v-if="detail?.responseBody != null" class="mb-3">
           <div class="mb-1 text-13px font-600">返回参数</div>
-          <pre class="m-0 rounded-lg bg-[var(--app-bg-hover)] p-3 text-12px whitespace-pre-wrap break-all">{{ formatJson(detail.responseBody) }}</pre>
+          <pre
+            class="m-0 rounded-lg bg-[var(--app-bg-hover)] p-3 text-12px whitespace-pre-wrap break-all"
+            >{{ formatJson(detail.responseBody) }}</pre
+          >
         </div>
 
         <!-- 错误信息 -->
         <div v-if="detail?.errorMessage">
           <div class="mb-1 text-13px font-600 text-[var(--lew-color-error)]">错误信息</div>
-          <pre class="m-0 rounded-lg bg-[var(--app-bg-hover)] p-3 text-12px whitespace-pre-wrap break-all text-[var(--lew-color-error)]">{{ detail.errorMessage }}</pre>
+          <pre
+            class="m-0 rounded-lg bg-[var(--app-bg-hover)] p-3 text-12px whitespace-pre-wrap break-all text-[var(--lew-color-error)]"
+            >{{ detail.errorMessage }}</pre
+          >
         </div>
       </div>
     </LewModal>

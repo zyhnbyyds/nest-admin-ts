@@ -430,8 +430,8 @@ async function handleSubmit() {
 // ---------- 按钮权限（type=F 子项管理） ----------
 const btnAuthVisible = ref(false);
 const btnAuthMenu = ref<Menu | null>(null);
-const btnAuthList = computed<Menu[]>(() =>
-  btnAuthMenu.value?.children?.filter((child) => child.type === "F") ?? [],
+const btnAuthList = computed<Menu[]>(
+  () => btnAuthMenu.value?.children?.filter((child) => child.type === "F") ?? [],
 );
 
 const btnAuthColumns: LewTableColumn[] = [
@@ -520,11 +520,7 @@ function handleDelete(row: Menu) {
             >
               <KeyRound :size="14" />
             </IconButton>
-            <IconButton
-              permission="system:menu:update"
-              title="编辑"
-              @click="openEdit(menuOf(row))"
-            >
+            <IconButton permission="system:menu:update" title="编辑" @click="openEdit(menuOf(row))">
               <Pencil :size="14" />
             </IconButton>
             <IconButton
@@ -590,7 +586,7 @@ function handleDelete(row: Menu) {
             <div class="flex items-center gap-1.5">
               <component :is="resolveMenuIcon(icon)" :size="17" />
               <span class="text-12.5px text-[var(--app-text-muted)]">
-                {{ icon || '未设置（显示默认图标）' }}
+                {{ icon || "未设置（显示默认图标）" }}
               </span>
             </div>
           </div>

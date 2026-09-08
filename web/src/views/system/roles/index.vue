@@ -187,9 +187,7 @@ async function handleSubmit() {
     sort: values.sort,
     remark: values.remark || undefined,
     dataScope: values.dataScope,
-    ...(values.dataScope === "custom"
-      ? { deptIds: (values.deptIds ?? []).map(Number) }
-      : {}),
+    ...(values.dataScope === "custom" ? { deptIds: (values.deptIds ?? []).map(Number) } : {}),
   };
   if (editingId.value === null) {
     await createRole(body);
@@ -309,7 +307,11 @@ function handleDelete(row: Role) {
             >
               <KeyRound :size="14" />
             </IconButton>
-            <IconButton color="error" title="删除角色" @click="handleDelete(row as unknown as Role)">
+            <IconButton
+              color="error"
+              title="删除角色"
+              @click="handleDelete(row as unknown as Role)"
+            >
               <Trash2 :size="14" />
             </IconButton>
           </div>
