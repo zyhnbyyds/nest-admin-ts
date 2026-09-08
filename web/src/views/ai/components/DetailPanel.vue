@@ -1,5 +1,13 @@
 <script setup lang="ts">
-import { Database, PanelRight, RotateCcw, ShieldAlert, ShieldCheck, X } from "lucide-vue-next";
+import {
+  Database,
+  Loader2,
+  PanelRight,
+  RotateCcw,
+  ShieldAlert,
+  ShieldCheck,
+  X,
+} from "lucide-vue-next";
 import { LewButton, LewCollapse, LewCollapseItem, LewTag } from "lew-ui";
 import { formatDateTime } from "~/composables/useFormat";
 import type { AiTaskInfo, AiTaskStep, AiToolCall } from "~/types/api";
@@ -94,21 +102,38 @@ const emit = defineEmits<{
                 class="text-12.5px rounded-md border border-[var(--app-border)] p-2"
               >
                 <div class="flex items-center gap-1.5">
-                  <Database :size="13" class="text-[var(--lew-color-primary)]" />
+                  <Loader2
+                    v-if="call.result === undefined"
+                    :size="12"
+                    class="shrink-0 text-[var(--lew-color-primary)] animate-spin"
+                  />
+                  <Database :size="13" class="shrink-0 text-[var(--lew-color-primary)]" />
                   <span class="font-600 text-[var(--lew-color-primary)]">{{ call.name }}</span>
                 </div>
                 <div class="text-[var(--app-text-muted)] mt-1 break-all">
                   {{ formatArgs(call.arguments) }}
                 </div>
                 <div
-                  v-if="call.result !== undefined"
+                  v-if="call.result === undefined"
+                  class="mt-1 text-11px text-[var(--lew-color-primary)]"
+                >
+                  执行中...
+                </div>
+                <div
+                  v-else-if="call.result !== undefined"
                   class="mt-1 text-11px"
-                  :class="call.result ? 'text-green-500' : 'text-[var(--app-text-muted)]'"
+                  :class="
+                    (call.result as { status?: string })?.status === 'waiting_approval'
+                      ? 'text-orange-500'
+                      : 'text-green-500'
+                  "
                 >
                   {{
-                    isUserList(call.result)
-                      ? `返回 ${(call.result as { items: unknown[] }).items.length} 条`
-                      : "已执行"
+                    (call.result as { status?: string })?.status === "waiting_approval"
+                      ? "等待确认"
+                      : isUserList(call.result)
+                        ? `返回 ${(call.result as { items: unknown[] }).items.length} 条`
+                        : "已执行"
                   }}
                 </div>
               </div>

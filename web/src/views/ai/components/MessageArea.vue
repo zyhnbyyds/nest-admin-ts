@@ -1,20 +1,12 @@
 <script setup lang="ts">
-import { Database, ShieldCheck, Sparkles } from "lucide-vue-next";
+import { ref } from "vue";
+import { ShieldCheck, Sparkles } from "lucide-vue-next";
 import { LewAlert, LewButton, LewTag } from "lew-ui";
-import { MdPreview } from "md-editor-v3";
-import "md-editor-v3/lib/style.css";
-import DOMPurify from "dompurify";
-import type { AiApprovalRequired, AiMessage } from "~/types/api";
-import { useSettingsStore } from "~/store/settings";
-import {
-  USER_TABLE_COLUMNS,
-  formatArgs,
-  isStatusColumn,
-  isUserList,
-  riskColor,
-  riskText,
-  userCellValue,
-} from "../utils/display";
+import type { AiApprovalRequired, AiMessage, AiToolCall } from "~/types/api";
+import { riskColor, riskText } from "../utils/display";
+import MarkdownContent from "./MarkdownContent.vue";
+import ToolStepCard from "./ToolStepCard.vue";
+import TypewriterText from "./TypewriterText.vue";
 
 defineProps<{
   messages: AiMessage[];
@@ -26,16 +18,35 @@ defineProps<{
 const emit = defineEmits<{
   (e: "confirm"): void;
   (e: "reject"): void;
+  /** 生成中的消息已完整打完字，父级将其标记为完成 */
+  (e: "typed", messageId: number): void;
 }>();
 
-const settings = useSettingsStore();
+const listEl = ref<HTMLElement | null>(null);
 
-/** XSS 过滤：AI 返回内容渲染前经 DOMPurify 清洗 */
-const sanitize = (html: string) => DOMPurify.sanitize(html);
+/** 判断消息是否为「正在生成中」 */
+function isFresh(message: AiMessage): boolean {
+  return !!message._fresh;
+}
+
+/** 根据 tool 调用推断步骤状态 */
+function toolStatus(call: AiToolCall): "running" | "success" | "approval" | "error" {
+  if (call.result === undefined) return "running";
+  const status = (call.result as { status?: string })?.status;
+  if (status === "waiting_approval") return "approval";
+  if (status === "error") return "error";
+  return "success";
+}
+
+/** 滚动到底部（打字机播放中跟随） */
+function scrollToBottom() {
+  const el = listEl.value;
+  if (el) el.scrollTop = el.scrollHeight;
+}
 </script>
 
 <template>
-  <div id="ai-messages" class="flex-1 overflow-y-auto p-4 space-y-4">
+  <div ref="listEl" id="ai-messages" class="flex-1 overflow-y-auto p-4 space-y-4">
     <!-- 空态引导 -->
     <div
       v-if="!messages.length && !thinking"
@@ -55,111 +66,54 @@ const sanitize = (html: string) => DOMPurify.sanitize(html);
       class="flex"
       :class="message.role === 'user' ? 'justify-end' : 'justify-start'"
     >
-      <div class="max-w-[78%]">
-        <!-- 文本气泡 -->
+      <div class="max-w-[78%] min-w-0">
+        <!-- 用户消息气泡 -->
         <div
-          v-if="message.content"
-          class="px-3.5 py-2.5 rounded-lg text-13.5px leading-relaxed"
-          :class="
-            message.role === 'user'
-              ? 'bg-[var(--lew-color-primary)] text-white whitespace-pre-wrap'
-              : 'bg-[var(--app-bg-hover)]'
-          "
+          v-if="message.role === 'user'"
+          class="px-3.5 py-2.5 rounded-lg text-13.5px leading-relaxed whitespace-pre-wrap bg-[var(--lew-color-primary)] text-white"
         >
-          <template v-if="message.role === 'assistant'">
-            <MdPreview
-              :model-value="message.content"
-              :theme="settings.isDark ? 'dark' : 'light'"
-              :sanitize="sanitize"
-              preview-theme="github"
-              class="ai-md-preview"
-            />
-          </template>
-          <template v-else>{{ message.content }}</template>
+          {{ message.content }}
         </div>
 
-        <!-- Tool 调用卡片 -->
-        <div
-          v-if="message.role === 'assistant' && message.toolCalls?.length"
-          class="mt-2 space-y-2"
-        >
+        <!-- assistant 消息 -->
+        <template v-else-if="message.role === 'assistant'">
+          <!-- 生成中占位：tool 步骤可能先到、文本未到时显示光标 -->
           <div
-            v-for="(call, index) in message.toolCalls"
-            :key="index"
-            class="rounded-lg border border-[var(--app-border)] bg-[var(--app-bg)] overflow-hidden"
+            v-if="isFresh(message) && !message.content"
+            class="flex items-center gap-1.5 text-12.5px text-[var(--app-text-muted)] px-1 py-0.5"
           >
-            <div class="flex items-center gap-1.5 px-3 py-2 bg-[var(--app-bg-hover)]">
-              <Database :size="13" class="text-[var(--lew-color-primary)]" />
-              <span class="text-12.5px font-600">{{ call.name }}</span>
-              <span class="text-11px text-[var(--app-text-muted)] ml-auto truncate">
-                {{ formatArgs(call.arguments) }}
-              </span>
-            </div>
-            <!-- 结果展示 -->
-            <div v-if="call.result" class="px-3 py-2">
-              <template v-if="isUserList(call.result)">
-                <div class="text-11.5px text-[var(--app-text-muted)] mb-1.5">
-                  查询到
-                  <span class="font-600 text-[var(--lew-color-primary)]">
-                    {{ (call.result as { items: unknown[] }).items.length }}
-                  </span>
-                  条用户记录
-                </div>
-                <div class="overflow-x-auto rounded-md border border-[var(--app-border)]">
-                  <table class="w-full text-12px">
-                    <thead>
-                      <tr class="bg-[var(--app-bg-hover)]">
-                        <th
-                          v-for="col in USER_TABLE_COLUMNS"
-                          :key="col.key"
-                          class="px-2.5 py-2 text-left font-600 text-[var(--app-text-primary)] whitespace-nowrap"
-                        >
-                          {{ col.label }}
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr
-                        v-for="(user, i) in (
-                          call.result as { items: Array<Record<string, unknown>> }
-                        ).items"
-                        :key="i"
-                        class="border-t border-[var(--app-border)] transition-colors hover:bg-[var(--app-bg-hover)]"
-                      >
-                        <td
-                          v-for="col in USER_TABLE_COLUMNS"
-                          :key="col.key"
-                          class="px-2.5 py-2 whitespace-nowrap text-[var(--app-text-primary)]"
-                        >
-                          <template v-if="isStatusColumn(col.key)">
-                            <LewTag
-                              :type="'light'"
-                              :color="user.status === 'active' ? 'success' : 'warning'"
-                              size="small"
-                            >
-                              {{ user.status === "active" ? "启用" : "禁用" }}
-                            </LewTag>
-                          </template>
-                          <template v-else>
-                            <span :class="col.key === 'id' ? 'text-[var(--app-text-muted)]' : ''">
-                              {{ userCellValue(user, col.key) }}
-                            </span>
-                          </template>
-                        </td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-              </template>
-              <!-- 其他结果 -->
-              <pre
-                v-else
-                class="text-11.5px text-[var(--app-text-muted)] whitespace-pre-wrap break-all max-h-32 overflow-y-auto"
-                >{{ JSON.stringify(call.result, null, 2) }}</pre
-              >
-            </div>
+            <span class="w-1.5 h-1.5 rounded-full bg-current animate-pulse" />
+            <span v-if="message.toolCalls?.length">正在处理...</span>
+            <span v-else>AI 正在分析...</span>
           </div>
-        </div>
+
+          <!-- 文本内容：生成中用打字机，否则 markdown 直接渲染 -->
+          <div
+            v-if="message.content"
+            class="px-3.5 py-2.5 rounded-lg text-13.5px leading-relaxed bg-[var(--app-bg-hover)]"
+          >
+            <TypewriterText
+              v-if="isFresh(message)"
+              :text="message.content"
+              :active="true"
+              @done="emit('typed', message.id)"
+              @scroll="scrollToBottom"
+            />
+            <MarkdownContent v-else :content="message.content" />
+          </div>
+
+          <!-- 操作步骤（tool 调用）：折叠卡片，默认闭合 -->
+          <div v-if="message.toolCalls?.length" class="mt-2 space-y-1.5">
+            <ToolStepCard
+              v-for="(call, index) in message.toolCalls"
+              :key="`${message.id}-${index}`"
+              :name="call.name"
+              :args="call.arguments"
+              :result="call.result"
+              :status="toolStatus(call)"
+            />
+          </div>
+        </template>
       </div>
     </div>
 
@@ -197,8 +151,8 @@ const sanitize = (html: string) => DOMPurify.sanitize(html);
       </div>
     </div>
 
-    <!-- 思考中 -->
-    <div v-if="thinking" class="flex justify-start">
+    <!-- 思考中（历史无消息且正在请求时的兜底提示） -->
+    <div v-if="thinking && !messages.some(isFresh)" class="flex justify-start">
       <div
         class="px-3.5 py-2.5 rounded-lg bg-[var(--app-bg-hover)] text-13px text-[var(--app-text-muted)]"
       >
@@ -210,98 +164,3 @@ const sanitize = (html: string) => DOMPurify.sanitize(html);
     </div>
   </div>
 </template>
-
-<style scoped>
-/* 覆盖 md-editor-v3 预览样式，匹配项目主题 */
-.ai-md-preview {
-  --md-color: var(--app-text-primary);
-  --md-border-color: var(--app-border);
-  --md-bk-color: transparent;
-  --md-bk-color-light: var(--app-bg-hover);
-  --md-bk-color-lighter: var(--app-bg-hover);
-  --md-theme: var(--app-text-primary);
-  font-size: 13.5px;
-  line-height: 1.7;
-}
-.ai-md-preview :deep(.md-editor-preview-wrapper) {
-  padding: 0;
-}
-.ai-md-preview :deep(h1),
-.ai-md-preview :deep(h2),
-.ai-md-preview :deep(h3),
-.ai-md-preview :deep(h4) {
-  color: var(--app-text-primary);
-  font-weight: 600;
-  margin: 0.6em 0 0.4em;
-}
-.ai-md-preview :deep(h1) {
-  font-size: 1.35em;
-}
-.ai-md-preview :deep(h2) {
-  font-size: 1.2em;
-}
-.ai-md-preview :deep(h3) {
-  font-size: 1.1em;
-}
-.ai-md-preview :deep(p) {
-  margin: 0.35em 0;
-}
-.ai-md-preview :deep(ul),
-.ai-md-preview :deep(ol) {
-  padding-left: 1.4em;
-  margin: 0.35em 0;
-}
-.ai-md-preview :deep(li) {
-  margin: 0.15em 0;
-}
-.ai-md-preview :deep(a) {
-  color: var(--lew-color-primary);
-}
-.ai-md-preview :deep(code) {
-  background: var(--app-bg-hover);
-  color: var(--lew-color-primary);
-  border-radius: 4px;
-  padding: 0.1em 0.35em;
-  font-size: 0.92em;
-}
-.ai-md-preview :deep(pre) {
-  background: var(--app-bg-hover);
-  border: 1px solid var(--app-border);
-  border-radius: 6px;
-  padding: 0.6em 0.8em;
-  overflow-x: auto;
-  margin: 0.5em 0;
-}
-.ai-md-preview :deep(pre code) {
-  background: transparent;
-  color: var(--app-text-primary);
-  padding: 0;
-}
-.ai-md-preview :deep(blockquote) {
-  border-left: 3px solid var(--lew-color-primary);
-  background: var(--app-bg-hover);
-  margin: 0.5em 0;
-  padding: 0.3em 0.8em;
-  color: var(--app-text-muted);
-  border-radius: 0 6px 6px 0;
-}
-.ai-md-preview :deep(table) {
-  border-collapse: collapse;
-  margin: 0.5em 0;
-  width: 100%;
-}
-.ai-md-preview :deep(th),
-.ai-md-preview :deep(td) {
-  border: 1px solid var(--app-border);
-  padding: 0.35em 0.6em;
-  text-align: left;
-}
-.ai-md-preview :deep(th) {
-  background: var(--app-bg-hover);
-  font-weight: 600;
-}
-.ai-md-preview :deep(hr) {
-  border-color: var(--app-border);
-  margin: 0.8em 0;
-}
-</style>

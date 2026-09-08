@@ -69,7 +69,9 @@ export function formatArgs(args: Record<string, unknown>): string {
   for (const [key, value] of Object.entries(args ?? {})) {
     if (value === undefined || value === null || value === "") continue;
     const label = { page: "页码", pageSize: "每页", status: "状态", keyword: "关键字" }[key] ?? key;
-    parts.push(`${label}: ${String(value)}`);
+    // 对象/数组值序列化为紧凑 JSON，避免 String(object) 抛错
+    const text = typeof value === "object" ? JSON.stringify(value) : String(value);
+    parts.push(`${label}: ${text}`);
   }
   return parts.length ? parts.join(" · ") : "无参数";
 }

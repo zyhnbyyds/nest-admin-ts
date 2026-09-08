@@ -2,6 +2,7 @@ import "virtual:uno.css";
 // @ts-ignore
 import "lew-ui/style";
 import "./styles/index.css";
+import "./styles/ai-md.css";
 
 import { createPinia } from "pinia";
 import { createApp } from "vue";

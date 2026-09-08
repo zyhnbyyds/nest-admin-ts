@@ -32,6 +32,7 @@ const {
   handleCreateSession,
   selectSession,
   handleSend,
+  finishFreshMessage,
   handleConfirm,
   handleReject,
   handleRollbackTask,
@@ -69,6 +70,7 @@ const {
         :confirming="confirming"
         @confirm="handleConfirm"
         @reject="handleReject"
+        @typed="finishFreshMessage"
       />
 
       <ChatInput

@@ -89,6 +89,7 @@ export function useAiChat() {
     taskSteps.value = [];
     taskStatus.value = "";
 
+    // 用户消息
     messages.value.push({
       id: Date.now(),
       sessionId: currentSession.value.id,
@@ -98,23 +99,37 @@ export function useAiChat() {
       toolResults: null,
       createdAt: new Date().toISOString(),
     });
+
+    // 占位 assistant 消息（生成中）：SSE 实时驱动 toolCalls 与 content
+    const freshId = Date.now() + 1;
+    const fresh: AiMessage = {
+      id: freshId,
+      sessionId: currentSession.value.id,
+      role: "assistant",
+      content: null,
+      toolCalls: [],
+      toolResults: null,
+      createdAt: new Date().toISOString(),
+      _fresh: true,
+    };
+    messages.value.push(fresh);
     await scrollToBottom();
 
     try {
       const result = await sendMessage(currentSession.value.id, content, handleSseEvent);
-      messages.value.push({
-        id: Date.now() + 1,
-        sessionId: currentSession.value.id,
-        role: "assistant",
-        content: result.content,
-        toolCalls: result.toolCalls,
-        toolResults: null,
-        createdAt: new Date().toISOString(),
-      });
+      // SSE 收尾：以最终结果为准原地回填占位消息（保持对象引用稳定，避免 vnode 重建）
+      const freshMsg = messages.value.find((m) => m.id === freshId);
+      if (freshMsg) {
+        freshMsg.content = result.content || freshMsg.content || null;
+        freshMsg.toolCalls = result.toolCalls;
+        freshMsg._fresh = true;
+      }
       riskLevel.value = result.riskLevel;
       waitingApproval.value = result.waitingApproval;
     } catch (error) {
       LewMessage.error(error instanceof Error ? error.message : "AI 请求失败");
+      // 失败时移除占位 assistant 消息，避免残留空白气泡
+      messages.value = messages.value.filter((m) => m.id !== freshId);
     } finally {
       sending.value = false;
       thinking.value = false;
@@ -122,20 +137,44 @@ export function useAiChat() {
     }
   }
 
+  /** 将生成中的占位消息标记为「已完成」（打字机播完后由父组件调用） */
+  function finishFreshMessage(id: number) {
+    const msg = messages.value.find((m) => m.id === id);
+    if (msg) msg._fresh = false;
+  }
+
   function handleSseEvent(event: AiSseEvent) {
+    // 找到当前生成中的占位 assistant 消息
+    const freshMsg = messages.value.find((m) => m._fresh);
+
     switch (event.type) {
       case "thinking":
         thinking.value = true;
         break;
       case "tool_call": {
         const data = event.data as { name: string; arguments: Record<string, unknown> };
-        toolCalls.value.push({ name: data.name, arguments: data.arguments });
+        const call = { name: data.name, arguments: data.arguments };
+        toolCalls.value.push(call);
+        // 同步到占位消息 → 对话区实时出现该步骤（running）
+        if (freshMsg) freshMsg.toolCalls?.push(call);
+        void scrollToBottom();
         break;
       }
       case "tool_result": {
         const data = event.data as { name: string; result: unknown };
-        const call = toolCalls.value.find((c) => c.name === data.name);
-        if (call) call.result = data.result;
+        const update = (list?: AiToolCall[] | null) => {
+          if (!list) return;
+          // 同名工具可能多次调用：更新最后一个尚无 result 的项
+          for (let i = list.length - 1; i >= 0; i--) {
+            if (list[i]?.name === data.name && list[i]?.result === undefined) {
+              list[i]!.result = data.result;
+              break;
+            }
+          }
+        };
+        update(toolCalls.value);
+        update(freshMsg?.toolCalls);
+        void scrollToBottom();
         break;
       }
       case "approval_required": {
@@ -145,9 +184,14 @@ export function useAiChat() {
         riskLevel.value = data.riskLevel;
         break;
       }
-      case "message":
+      case "message": {
+        // 文本完整到达 → 触发打字机
+        const data = event.data as { content?: string };
         thinking.value = false;
+        if (freshMsg && data.content) freshMsg.content = data.content;
+        void scrollToBottom();
         break;
+      }
       case "error":
         LewMessage.error((event.data as { message?: string })?.message ?? "AI 处理失败");
         break;
@@ -209,8 +253,18 @@ export function useAiChat() {
         pendingApproval.value.confirmToken,
       );
       LewMessage.success("操作已执行");
-      const call = toolCalls.value.find((c) => c.name === toolName);
-      if (call) call.result = { status: "executed" };
+      const result = { status: "executed" as const };
+      // 同步更新 toolCalls 与占位 assistant 消息中对应步骤
+      toolCalls.value.forEach((c) => {
+        if (c.name === toolName) c.result = result;
+      });
+      messages.value
+        .filter((m) => m._fresh)
+        .forEach((m) =>
+          m.toolCalls?.forEach((c) => {
+            if (c.name === toolName) c.result = result;
+          }),
+        );
       pendingApproval.value = null;
       waitingApproval.value = false;
     } catch (error) {
@@ -268,6 +322,7 @@ export function useAiChat() {
     thinking,
     toolCalls,
     handleSend,
+    finishFreshMessage,
     // 审批
     waitingApproval,
     riskLevel,

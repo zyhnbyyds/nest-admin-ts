@@ -144,6 +144,8 @@ export interface AiMessage {
   toolCalls: AiToolCall[] | null;
   toolResults: unknown[] | null;
   createdAt: string;
+  /** 前端本地标记：本条为「生成中」消息（打字机动画 + 实时 tool 步骤），不持久化 */
+  _fresh?: boolean;
 }
 
 export interface AiResult {
