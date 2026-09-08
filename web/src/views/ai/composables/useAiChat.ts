@@ -3,6 +3,7 @@ import { LewDialog, LewMessage } from "lew-ui";
 import {
   confirmAction,
   createSession,
+  getTask,
   listMessages,
   listSessions,
   listTasks,
@@ -44,6 +45,8 @@ export function useAiChat() {
   const waitingApproval = ref(false);
   const riskLevel = ref<string>("");
   const pendingApproval = ref<AiApprovalRequired | null>(null);
+  /** 审批收尾进行中（防止弹窗按钮连点导致重复收尾/重复追加消息） */
+  const approvalBusy = ref(false);
 
   // ---------- 任务时间线 ----------
   const currentTaskId = ref<number | null>(null);
@@ -300,11 +303,12 @@ export function useAiChat() {
             size: "small",
             request: async () => {
               try {
-                await rejectAction(data.intentId, "用户取消");
+                const { content } = await rejectAction(data.intentId, "用户取消");
                 LewMessage.info("已取消操作");
-                updateToolStepStatus(data.toolName, { status: "cancelled" });
-              } catch (error) {
-                LewMessage.error(error instanceof Error ? error.message : "取消失败");
+                await finishApproval(data.toolName, { status: "cancelled" }, content);
+              } catch {
+                // 错误提示已由请求拦截器统一弹出，这里只做状态收尾
+                await finishApproval(data.toolName, { status: "cancelled" });
               }
               return true;
             },
@@ -318,11 +322,15 @@ export function useAiChat() {
             color: "info",
             request: async () => {
               try {
-                const { toolName } = await confirmAction(data.intentId, data.confirmToken);
+                const { toolName, result, content } = await confirmAction(
+                  data.intentId,
+                  data.confirmToken,
+                );
                 LewMessage.success("操作已执行");
-                updateToolStepStatus(toolName, { status: "executed" });
-              } catch (error) {
-                LewMessage.error(error instanceof Error ? error.message : "确认失败");
+                await finishApproval(toolName, result ?? { status: "executed" }, content);
+              } catch {
+                // 错误提示已由请求拦截器统一弹出，这里把步骤标记为失败并收尾
+                await finishApproval(data.toolName, { status: "error" });
               }
               return true;
             },
@@ -330,6 +338,64 @@ export function useAiChat() {
         },
       ],
     });
+  }
+
+  /**
+   * 审批结束（确认/取消/失败）后的统一收尾：
+   * 清理等待状态 → 结束「生成中」占位消息 → 更新步骤卡片
+   * → 追加收尾文案（确认总结/取消提示） → 刷新任务时间线。
+   */
+  async function finishApproval(toolName: string, result: unknown, summary?: string) {
+    // 防止弹窗按钮连点/重复回调导致重复收尾或重复追加消息
+    if (approvalBusy.value) return;
+    approvalBusy.value = true;
+    try {
+      pendingApproval.value = null;
+      waitingApproval.value = false;
+      updateToolStepStatus(toolName, result);
+
+      // 仅当本次步骤仍在本会话消息中才就地收尾，避免会话切换后误写入其它会话
+      const hasStep = messages.value.some(
+        (m) => m.role === "assistant" && m.toolCalls?.some((c) => c.name === toolName),
+      );
+      if (hasStep) {
+        // 结束「生成中」占位消息：步骤已定稿，避免残留“正在处理...”动画
+        messages.value
+          .filter((m) => m._fresh && m.toolCalls?.some((c) => c.name === toolName))
+          .forEach((m) => {
+            m._fresh = false;
+          });
+
+        // 收尾文案作为对话下文展示（刷新后由历史记录中的同文案承载）
+        if (summary && currentSession.value) {
+          messages.value.push({
+            id: Date.now(),
+            sessionId: currentSession.value.id,
+            role: "assistant",
+            content: summary,
+            toolCalls: null,
+            toolResults: null,
+            createdAt: new Date().toISOString(),
+            _fresh: true,
+          });
+          await scrollToBottom();
+        }
+      }
+
+      // 刷新任务时间线与历史，反映最终状态
+      if (currentTaskId.value) {
+        try {
+          const task = await getTask(currentTaskId.value);
+          taskSteps.value = task.steps ?? [];
+          taskStatus.value = task.status;
+        } catch {
+          // 任务可能已不存在，忽略
+        }
+      }
+      void loadTaskHistory();
+    } finally {
+      approvalBusy.value = false;
+    }
   }
 
   // ---------- 撤销任务（Undo） ----------

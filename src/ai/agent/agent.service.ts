@@ -493,7 +493,12 @@ export class AgentService {
     intentId: number,
     confirmToken: string,
     actor: AiActor,
-  ): Promise<{ result: unknown; toolName: string }> {
+  ): Promise<{
+    result: unknown;
+    toolName: string;
+    sessionId: number | null;
+    input: Record<string, unknown>;
+  }> {
     const intent = await this.actionIntentService.getById(intentId);
     if (!intent) {
       throw new AiException(AiErrorCode.ACTION_EXPIRED, '操作意图不存在');
@@ -597,6 +602,73 @@ export class AgentService {
       metadata: { input: intent.input, intentId },
     });
 
-    return { result: sanitized, toolName: tool.name };
+    return {
+      result: sanitized,
+      toolName: tool.name,
+      sessionId: intent.sessionId ?? null,
+      input: (intent.input ?? {}) as Record<string, unknown>,
+    };
+  }
+
+  /**
+   * 确认执行后生成总结回复（单轮 LLM 调用，禁止再触发工具）。
+   *
+   * 会话在审批中断后由本方法补上「下文」：把工具执行结果喂回 LLM，
+   * 生成面向用户的自然语言总结，让对话完整闭环。
+   */
+  async summarizeExecution(params: {
+    actor: AiActor;
+    history: Array<{ role: 'user' | 'assistant'; content: string }>;
+    userMessage: string;
+    toolName: string;
+    input: Record<string, unknown>;
+    result: unknown;
+  }): Promise<string> {
+    const aiContext = this.contextBuilder.build(params.actor);
+    // 实际工具名 → LLM 工具名（与 agent.run 中的映射保持一致）
+    const llmToolName =
+      [...aiContext.toolNameMap.entries()].find(
+        ([, actual]) => actual === params.toolName,
+      )?.[0] ?? params.toolName;
+
+    // 避免与独立 user 消息重复：history 末尾若正是本次用户消息则剔除
+    const last = params.history[params.history.length - 1];
+    const duplicatedTail =
+      last && last.role === 'user' && last.content === params.userMessage;
+    const historyTail = duplicatedTail
+      ? params.history.slice(0, -1)
+      : params.history;
+
+    const messages: LlmMessage[] = [
+      { role: 'system', content: aiContext.systemPrompt },
+      ...historyTail.slice(-20).map((item) => ({
+        role: item.role,
+        content: item.content,
+      })),
+      { role: 'user', content: params.userMessage },
+      {
+        role: 'assistant',
+        content: '',
+        toolCalls: [
+          {
+            id: 'confirm-execution',
+            name: llmToolName,
+            arguments: params.input,
+          },
+        ],
+      },
+      {
+        role: 'tool',
+        content: JSON.stringify(params.result ?? {}).slice(0, 4000),
+        toolCallId: 'confirm-execution',
+      },
+    ];
+
+    const response = await this.llm.chat({
+      messages,
+      tools: aiContext.tools,
+      toolChoice: 'none',
+    });
+    return response.content.trim();
   }
 }

@@ -27,11 +27,12 @@ function isFresh(message: AiMessage): boolean {
 }
 
 /** 根据 tool 调用推断步骤状态 */
-function toolStatus(call: AiToolCall): "running" | "success" | "approval" | "error" {
+function toolStatus(call: AiToolCall): "running" | "success" | "approval" | "error" | "cancelled" {
   if (call.result === undefined) return "running";
   const status = (call.result as { status?: string })?.status;
   if (status === "waiting_approval") return "approval";
   if (status === "error") return "error";
+  if (status === "cancelled") return "cancelled";
   return "success";
 }
 

@@ -98,17 +98,23 @@ export function approveAction(intentId: number) {
   return post<{ id: number; status: string }>(`/ai/action-intents/${intentId}/approve`, {});
 }
 
-/** 拒绝 AI 操作意图 */
+/** 拒绝 AI 操作意图（后端同步历史状态并返回收尾文案） */
 export function rejectAction(intentId: number, reason?: string) {
-  return post<{ id: number; status: string }>(`/ai/action-intents/${intentId}/reject`, { reason });
+  return post<{ id: number; status: string; content?: string }>(
+    `/ai/action-intents/${intentId}/reject`,
+    { reason },
+  );
 }
 
-/** 确认执行 AI 操作意图 */
+/** 确认执行 AI 操作意图（后端执行工具并生成总结回复） */
 export function confirmAction(intentId: number, confirmToken: string) {
-  return post<{ result: unknown; toolName: string }>("/ai/action-intents/confirm", {
-    intentId,
-    confirmToken,
-  });
+  return post<{ result: unknown; toolName: string; content: string }>(
+    "/ai/action-intents/confirm",
+    {
+      intentId,
+      confirmToken,
+    },
+  );
 }
 
 // ---------- 任务（Task / TaskStep / Undo） ----------

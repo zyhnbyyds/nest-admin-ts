@@ -19,7 +19,7 @@ const props = withDefaults(
     /** 执行结果（可为空：执行中/待审批） */
     result?: unknown;
     /** 步骤状态 */
-    status?: "running" | "success" | "approval" | "error";
+    status?: "running" | "success" | "approval" | "error" | "cancelled";
   }>(),
   { result: undefined, status: "success" },
 );
@@ -58,6 +58,11 @@ function prettyJson(value: unknown): string {
               :size="12"
               class="ml-1 shrink-0 text-[var(--lew-color-primary)] animate-spin"
             />
+            <X
+              v-else-if="status === 'cancelled'"
+              :size="12"
+              class="ml-1 shrink-0 text-[var(--app-text-muted)]"
+            />
             <Check v-else-if="!isWaiting" :size="12" class="ml-1 shrink-0 text-green-500" />
             <Clock v-else :size="12" class="ml-1 shrink-0 text-orange-500" />
 
@@ -69,6 +74,15 @@ function prettyJson(value: unknown): string {
             <!-- 状态标签 -->
             <LewTag v-if="isWaiting" :type="'light'" color="warning" size="small" class="shrink-0">
               待确认
+            </LewTag>
+            <LewTag
+              v-else-if="status === 'cancelled'"
+              :type="'light'"
+              color="gray"
+              size="small"
+              class="shrink-0"
+            >
+              已取消
             </LewTag>
             <span v-else-if="isRunning" class="shrink-0 text-11px text-[var(--lew-color-primary)]">
               执行中
@@ -168,10 +182,14 @@ function prettyJson(value: unknown): string {
             >
           </div>
 
-          <!-- 错误结果 -->
-          <div v-if="status === 'error'" class="flex items-center gap-1.5 text-11.5px text-red-500">
+          <!-- 错误/取消结果 -->
+          <div
+            v-if="status === 'error' || status === 'cancelled'"
+            class="flex items-center gap-1.5 text-11.5px"
+            :class="status === 'error' ? 'text-red-500' : 'text-[var(--app-text-muted)]'"
+          >
             <X :size="12" />
-            执行失败
+            {{ status === "error" ? "执行失败" : "已取消" }}
           </div>
         </div>
       </LewCollapseItem>
