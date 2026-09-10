@@ -1,39 +1,62 @@
 <script setup lang="ts">
-import { nextTick, ref } from "vue";
-import { FileClock, Pencil, Play, Plus, Trash2 } from "lucide-vue-next";
-import { LewButton, LewForm, LewMessage, LewModal, LewPagination, LewTable } from "lew-ui";
-import type { LewTableColumn } from "lew-ui";
-import { clearJobLogs, createJob, deleteJob, listJobLogs, runJob, updateJob } from "~/api/jobs";
-import { useTable } from "~/composables/useTable";
+import { nextTick, ref } from 'vue';
+import { FileClock, Pencil, Play, Plus, Trash2 } from 'lucide-vue-next';
+import {
+  LewButton,
+  LewForm,
+  LewMessage,
+  LewModal,
+  LewPagination,
+  LewTable,
+} from 'lew-ui';
+import type { LewTableColumn } from 'lew-ui';
+import {
+  clearJobLogs,
+  createJob,
+  deleteJob,
+  listJobLogs,
+  runJob,
+  updateJob,
+} from '~/api/jobs';
+import { useTable } from '~/composables/useTable';
 
-import type { CreateJobBody, Job, JobLog } from "~/types/api";
-import { renderStatus } from "~/utils/render";
-import { confirmDanger } from "~/utils/confirm";
-import IconButton from "~/components/IconButton.vue";
+import type { CreateJobBody, Job, JobLog } from '~/types/api';
+import { renderStatus } from '~/utils/render';
+import { confirmDanger } from '~/utils/confirm';
+import IconButton from '~/components/IconButton.vue';
 
 // ---------- 任务列表 ----------
-const { items, loading, currentPage, pageSize, total, search, refresh, handleChange } =
-  useTable<Job>({ url: "/system/jobs" });
+const {
+  items,
+  loading,
+  currentPage,
+  pageSize,
+  total,
+  search,
+  refresh,
+  handleChange,
+} = useTable<Job>({ url: '/system/jobs' });
 
 const columns: LewTableColumn[] = [
-  { title: "ID", field: "id", width: 70 },
-  { title: "任务名称", field: "name", width: 180 },
-  { title: "处理器", field: "handler", width: 200 },
-  { title: "Cron 表达式", field: "cron", width: 140 },
+  { title: 'ID', field: 'id', width: 70 },
+  { title: '任务名称', field: 'name', width: 180 },
+  { title: '处理器', field: 'handler', width: 200 },
+  { title: 'Cron 表达式', field: 'cron', width: 140 },
   {
-    title: "状态",
-    field: "status",
+    title: '状态',
+    field: 'status',
     width: 90,
     customRender: ({ row }) => renderStatus((row as { status: string }).status),
   },
   {
-    title: "允许并发",
-    field: "concurrent",
+    title: '允许并发',
+    field: 'concurrent',
     width: 90,
-    customRender: ({ row }) => ((row as unknown as Job).concurrent ? "是" : "否"),
+    customRender: ({ row }) =>
+      (row as unknown as Job).concurrent ? '是' : '否',
   },
-  { title: "备注", field: "remark" },
-  { title: "操作", field: "operation", width: 150, fixed: "right" },
+  { title: '备注', field: 'remark' },
+  { title: '操作', field: 'operation', width: 150, fixed: 'right' },
 ];
 
 void search();
@@ -43,12 +66,12 @@ const modalVisible = ref(false);
 const editingId = ref<number | null>(null);
 const formRef = ref();
 const form = ref({
-  name: "",
-  handler: "",
-  cron: "",
+  name: '',
+  handler: '',
+  cron: '',
   status: true,
   concurrent: false,
-  remark: "",
+  remark: '',
 });
 /** 表单 key：每次打开弹窗自增，强制重建 LewForm 以回填数据 */
 const formKey = ref(0);
@@ -59,12 +82,12 @@ function openCreate() {
   modalVisible.value = true;
   void nextTick(() => {
     formRef.value?.setForm?.({
-      name: "",
-      handler: "",
-      cron: "",
+      name: '',
+      handler: '',
+      cron: '',
       status: true,
       concurrent: false,
-      remark: "",
+      remark: '',
     });
   });
 }
@@ -78,9 +101,9 @@ function openEdit(row: Job) {
       name: row.name,
       handler: row.handler,
       cron: row.cron,
-      status: row.status === "active",
+      status: row.status === 'active',
       concurrent: row.concurrent,
-      remark: row.remark ?? "",
+      remark: row.remark ?? '',
     });
   });
 }
@@ -88,21 +111,22 @@ function openEdit(row: Job) {
 async function handleSubmit() {
   const valid = await formRef.value?.validate();
   if (!valid) return;
-  const values = (formRef.value?.getForm?.() ?? form.value) as typeof form.value;
+  const values = (formRef.value?.getForm?.() ??
+    form.value) as typeof form.value;
   const body: CreateJobBody = {
     name: values.name,
     handler: values.handler,
     cron: values.cron,
-    status: values.status ? "active" : "disabled",
+    status: values.status ? 'active' : 'disabled',
     concurrent: values.concurrent,
     remark: values.remark || undefined,
   };
   if (editingId.value === null) {
     await createJob(body);
-    LewMessage.success("创建成功");
+    LewMessage.success('创建成功');
   } else {
     await updateJob(editingId.value, body);
-    LewMessage.success("更新成功");
+    LewMessage.success('更新成功');
   }
   modalVisible.value = false;
   void refresh();
@@ -111,14 +135,14 @@ async function handleSubmit() {
 // ---------- 手动执行 ----------
 function handleRun(row: Job) {
   confirmDanger({
-    type: "normal",
-    title: "手动执行",
+    type: 'normal',
+    title: '手动执行',
     content: `确定立即执行任务「${row.name}」吗？`,
-    confirmText: "执行",
-    confirmColor: "primary",
+    confirmText: '执行',
+    confirmColor: 'primary',
     onConfirm: async () => {
       await runJob(row.id);
-      LewMessage.success("已触发执行");
+      LewMessage.success('已触发执行');
     },
   });
 }
@@ -126,11 +150,11 @@ function handleRun(row: Job) {
 // ---------- 删除 ----------
 function handleDelete(row: Job) {
   confirmDanger({
-    title: "删除确认",
+    title: '删除确认',
     content: `确定删除任务「${row.name}」吗？`,
     onConfirm: async () => {
       await deleteJob(row.id);
-      LewMessage.success("删除成功");
+      LewMessage.success('删除成功');
       void refresh();
     },
   });
@@ -156,12 +180,12 @@ async function openLogs(row: Job) {
 
 async function handleClearLogs() {
   confirmDanger({
-    title: "清空确认",
-    content: "确定清空所有任务执行日志吗？",
-    confirmText: "清空",
+    title: '清空确认',
+    content: '确定清空所有任务执行日志吗？',
+    confirmText: '清空',
     onConfirm: async () => {
       await clearJobLogs();
-      LewMessage.success("已清空");
+      LewMessage.success('已清空');
       if (logsJob.value) await openLogs(logsJob.value);
     },
   });
@@ -185,7 +209,11 @@ async function handleClearLogs() {
         >
           <Trash2 :size="15" style="margin-right: 4px" /> 清空日志
         </LewButton>
-        <LewButton v-permission="'system:job:create'" type="fill" @click="openCreate">
+        <LewButton
+          v-permission="'system:job:create'"
+          type="fill"
+          @click="openCreate"
+        >
           <Plus :size="15" style="margin-right: 4px" /> 新增任务
         </LewButton>
       </div>
@@ -209,7 +237,10 @@ async function handleClearLogs() {
             >
               <Play :size="14" />
             </IconButton>
-            <IconButton title="执行日志" @click="openLogs(row as unknown as Job)">
+            <IconButton
+              title="执行日志"
+              @click="openLogs(row as unknown as Job)"
+            >
               <FileClock :size="14" />
             </IconButton>
             <IconButton

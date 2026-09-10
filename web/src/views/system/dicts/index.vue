@@ -1,8 +1,16 @@
 <script setup lang="ts">
-import { nextTick, ref } from "vue";
-import { Pencil, Plus, Trash2 } from "lucide-vue-next";
-import { LewButton, LewForm, LewMessage, LewModal, LewPagination, LewTable, LewTag } from "lew-ui";
-import type { LewTableColumn } from "lew-ui";
+import { nextTick, ref } from 'vue';
+import { Pencil, Plus, Trash2 } from 'lucide-vue-next';
+import {
+  LewButton,
+  LewForm,
+  LewMessage,
+  LewModal,
+  LewPagination,
+  LewTable,
+  LewTag,
+} from 'lew-ui';
+import type { LewTableColumn } from 'lew-ui';
 import {
   createDictData,
   createDictType,
@@ -10,39 +18,48 @@ import {
   deleteDictType,
   updateDictData,
   updateDictType,
-} from "~/api/system/dict";
-import { clearDictCache } from "~/composables/useDict";
-import { useTable } from "~/composables/useTable";
-import type { CreateDictDataBody, CreateDictTypeBody, DictData, DictType } from "~/types/api";
-import { renderStatus } from "~/utils/render";
-import { confirmDanger } from "~/utils/confirm";
-import IconButton from "~/components/IconButton.vue";
+} from '~/api/system/dict';
+import { clearDictCache } from '~/composables/useDict';
+import { useTable } from '~/composables/useTable';
+import type {
+  CreateDictDataBody,
+  CreateDictTypeBody,
+  DictData,
+  DictType,
+} from '~/types/api';
+import { renderStatus } from '~/utils/render';
+import { confirmDanger } from '~/utils/confirm';
+import IconButton from '~/components/IconButton.vue';
 
 // ---------- 左侧：字典类型 ----------
-const typeTable = useTable<DictType>({ url: "/system/dict-types", defaultPageSize: 20 });
+const typeTable = useTable<DictType>({
+  url: '/system/dict-types',
+  defaultPageSize: 20,
+});
 void typeTable.search();
 
 const typeColumns: LewTableColumn[] = [
-  { title: "字典名称", field: "name", width: 150 },
-  { title: "类型标识", field: "type", width: 160 },
+  { title: '字典名称', field: 'name', width: 150 },
+  { title: '类型标识', field: 'type', width: 160 },
   {
-    title: "状态",
-    field: "status",
+    title: '状态',
+    field: 'status',
     width: 80,
     customRender: ({ row }) => renderStatus((row as { status: string }).status),
   },
-  { title: "操作", field: "operation", width: 80, fixed: "right" },
+  { title: '操作', field: 'operation', width: 80, fixed: 'right' },
 ];
 
 const selectedType = ref<DictType | null>(null);
 
 function selectType(selected: unknown) {
   // lew-ui 的 selectChange 返回选中行 key（非行对象）：按 row-key=id 映射回行
-  if (selected && typeof selected === "object") {
+  if (selected && typeof selected === 'object') {
     selectedType.value = selected as DictType;
   } else {
     const key = selected == null ? undefined : Number(selected);
-    selectedType.value = typeTable.items.value.find((row) => row.id === key) ?? null;
+    selectedType.value =
+      typeTable.items.value.find((row) => row.id === key) ?? null;
   }
   void dataSearch();
 }
@@ -50,7 +67,7 @@ function selectType(selected: unknown) {
 // ---------- 右侧：字典数据 ----------
 const dataQuery = ref<{ type?: string }>({});
 const dataTable = useTable<DictData>({
-  url: "/system/dict-data",
+  url: '/system/dict-data',
   query: () => ({ ...dataQuery.value, type: selectedType.value?.type }),
 });
 const {
@@ -65,25 +82,25 @@ const {
 } = dataTable;
 
 const dataColumns: LewTableColumn[] = [
-  { title: "标签", field: "label", width: 140 },
-  { title: "键值", field: "value", width: 120 },
-  { title: "排序", field: "sort", width: 70 },
+  { title: '标签', field: 'label', width: 140 },
+  { title: '键值', field: 'value', width: 120 },
+  { title: '排序', field: 'sort', width: 70 },
   {
-    title: "状态",
-    field: "status",
+    title: '状态',
+    field: 'status',
     width: 80,
     customRender: ({ row }) => renderStatus((row as { status: string }).status),
   },
-  { title: "样式类名", field: "cssClass", width: 120 },
-  { title: "列表样式", field: "listClass", width: 120 },
-  { title: "操作", field: "operation", width: 80, fixed: "right" },
+  { title: '样式类名', field: 'cssClass', width: 120 },
+  { title: '列表样式', field: 'listClass', width: 120 },
+  { title: '操作', field: 'operation', width: 80, fixed: 'right' },
 ];
 
 // ---------- 字典类型弹窗 ----------
 const typeModalVisible = ref(false);
 const typeEditingId = ref<number | null>(null);
 const typeFormRef = ref();
-const typeForm = ref({ name: "", type: "", status: true, remark: "" });
+const typeForm = ref({ name: '', type: '', status: true, remark: '' });
 /** 类型表单 key：每次打开自增，强制重建 LewForm 回填数据 */
 const typeFormKey = ref(0);
 
@@ -92,7 +109,12 @@ function openTypeCreate() {
   typeFormKey.value += 1;
   typeModalVisible.value = true;
   void nextTick(() => {
-    typeFormRef.value?.setForm?.({ name: "", type: "", status: true, remark: "" });
+    typeFormRef.value?.setForm?.({
+      name: '',
+      type: '',
+      status: true,
+      remark: '',
+    });
   });
 }
 
@@ -104,8 +126,8 @@ function openTypeEdit(row: DictType) {
     typeFormRef.value?.setForm?.({
       name: row.name,
       type: row.type,
-      status: row.status === "active",
-      remark: row.remark ?? "",
+      status: row.status === 'active',
+      remark: row.remark ?? '',
     });
   });
 }
@@ -113,19 +135,20 @@ function openTypeEdit(row: DictType) {
 async function handleTypeSubmit() {
   const valid = await typeFormRef.value?.validate();
   if (!valid) return;
-  const values = (typeFormRef.value?.getForm?.() ?? typeForm.value) as typeof typeForm.value;
+  const values = (typeFormRef.value?.getForm?.() ??
+    typeForm.value) as typeof typeForm.value;
   const body: CreateDictTypeBody = {
     name: values.name,
     type: values.type,
-    status: values.status ? "active" : "disabled",
+    status: values.status ? 'active' : 'disabled',
     remark: values.remark || undefined,
   };
   if (typeEditingId.value === null) {
     await createDictType(body);
-    LewMessage.success("创建成功");
+    LewMessage.success('创建成功');
   } else {
     await updateDictType(typeEditingId.value, body);
-    LewMessage.success("更新成功");
+    LewMessage.success('更新成功');
   }
   typeModalVisible.value = false;
   clearDictCache();
@@ -134,11 +157,11 @@ async function handleTypeSubmit() {
 
 function handleTypeDelete(row: DictType) {
   confirmDanger({
-    title: "删除确认",
+    title: '删除确认',
     content: `确定删除字典类型「${row.name}」吗？其下所有字典数据将无法使用。`,
     onConfirm: async () => {
       await deleteDictType(row.id);
-      LewMessage.success("删除成功");
+      LewMessage.success('删除成功');
       clearDictCache();
       if (selectedType.value?.id === row.id) selectedType.value = null;
       void typeTable.refresh();
@@ -151,12 +174,12 @@ const dataModalVisible = ref(false);
 const dataEditingId = ref<number | null>(null);
 const dataFormRef = ref();
 const dataForm = ref({
-  label: "",
-  value: "",
+  label: '',
+  value: '',
   sort: 0,
   status: true,
-  cssClass: "",
-  listClass: "",
+  cssClass: '',
+  listClass: '',
 });
 /** 数据表单 key：每次打开自增，强制重建 LewForm 回填数据 */
 const dataFormKey = ref(0);
@@ -167,12 +190,12 @@ function openDataCreate() {
   dataModalVisible.value = true;
   void nextTick(() => {
     dataFormRef.value?.setForm?.({
-      label: "",
-      value: "",
+      label: '',
+      value: '',
       sort: 0,
       status: true,
-      cssClass: "",
-      listClass: "",
+      cssClass: '',
+      listClass: '',
     });
   });
 }
@@ -186,9 +209,9 @@ function openDataEdit(row: DictData) {
       label: row.label,
       value: row.value,
       sort: row.sort,
-      status: row.status === "active",
-      cssClass: row.cssClass ?? "",
-      listClass: row.listClass ?? "",
+      status: row.status === 'active',
+      cssClass: row.cssClass ?? '',
+      listClass: row.listClass ?? '',
     });
   });
 }
@@ -197,26 +220,27 @@ async function handleDataSubmit() {
   const valid = await dataFormRef.value?.validate();
   if (!valid) return;
   if (!selectedType.value) {
-    LewMessage.warning("请先选择左侧字典类型");
+    LewMessage.warning('请先选择左侧字典类型');
     return;
   }
-  const values = (dataFormRef.value?.getForm?.() ?? dataForm.value) as typeof dataForm.value;
+  const values = (dataFormRef.value?.getForm?.() ??
+    dataForm.value) as typeof dataForm.value;
   // LewForm 的数字输入可能以字符串返回，后端 schema 要求 number，这里强制数值化
   const body: CreateDictDataBody = {
     type: selectedType.value.type,
     label: values.label,
     value: values.value,
     sort: Number(values.sort ?? 0),
-    status: values.status ? "active" : "disabled",
+    status: values.status ? 'active' : 'disabled',
     cssClass: values.cssClass || undefined,
     listClass: values.listClass || undefined,
   };
   if (dataEditingId.value === null) {
     await createDictData(body);
-    LewMessage.success("创建成功");
+    LewMessage.success('创建成功');
   } else {
     await updateDictData(dataEditingId.value, body);
-    LewMessage.success("更新成功");
+    LewMessage.success('更新成功');
   }
   dataModalVisible.value = false;
   clearDictCache(selectedType.value.type);
@@ -225,11 +249,11 @@ async function handleDataSubmit() {
 
 function handleDataDelete(row: DictData) {
   confirmDanger({
-    title: "删除确认",
+    title: '删除确认',
     content: `确定删除字典数据「${row.label}」吗？`,
     onConfirm: async () => {
       await deleteDictData(row.id);
-      LewMessage.success("删除成功");
+      LewMessage.success('删除成功');
       clearDictCache(row.type);
       void dataRefresh();
     },
@@ -270,7 +294,10 @@ function handleDataDelete(row: DictData) {
         >
           <template #operation="{ row }">
             <div class="flex items-center gap-1">
-              <IconButton title="编辑" @click="openTypeEdit(row as unknown as DictType)">
+              <IconButton
+                title="编辑"
+                @click="openTypeEdit(row as unknown as DictType)"
+              >
                 <Pencil :size="13" />
               </IconButton>
               <IconButton
@@ -322,7 +349,10 @@ function handleDataDelete(row: DictData) {
         >
           <template #operation="{ row }">
             <div class="flex items-center gap-1">
-              <IconButton title="编辑" @click="openDataEdit(row as unknown as DictData)">
+              <IconButton
+                title="编辑"
+                @click="openDataEdit(row as unknown as DictData)"
+              >
                 <Pencil :size="13" />
               </IconButton>
               <IconButton
@@ -457,7 +487,12 @@ function handleDataDelete(row: DictData) {
               rule: `Yup.string().required('不能为空')`,
               props: { placeholder: '如 1', clearable: true },
             },
-            { field: 'sort', label: '排序', as: 'input-number', props: { min: 0 } },
+            {
+              field: 'sort',
+              label: '排序',
+              as: 'input-number',
+              props: { min: 0 },
+            },
             { field: 'status', label: '状态', as: 'switch' },
             {
               field: 'cssClass',

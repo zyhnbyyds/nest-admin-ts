@@ -1,7 +1,7 @@
-export type ColorMode = "light" | "dark" | "auto";
+export type ColorMode = 'light' | 'dark' | 'auto';
 
 /** 圆角档位 */
-export type RadiusLevel = "round" | "medium" | "large";
+export type RadiusLevel = 'round' | 'medium' | 'large';
 
 /** 后端 GET /system/menus/routes 返回的动态路由节点 */
 export interface RouteNode {
@@ -11,7 +11,7 @@ export interface RouteNode {
   path: string | null;
   component: string | null;
   permission: string | null;
-  type: "M" | "C" | "F";
+  type: 'M' | 'C' | 'F';
   meta: {
     title: string;
     icon: string | null;

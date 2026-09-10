@@ -4,9 +4,9 @@
  * - LewTableColumn.customRender：表格列自定义渲染（运行时以 { row, column, text } 调用）
  * - LewDialogOptions.onOk / onClose：函数式弹窗确认/关闭回调（运行时已解构支持）
  */
-import "lew-ui";
+import 'lew-ui';
 
-declare module "lew-ui" {
+declare module 'lew-ui' {
   interface LewTableColumn {
     customRender?: (ctx: {
       row: Record<string, unknown>;

@@ -1,5 +1,5 @@
-import type { Directive, DirectiveBinding } from "vue";
-import { useUserStore } from "~/store/user";
+import type { Directive, DirectiveBinding } from 'vue';
+import { useUserStore } from '~/store/user';
 
 /**
  * v-permission 按钮级权限指令

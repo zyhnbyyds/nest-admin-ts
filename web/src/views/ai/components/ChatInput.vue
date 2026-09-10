@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { Loader2, Send } from "lucide-vue-next";
-import { LewTextarea } from "lew-ui";
+import { Loader2, Send } from 'lucide-vue-next';
+import { LewTextarea } from 'lew-ui';
 
 defineProps<{
   modelValue: string;
@@ -9,15 +9,15 @@ defineProps<{
 }>();
 
 const emit = defineEmits<{
-  (e: "update:modelValue", value: string): void;
-  (e: "send"): void;
+  (e: 'update:modelValue', value: string): void;
+  (e: 'send'): void;
 }>();
 
 function onKeydown(event: KeyboardEvent) {
   // Enter 发送，Shift+Enter 换行
-  if (event.key === "Enter" && !event.shiftKey) {
+  if (event.key === 'Enter' && !event.shiftKey) {
     event.preventDefault();
-    emit("send");
+    emit('send');
   }
 }
 </script>

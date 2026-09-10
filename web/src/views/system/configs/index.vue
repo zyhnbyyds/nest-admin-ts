@@ -1,38 +1,55 @@
 <script setup lang="ts">
-import { nextTick, ref } from "vue";
-import { Pencil, Plus, Trash2 } from "lucide-vue-next";
-import { LewButton, LewForm, LewMessage, LewModal, LewPagination, LewTable } from "lew-ui";
-import type { LewTableColumn } from "lew-ui";
-import { createConfig, deleteConfig, updateConfig } from "~/api/system/configs";
-import { useTable } from "~/composables/useTable";
-import { formatDateTime } from "~/composables/useFormat";
-import type { Config } from "~/types/api";
-import { confirmDanger } from "~/utils/confirm";
-import IconButton from "~/components/IconButton.vue";
+import { nextTick, ref } from 'vue';
+import { Pencil, Plus, Trash2 } from 'lucide-vue-next';
+import {
+  LewButton,
+  LewForm,
+  LewMessage,
+  LewModal,
+  LewPagination,
+  LewTable,
+} from 'lew-ui';
+import type { LewTableColumn } from 'lew-ui';
+import { createConfig, deleteConfig, updateConfig } from '~/api/system/configs';
+import { useTable } from '~/composables/useTable';
+import { formatDateTime } from '~/composables/useFormat';
+import type { Config } from '~/types/api';
+import { confirmDanger } from '~/utils/confirm';
+import IconButton from '~/components/IconButton.vue';
 
 // ---------- 列表 ----------
-const { items, loading, currentPage, pageSize, total, search, refresh, handleChange } =
-  useTable<Config>({ url: "/system/configs" });
+const {
+  items,
+  loading,
+  currentPage,
+  pageSize,
+  total,
+  search,
+  refresh,
+  handleChange,
+} = useTable<Config>({ url: '/system/configs' });
 
 const columns: LewTableColumn[] = [
-  { title: "ID", field: "id", width: 70 },
-  { title: "参数名称", field: "name", width: 180 },
-  { title: "参数键名", field: "key", width: 200 },
-  { title: "参数值", field: "value" },
+  { title: 'ID', field: 'id', width: 70 },
+  { title: '参数名称', field: 'name', width: 180 },
+  { title: '参数键名', field: 'key', width: 200 },
+  { title: '参数值', field: 'value' },
   {
-    title: "内置",
-    field: "builtin",
+    title: '内置',
+    field: 'builtin',
     width: 80,
-    customRender: ({ row }) => ((row as unknown as Config).builtin ? "是" : "否"),
+    customRender: ({ row }) =>
+      (row as unknown as Config).builtin ? '是' : '否',
   },
-  { title: "备注", field: "remark" },
+  { title: '备注', field: 'remark' },
   {
-    title: "创建时间",
-    field: "createdAt",
+    title: '创建时间',
+    field: 'createdAt',
     width: 170,
-    customRender: ({ row }) => formatDateTime((row as unknown as Config).createdAt),
+    customRender: ({ row }) =>
+      formatDateTime((row as unknown as Config).createdAt),
   },
-  { title: "操作", field: "operation", width: 100, fixed: "right" },
+  { title: '操作', field: 'operation', width: 100, fixed: 'right' },
 ];
 
 void search();
@@ -41,7 +58,7 @@ void search();
 const modalVisible = ref(false);
 const editingId = ref<number | null>(null);
 const formRef = ref();
-const form = ref({ name: "", key: "", value: "", builtin: false, remark: "" });
+const form = ref({ name: '', key: '', value: '', builtin: false, remark: '' });
 /** 表单 key：每次打开弹窗自增，强制重建 LewForm 以回填数据 */
 const formKey = ref(0);
 
@@ -50,7 +67,13 @@ function openCreate() {
   formKey.value += 1;
   modalVisible.value = true;
   void nextTick(() => {
-    formRef.value?.setForm?.({ name: "", key: "", value: "", builtin: false, remark: "" });
+    formRef.value?.setForm?.({
+      name: '',
+      key: '',
+      value: '',
+      builtin: false,
+      remark: '',
+    });
   });
 }
 
@@ -64,7 +87,7 @@ function openEdit(row: Config) {
       key: row.key,
       value: row.value,
       builtin: row.builtin,
-      remark: row.remark ?? "",
+      remark: row.remark ?? '',
     });
   });
 }
@@ -72,7 +95,8 @@ function openEdit(row: Config) {
 async function handleSubmit() {
   const valid = await formRef.value?.validate();
   if (!valid) return;
-  const values = (formRef.value?.getForm?.() ?? form.value) as typeof form.value;
+  const values = (formRef.value?.getForm?.() ??
+    form.value) as typeof form.value;
   const body = {
     name: values.name,
     key: values.key,
@@ -82,10 +106,10 @@ async function handleSubmit() {
   };
   if (editingId.value === null) {
     await createConfig(body);
-    LewMessage.success("创建成功");
+    LewMessage.success('创建成功');
   } else {
     await updateConfig(editingId.value, body);
-    LewMessage.success("更新成功");
+    LewMessage.success('更新成功');
   }
   modalVisible.value = false;
   void refresh();
@@ -94,11 +118,11 @@ async function handleSubmit() {
 // ---------- 删除 ----------
 function handleDelete(row: Config) {
   confirmDanger({
-    title: "删除确认",
+    title: '删除确认',
     content: `确定删除参数「${row.name}」吗？`,
     onConfirm: async () => {
       await deleteConfig(row.id);
-      LewMessage.success("删除成功");
+      LewMessage.success('删除成功');
       void refresh();
     },
   });
@@ -113,7 +137,11 @@ function handleDelete(row: Config) {
         <h2 class="page-title m-0">参数配置</h2>
         <p class="page-subtitle mt-1 mb-0">管理系统运行参数</p>
       </div>
-      <LewButton v-permission="'system:config:create'" type="fill" @click="openCreate">
+      <LewButton
+        v-permission="'system:config:create'"
+        type="fill"
+        @click="openCreate"
+      >
         <Plus :size="15" style="margin-right: 4px" /> 新增参数
       </LewButton>
     </div>

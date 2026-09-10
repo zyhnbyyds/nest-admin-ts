@@ -1,24 +1,24 @@
 <script setup lang="ts">
-import { computed, nextTick, ref, watch } from "vue";
-import { useRoute, useRouter } from "vue-router";
-import { useEventListener } from "@vueuse/core";
-import { CircleX, ListX, X } from "lucide-vue-next";
-import type { TabItem } from "~/types/app";
+import { computed, nextTick, ref, watch } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
+import { useEventListener } from '@vueuse/core';
+import { CircleX, ListX, X } from 'lucide-vue-next';
+import type { TabItem } from '~/types/app';
 
 const route = useRoute();
 const router = useRouter();
 const tabs = ref<TabItem[]>([]);
 
 function addTab() {
-  if (route.path === "/login") return;
+  if (route.path === '/login') return;
   const exists = tabs.value.find((tab) => tab.path === route.path);
   if (exists) return;
   tabs.value.push({
-    name: (route.name as string) ?? "",
+    name: (route.name as string) ?? '',
     path: route.path,
     title: (route.meta.title as string) ?? route.path,
     // 仅工作台作为首页固定不可关闭，其余 tab（含个人中心）均可关闭
-    closable: route.path !== "/dashboard",
+    closable: route.path !== '/dashboard',
   });
 }
 
@@ -54,7 +54,9 @@ function closeCurrent() {
 /** 关闭其他：仅保留固定 tab 与右键目标 tab */
 function closeOthers() {
   const keepPath = menuTab.value?.path;
-  tabs.value = tabs.value.filter((tab) => !tab.closable || tab.path === keepPath);
+  tabs.value = tabs.value.filter(
+    (tab) => !tab.closable || tab.path === keepPath,
+  );
   void ensureCurrent();
   closeMenu();
 }
@@ -88,7 +90,10 @@ function openMenu(tab: TabItem, event: MouseEvent) {
     const el = menuRef.value;
     if (!el) return;
     menuX.value = Math.min(menuX.value, window.innerWidth - el.offsetWidth - 8);
-    menuY.value = Math.min(menuY.value, window.innerHeight - el.offsetHeight - 8);
+    menuY.value = Math.min(
+      menuY.value,
+      window.innerHeight - el.offsetHeight - 8,
+    );
   });
 }
 
@@ -99,9 +104,9 @@ function closeMenu() {
 }
 
 // 点击外部 / 滚动 / 缩放时关闭右键菜单（useEventListener 自动管理绑定与解绑）
-useEventListener(window, "click", closeMenu);
-useEventListener(window, "resize", closeMenu);
-useEventListener(window, "scroll", closeMenu, { capture: true });
+useEventListener(window, 'click', closeMenu);
+useEventListener(window, 'resize', closeMenu);
+useEventListener(window, 'scroll', closeMenu, { capture: true });
 
 // 路由切换时关闭菜单（避免菜单残留）
 watch(() => route.path, closeMenu);

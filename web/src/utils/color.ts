@@ -19,12 +19,12 @@ export interface Hsl {
 
 /** #rrggbb / #rgb → {r,g,b} */
 export function hexToRgb(hex: string): Rgb {
-  let h = hex.replace("#", "").trim();
+  let h = hex.replace('#', '').trim();
   if (h.length === 3) {
     h = h
-      .split("")
+      .split('')
       .map((c) => c + c)
-      .join("");
+      .join('');
   }
   const num = parseInt(h, 16);
   if (Number.isNaN(num) || h.length !== 6) return { r: 26, g: 115, b: 232 };
@@ -35,7 +35,7 @@ export function rgbToHex({ r, g, b }: Rgb): string {
   const to = (v: number) =>
     Math.round(Math.min(255, Math.max(0, v)))
       .toString(16)
-      .padStart(2, "0");
+      .padStart(2, '0');
   return `#${to(r)}${to(g)}${to(b)}`;
 }
 

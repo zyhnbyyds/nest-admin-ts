@@ -1,30 +1,35 @@
 <script setup lang="ts">
-import { nextTick, reactive, ref } from "vue";
-import { Pencil, Plus, Trash2 } from "lucide-vue-next";
-import { LewButton, LewForm, LewMessage, LewModal, LewTable } from "lew-ui";
-import type { LewTableColumn } from "lew-ui";
-import { createDept, deleteDept, listDepts, updateDept } from "~/api/system/depts";
-import type { CreateDeptBody, Dept } from "~/types/api";
-import { renderStatus } from "~/utils/render";
-import { confirmDanger } from "~/utils/confirm";
-import IconButton from "~/components/IconButton.vue";
+import { nextTick, reactive, ref } from 'vue';
+import { Pencil, Plus, Trash2 } from 'lucide-vue-next';
+import { LewButton, LewForm, LewMessage, LewModal, LewTable } from 'lew-ui';
+import type { LewTableColumn } from 'lew-ui';
+import {
+  createDept,
+  deleteDept,
+  listDepts,
+  updateDept,
+} from '~/api/system/depts';
+import type { CreateDeptBody, Dept } from '~/types/api';
+import { renderStatus } from '~/utils/render';
+import { confirmDanger } from '~/utils/confirm';
+import IconButton from '~/components/IconButton.vue';
 
 // ---------- 部门树 ----------
 const depts = ref<Dept[]>([]);
 const loading = ref(false);
 
 const columns: LewTableColumn[] = [
-  { title: "部门名称", field: "name", width: 220 },
-  { title: "排序", field: "sort", width: 80 },
-  { title: "联系电话", field: "phone", width: 140 },
-  { title: "邮箱", field: "email" },
+  { title: '部门名称', field: 'name', width: 220 },
+  { title: '排序', field: 'sort', width: 80 },
+  { title: '联系电话', field: 'phone', width: 140 },
+  { title: '邮箱', field: 'email' },
   {
-    title: "状态",
-    field: "status",
+    title: '状态',
+    field: 'status',
     width: 90,
     customRender: ({ row }) => renderStatus((row as { status: string }).status),
   },
-  { title: "操作", field: "operation", width: 120, fixed: "right" },
+  { title: '操作', field: 'operation', width: 120, fixed: 'right' },
 ];
 
 async function fetchList() {
@@ -46,20 +51,25 @@ const formRef = ref();
 const ROOT_PARENT = -1;
 const form = ref({
   parentId: ROOT_PARENT,
-  name: "",
+  name: '',
   sort: 0,
-  phone: "",
-  email: "",
+  phone: '',
+  email: '',
   status: true,
 });
 /** 表单 key：每次打开弹窗自增，强制重建 LewForm 以回填数据 */
 const formKey = ref(0);
 
-function flattenDepts(list: Dept[], prefix = ""): { label: string; value: number }[] {
+function flattenDepts(
+  list: Dept[],
+  prefix = '',
+): { label: string; value: number }[] {
   return list.flatMap((dept) => {
     const label = `${prefix}${dept.name}`;
     const self = { label, value: dept.id };
-    const children = dept.children?.length ? flattenDepts(dept.children, `${label} / `) : [];
+    const children = dept.children?.length
+      ? flattenDepts(dept.children, `${label} / `)
+      : [];
     return [self, ...children];
   });
 }
@@ -71,7 +81,7 @@ function openCreate(parentId = 0) {
   parentOptions.splice(
     0,
     parentOptions.length,
-    { label: "根部门", value: ROOT_PARENT },
+    { label: '根部门', value: ROOT_PARENT },
     ...flattenDepts(depts.value),
   );
   formKey.value += 1;
@@ -79,10 +89,10 @@ function openCreate(parentId = 0) {
   void nextTick(() => {
     formRef.value?.setForm?.({
       parentId: parentId === 0 ? ROOT_PARENT : parentId,
-      name: "",
+      name: '',
       sort: 0,
-      phone: "",
-      email: "",
+      phone: '',
+      email: '',
       status: true,
     });
   });
@@ -93,7 +103,7 @@ function openEdit(row: Dept) {
   parentOptions.splice(
     0,
     parentOptions.length,
-    { label: "根部门", value: ROOT_PARENT },
+    { label: '根部门', value: ROOT_PARENT },
     ...flattenDepts(depts.value),
   );
   formKey.value += 1;
@@ -103,9 +113,9 @@ function openEdit(row: Dept) {
       parentId: row.parentId === 0 ? ROOT_PARENT : row.parentId,
       name: row.name,
       sort: row.sort,
-      phone: row.phone ?? "",
-      email: row.email ?? "",
-      status: row.status === "active",
+      phone: row.phone ?? '',
+      email: row.email ?? '',
+      status: row.status === 'active',
     });
   });
 }
@@ -113,21 +123,22 @@ function openEdit(row: Dept) {
 async function handleSubmit() {
   const valid = await formRef.value?.validate();
   if (!valid) return;
-  const values = (formRef.value?.getForm?.() ?? form.value) as typeof form.value;
+  const values = (formRef.value?.getForm?.() ??
+    form.value) as typeof form.value;
   const body: CreateDeptBody = {
     parentId: values.parentId === ROOT_PARENT ? 0 : values.parentId,
     name: values.name,
     sort: values.sort,
     phone: values.phone || undefined,
     email: values.email || undefined,
-    status: values.status ? "active" : "disabled",
+    status: values.status ? 'active' : 'disabled',
   };
   if (editingId.value === null) {
     await createDept(body);
-    LewMessage.success("创建成功");
+    LewMessage.success('创建成功');
   } else {
     await updateDept(editingId.value, body);
-    LewMessage.success("更新成功");
+    LewMessage.success('更新成功');
   }
   modalVisible.value = false;
   void fetchList();
@@ -136,11 +147,11 @@ async function handleSubmit() {
 // ---------- 删除 ----------
 function handleDelete(row: Dept) {
   confirmDanger({
-    title: "删除确认",
+    title: '删除确认',
     content: `确定删除部门「${row.name}」吗？`,
     onConfirm: async () => {
       await deleteDept(row.id);
-      LewMessage.success("删除成功");
+      LewMessage.success('删除成功');
       void fetchList();
     },
   });
@@ -155,7 +166,11 @@ function handleDelete(row: Dept) {
         <h2 class="page-title m-0">部门管理</h2>
         <p class="page-subtitle mt-1 mb-0">管理组织架构部门</p>
       </div>
-      <LewButton v-permission="'system:dept:create'" type="fill" @click="openCreate(0)">
+      <LewButton
+        v-permission="'system:dept:create'"
+        type="fill"
+        @click="openCreate(0)"
+      >
         <Plus :size="15" style="margin-right: 4px" /> 新增部门
       </LewButton>
     </div>

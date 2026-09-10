@@ -4,5 +4,5 @@
   "trailingComma": "all",
   "printWidth": 80,
   "sortPackageJson": false,
-  "ignorePatterns": []
+  "ignorePatterns": ["web/types/auto-imports.d.ts"]
 }

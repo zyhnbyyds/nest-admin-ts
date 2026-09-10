@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { h, nextTick, reactive, ref } from "vue";
-import { Pencil, Plus, Trash2 } from "lucide-vue-next";
+import { h, nextTick, reactive, ref } from 'vue';
+import { Pencil, Plus, Trash2 } from 'lucide-vue-next';
 import {
   LewButton,
   LewForm,
@@ -9,30 +9,35 @@ import {
   LewPagination,
   LewSelect,
   LewTable,
-} from "lew-ui";
-import type { LewFormOption } from "lew-ui";
-import type { LewTableColumn } from "lew-ui";
-import { createUser, deleteUser, updateUser } from "~/api/system/users";
-import { listDepts } from "~/api/system/depts";
-import { listRoles } from "~/api/system/roles";
-import { useTable } from "~/composables/useTable";
-import { formatDateTime } from "~/composables/useFormat";
-import type { Dept, User } from "~/types/api";
-import { renderStatus } from "~/utils/render";
-import { confirmDanger } from "~/utils/confirm";
-import IconButton from "~/components/IconButton.vue";
+} from 'lew-ui';
+import type { LewFormOption } from 'lew-ui';
+import type { LewTableColumn } from 'lew-ui';
+import { createUser, deleteUser, updateUser } from '~/api/system/users';
+import { listDepts } from '~/api/system/depts';
+import { listRoles } from '~/api/system/roles';
+import { useTable } from '~/composables/useTable';
+import { formatDateTime } from '~/composables/useFormat';
+import type { Dept, User } from '~/types/api';
+import { renderStatus } from '~/utils/render';
+import { confirmDanger } from '~/utils/confirm';
+import IconButton from '~/components/IconButton.vue';
 
 // ---------- 列表 ----------
 const statusFilters = [
-  { label: "启用", value: "active" },
-  { label: "禁用", value: "disabled" },
+  { label: '启用', value: 'active' },
+  { label: '禁用', value: 'disabled' },
 ];
 /** 部门下拉开平（带层级前缀）；lew-ui 下拉框 value 约定为字符串 */
-function flattenDepts(list: Dept[], prefix = ""): { label: string; value: string }[] {
+function flattenDepts(
+  list: Dept[],
+  prefix = '',
+): { label: string; value: string }[] {
   return list.flatMap((dept) => {
     const label = `${prefix}${dept.name}`;
     const self = { label, value: String(dept.id) };
-    const children = dept.children?.length ? flattenDepts(dept.children, `${label} / `) : [];
+    const children = dept.children?.length
+      ? flattenDepts(dept.children, `${label} / `)
+      : [];
     return [self, ...children];
   });
 }
@@ -45,86 +50,103 @@ async function loadDeptOptions() {
   deptFormOptions.splice(
     0,
     deptFormOptions.length,
-    ...options.map((option) => ({ label: option.label, value: Number(option.value) })),
+    ...options.map((option) => ({
+      label: option.label,
+      value: Number(option.value),
+    })),
   );
 }
 void loadDeptOptions();
 
 const query = ref<{ status?: string; deptId?: string }>({});
-const { items, loading, currentPage, pageSize, total, search, refresh, handleChange } =
-  useTable<User>({ url: "/system/users", query: () => query.value });
+const {
+  items,
+  loading,
+  currentPage,
+  pageSize,
+  total,
+  search,
+  refresh,
+  handleChange,
+} = useTable<User>({ url: '/system/users', query: () => query.value });
 
 const columns: LewTableColumn[] = [
-  { title: "ID", field: "id", width: 70 },
-  { title: "用户名", field: "username", width: 130 },
+  { title: 'ID', field: 'id', width: 70 },
+  { title: '用户名', field: 'username', width: 130 },
   {
-    title: "头像",
-    field: "avatar",
+    title: '头像',
+    field: 'avatar',
     width: 80,
     customRender: ({ row }) => {
       const avatar = (row as unknown as User).avatar;
-      if (!avatar) return h("span", { class: "text-[var(--app-text-muted)]" }, "-");
-      return h("img", {
+      if (!avatar)
+        return h('span', { class: 'text-[var(--app-text-muted)]' }, '-');
+      return h('img', {
         src: avatar,
-        alt: "avatar",
-        class: "w-28px h-28px rounded-full object-cover",
+        alt: 'avatar',
+        class: 'w-28px h-28px rounded-full object-cover',
       });
     },
   },
-  { title: "显示名称", field: "displayName", width: 130 },
+  { title: '显示名称', field: 'displayName', width: 130 },
   {
-    title: "部门",
-    field: "deptName",
+    title: '部门',
+    field: 'deptName',
     width: 130,
-    customRender: ({ row }) => (row as unknown as User).deptName ?? "-",
+    customRender: ({ row }) => (row as unknown as User).deptName ?? '-',
   },
   {
-    title: "角色",
-    field: "roleNames",
+    title: '角色',
+    field: 'roleNames',
     width: 140,
     customRender: ({ row }) => {
       const names = (row as unknown as User).roleNames ?? [];
-      return h("span", { class: "text-12.5px" }, names.length ? names.join("、") : "-");
+      return h(
+        'span',
+        { class: 'text-12.5px' },
+        names.length ? names.join('、') : '-',
+      );
     },
   },
   {
-    title: "邮箱",
-    field: "email",
+    title: '邮箱',
+    field: 'email',
     width: 180,
     customRender: ({ row }) => {
       const email = (row as unknown as User).email;
-      if (!email) return "-";
+      if (!email) return '-';
       // 超出列宽时省略显示，悬停用 tooltip 查看完整邮箱
       return h(
-        "span",
+        'span',
         {
-          class: "block w-full truncate align-middle cursor-default",
+          class: 'block w-full truncate align-middle cursor-default',
           title: email,
         },
         email,
       );
     },
   },
-  { title: "手机号", field: "phone", width: 120 },
+  { title: '手机号', field: 'phone', width: 120 },
   {
-    title: "状态",
-    field: "status",
+    title: '状态',
+    field: 'status',
     width: 90,
     customRender: ({ row }) => renderStatus((row as { status: string }).status),
   },
   {
-    title: "创建时间",
-    field: "createdAt",
+    title: '创建时间',
+    field: 'createdAt',
     width: 160,
-    customRender: ({ row }) => formatDateTime((row as unknown as User).createdAt),
+    customRender: ({ row }) =>
+      formatDateTime((row as unknown as User).createdAt),
   },
   {
-    title: "最近登录",
-    field: "loginAt",
+    title: '最近登录',
+    field: 'loginAt',
     width: 160,
     customRender: ({ row }) => formatDateTime((row as unknown as User).loginAt),
   },
-  { title: "操作", field: "operation", width: 100, fixed: "right" },
+  { title: '操作', field: 'operation', width: 100, fixed: 'right' },
 ];
 
 void search();
@@ -133,7 +155,11 @@ void search();
 const roleOptions = reactive<{ label: string; value: number }[]>([]);
 async function loadRoles() {
   const roles = await listRoles();
-  roleOptions.splice(0, roleOptions.length, ...roles.map((r) => ({ label: r.name, value: r.id })));
+  roleOptions.splice(
+    0,
+    roleOptions.length,
+    ...roles.map((r) => ({ label: r.name, value: r.id })),
+  );
 }
 void loadRoles();
 
@@ -142,11 +168,11 @@ const modalVisible = ref(false);
 const editingId = ref<number | null>(null);
 const formRef = ref();
 const form = ref({
-  username: "",
-  displayName: "",
-  password: "",
-  email: "",
-  phone: "",
+  username: '',
+  displayName: '',
+  password: '',
+  email: '',
+  phone: '',
   status: true,
   deptId: undefined as number | undefined,
   roleIds: [] as number[],
@@ -156,50 +182,64 @@ const formKey = ref(0);
 
 const formOptions: LewFormOption[] = [
   {
-    field: "username",
-    label: "用户名",
-    as: "input",
+    field: 'username',
+    label: '用户名',
+    as: 'input',
     rule: "Yup.string().required('不能为空')",
-    props: { placeholder: "3-64 个字符", clearable: true },
+    props: { placeholder: '3-64 个字符', clearable: true },
   },
   {
-    field: "displayName",
-    label: "显示名称",
-    as: "input",
+    field: 'displayName',
+    label: '显示名称',
+    as: 'input',
     rule: "Yup.string().required('不能为空')",
-    props: { placeholder: "请输入显示名称", clearable: true },
+    props: { placeholder: '请输入显示名称', clearable: true },
   },
   {
-    field: "deptId",
-    label: "部门",
-    as: "select",
-    props: { options: deptFormOptions, placeholder: "请选择部门", clearable: true },
-  },
-  {
-    field: "password",
-    label: "密码",
-    as: "input",
-    rule: "Yup.string().nullable()",
+    field: 'deptId',
+    label: '部门',
+    as: 'select',
     props: {
-      type: "password",
-      placeholder: "新增必填；编辑选填，不填则不修改",
+      options: deptFormOptions,
+      placeholder: '请选择部门',
+      clearable: true,
+    },
+  },
+  {
+    field: 'password',
+    label: '密码',
+    as: 'input',
+    rule: 'Yup.string().nullable()',
+    props: {
+      type: 'password',
+      placeholder: '新增必填；编辑选填，不填则不修改',
       clearable: true,
       showPassword: true,
     },
   },
-  { field: "email", label: "邮箱", as: "input", props: { placeholder: "选填", clearable: true } },
-  { field: "phone", label: "手机号", as: "input", props: { placeholder: "选填", clearable: true } },
   {
-    field: "status",
-    label: "状态",
-    as: "switch",
+    field: 'email',
+    label: '邮箱',
+    as: 'input',
+    props: { placeholder: '选填', clearable: true },
   },
   {
-    field: "roleIds",
-    label: "角色",
-    as: "select",
-    rule: "Yup.array().nullable()",
-    props: { options: roleOptions, multiple: true, placeholder: "请选择角色" },
+    field: 'phone',
+    label: '手机号',
+    as: 'input',
+    props: { placeholder: '选填', clearable: true },
+  },
+  {
+    field: 'status',
+    label: '状态',
+    as: 'switch',
+  },
+  {
+    field: 'roleIds',
+    label: '角色',
+    as: 'select',
+    rule: 'Yup.array().nullable()',
+    props: { options: roleOptions, multiple: true, placeholder: '请选择角色' },
   },
 ];
 
@@ -210,11 +250,11 @@ function openCreate() {
   // LewForm 为受控组件，需在挂载后通过 setForm 填充
   void nextTick(() => {
     formRef.value?.setForm?.({
-      username: "",
-      displayName: "",
-      password: "",
-      email: "",
-      phone: "",
+      username: '',
+      displayName: '',
+      password: '',
+      email: '',
+      phone: '',
       status: true,
       deptId: undefined,
       roleIds: [],
@@ -231,10 +271,10 @@ function openEdit(row: User) {
     formRef.value?.setForm?.({
       username: row.username,
       displayName: row.displayName,
-      password: "",
-      email: row.email ?? "",
-      phone: row.phone ?? "",
-      status: row.status === "active",
+      password: '',
+      email: row.email ?? '',
+      phone: row.phone ?? '',
+      status: row.status === 'active',
       deptId: row.deptId ?? undefined,
       roleIds: row.roleIds ?? [],
     });
@@ -245,14 +285,15 @@ async function handleSubmit() {
   const valid = await formRef.value?.validate();
   if (!valid) return;
   // LewForm 为受控组件，用 getForm 读取用户真实输入
-  const values = (formRef.value?.getForm?.() ?? form.value) as typeof form.value;
+  const values = (formRef.value?.getForm?.() ??
+    form.value) as typeof form.value;
   if (editingId.value === null) {
     if (!values.password) {
-      LewMessage.error("请输入密码");
+      LewMessage.error('请输入密码');
       return;
     }
     if (values.password.length < 12) {
-      LewMessage.error("密码最少 12 位");
+      LewMessage.error('密码最少 12 位');
       return;
     }
     await createUser({
@@ -264,18 +305,18 @@ async function handleSubmit() {
       deptId: values.deptId || undefined,
       roleIds: values.roleIds ?? [],
     });
-    LewMessage.success("创建成功");
+    LewMessage.success('创建成功');
   } else {
     await updateUser(editingId.value, {
       displayName: values.displayName,
       email: values.email || null,
       phone: values.phone || null,
-      status: values.status ? "active" : "disabled",
+      status: values.status ? 'active' : 'disabled',
       deptId: values.deptId ?? null,
       password: values.password || undefined,
       roleIds: values.roleIds ?? [],
     });
-    LewMessage.success("更新成功");
+    LewMessage.success('更新成功');
   }
   modalVisible.value = false;
   void refresh();
@@ -284,11 +325,11 @@ async function handleSubmit() {
 // ---------- 删除 ----------
 function handleDelete(row: User) {
   confirmDanger({
-    title: "删除确认",
+    title: '删除确认',
     content: `确定删除用户「${row.displayName}」吗？此操作不可恢复。`,
     onConfirm: async () => {
       await deleteUser(row.id);
-      LewMessage.success("删除成功");
+      LewMessage.success('删除成功');
       void refresh();
     },
   });
@@ -303,7 +344,11 @@ function handleDelete(row: User) {
         <h2 class="page-title m-0">用户管理</h2>
         <p class="page-subtitle mt-1 mb-0">管理系统用户账号</p>
       </div>
-      <LewButton v-permission="'system:user:create'" type="fill" @click="openCreate">
+      <LewButton
+        v-permission="'system:user:create'"
+        type="fill"
+        @click="openCreate"
+      >
         <Plus :size="15" style="margin-right: 4px" /> 新增用户
       </LewButton>
     </div>
@@ -324,7 +369,9 @@ function handleDelete(row: User) {
         placeholder="全部部门"
         clearable
       />
-      <LewButton type="light" :loading="loading" @click="search()">查询</LewButton>
+      <LewButton type="light" :loading="loading" @click="search()"
+        >查询</LewButton
+      >
     </div>
 
     <!-- 表格 -->

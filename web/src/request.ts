@@ -1,7 +1,7 @@
-import axios, { AxiosError, type AxiosRequestConfig } from "axios";
-import { LewMessage } from "lew-ui";
-import { REFRESH_TOKEN_KEY, useUserStore } from "~/store/user";
-import type { LoginResult } from "~/types/api";
+import axios, { AxiosError, type AxiosRequestConfig } from 'axios';
+import { LewMessage } from 'lew-ui';
+import { REFRESH_TOKEN_KEY, useUserStore } from '~/store/user';
+import type { LoginResult } from '~/types/api';
 
 /** 业务错误（后端无统一包裹层，直接用 HTTP 状态码 + message） */
 export class ApiError extends Error {
@@ -42,7 +42,7 @@ function flushQueue(token: string | null) {
 
 /** 拿最新 refreshToken：优先 localStorage（多标签页场景下内存态可能已被其他标签页轮换更新） */
 function readLatestRefreshToken(): string {
-  return localStorage.getItem(REFRESH_TOKEN_KEY) ?? "";
+  return localStorage.getItem(REFRESH_TOKEN_KEY) ?? '';
 }
 
 async function doRefresh(): Promise<string> {
@@ -59,7 +59,7 @@ async function doRefresh(): Promise<string> {
   };
 
   const initialToken = readLatestRefreshToken() || userStore.refreshToken;
-  if (!initialToken) throw new ApiError(401, "未登录");
+  if (!initialToken) throw new ApiError(401, '未登录');
 
   try {
     return await attempt(initialToken);
@@ -87,8 +87,8 @@ function refreshOnce(): Promise<string> {
         const userStore = useUserStore();
         userStore.reset();
         // 跳转登录页（避免循环依赖 router，用事件解耦）
-        window.dispatchEvent(new CustomEvent("auth:logout"));
-        LewMessage.error("登录已过期，请重新登录");
+        window.dispatchEvent(new CustomEvent('auth:logout'));
+        LewMessage.error('登录已过期，请重新登录');
         throw error;
       })
       .finally(() => {
@@ -102,38 +102,41 @@ function refreshOnce(): Promise<string> {
 /** 把后端/网络层的各种错误形态转成一句可读的中文提示 */
 function formatMessage(error: AxiosError): string {
   const status = error.response?.status;
-  const raw = (error.response?.data as { message?: unknown } | undefined)?.message;
+  const raw = (error.response?.data as { message?: unknown } | undefined)
+    ?.message;
 
   // 后端校验失败会返回字段提示数组，如 ["name：不能为空"]
   if (Array.isArray(raw) && raw.length > 0) {
-    return raw.filter((m): m is string => typeof m === "string").join("；");
+    return raw.filter((m): m is string => typeof m === 'string').join('；');
   }
-  if (typeof raw === "string" && raw) return raw;
+  if (typeof raw === 'string' && raw) return raw;
 
   // 网络层错误
-  if (error.code === "ECONNABORTED" || /timeout/i.test(error.message ?? "")) {
-    return "请求超时，请稍后重试";
+  if (error.code === 'ECONNABORTED' || /timeout/i.test(error.message ?? '')) {
+    return '请求超时，请稍后重试';
   }
-  if (!error.response) return "网络异常，请检查网络连接";
+  if (!error.response) return '网络异常，请检查网络连接';
 
-  if (status === 401) return "未登录或登录已过期";
-  if (status === 403) return "没有操作权限";
-  if (status === 404) return "资源不存在";
-  if (status && status >= 500) return "服务器开小差了，请稍后重试";
-  return error.message || "请求失败";
+  if (status === 401) return '未登录或登录已过期';
+  if (status === 403) return '没有操作权限';
+  if (status === 404) return '资源不存在';
+  if (status && status >= 500) return '服务器开小差了，请稍后重试';
+  return error.message || '请求失败';
 }
 
 // ---------- 响应拦截器：统一错误 + 401 刷新重放 ----------
 /** 登录/注册/刷新等认证接口不做 401 自动刷新，直接把后端提示展示给用户 */
-const NO_REFRESH_URLS = ["/auth/login", "/auth/refresh", "/auth/register"];
+const NO_REFRESH_URLS = ['/auth/login', '/auth/refresh', '/auth/register'];
 
 request.interceptors.response.use(
   (response) => response,
   async (error: AxiosError) => {
-    const config = error.config as (AxiosRequestConfig & { _retried?: boolean }) | undefined;
+    const config = error.config as
+      | (AxiosRequestConfig & { _retried?: boolean })
+      | undefined;
     const status = error.response?.status;
     const skipRefresh = NO_REFRESH_URLS.some(
-      (url) => typeof config?.url === "string" && config.url.includes(url),
+      (url) => typeof config?.url === 'string' && config.url.includes(url),
     );
 
     // 401：尝试刷新并重放一次（认证接口重放无意义，直接报错提示）
@@ -141,11 +144,14 @@ request.interceptors.response.use(
       config._retried = true;
       try {
         const token = refreshing ? await refreshing : await refreshOnce();
-        config.headers = { ...config.headers, Authorization: `Bearer ${token}` };
+        config.headers = {
+          ...config.headers,
+          Authorization: `Bearer ${token}`,
+        };
         return request(config);
       } catch {
         // 刷新失败已在 refreshOnce 内提示并广播退出登录，这里不再重复提示
-        return Promise.reject(new ApiError(401, "登录已过期，请重新登录"));
+        return Promise.reject(new ApiError(401, '登录已过期，请重新登录'));
       }
     }
 
@@ -156,7 +162,10 @@ request.interceptors.response.use(
 );
 
 /** GET 请求 */
-export async function get<T>(url: string, params?: Record<string, unknown>): Promise<T> {
+export async function get<T>(
+  url: string,
+  params?: Record<string, unknown>,
+): Promise<T> {
   const { data } = await request.get<T>(url, { params });
   return data;
 }
@@ -180,7 +189,10 @@ export async function put<T>(url: string, body?: unknown): Promise<T> {
 }
 
 /** DELETE 请求 */
-export async function del<T>(url: string, params?: Record<string, unknown>): Promise<T> {
+export async function del<T>(
+  url: string,
+  params?: Record<string, unknown>,
+): Promise<T> {
   const { data } = await request.delete<T>(url, { params });
   return data;
 }
@@ -188,9 +200,9 @@ export async function del<T>(url: string, params?: Record<string, unknown>): Pro
 /** 文件上传 */
 export async function upload<T>(url: string, file: File): Promise<T> {
   const form = new FormData();
-  form.append("file", file);
+  form.append('file', file);
   const { data } = await request.post<T>(url, form, {
-    headers: { "Content-Type": "multipart/form-data" },
+    headers: { 'Content-Type': 'multipart/form-data' },
   });
   return data;
 }

@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import { useRouter } from "vue-router";
-import { Bot, Github, Moon, Palette, Sun } from "lucide-vue-next";
-import { LewDropdown, LewMessage } from "lew-ui";
-import type { LewContextMenusOption } from "lew-ui";
-import { logout as logoutApi } from "~/api/auth";
-import { useUserStore } from "~/store/user";
-import { useSettingsStore } from "~/store/settings";
-import { resetRouteFlag } from "~/router/guard";
+import { useRouter } from 'vue-router';
+import { Bot, Github, Moon, Palette, Sun } from 'lucide-vue-next';
+import { LewDropdown, LewMessage } from 'lew-ui';
+import type { LewContextMenusOption } from 'lew-ui';
+import { logout as logoutApi } from '~/api/auth';
+import { useUserStore } from '~/store/user';
+import { useSettingsStore } from '~/store/settings';
+import { resetRouteFlag } from '~/router/guard';
 
 const emit = defineEmits<{ openTheme: []; openAi: [] }>();
 
@@ -22,20 +22,20 @@ async function handleLogout() {
   }
   userStore.reset();
   resetRouteFlag();
-  LewMessage.success("已退出登录");
-  router.push("/login");
+  LewMessage.success('已退出登录');
+  router.push('/login');
 }
 
 function handleUserMenu(option: LewContextMenusOption) {
-  if (option.value === "profile") {
-    router.push("/profile");
-  } else if (option.value === "logout") {
+  if (option.value === 'profile') {
+    router.push('/profile');
+  } else if (option.value === 'logout') {
     void handleLogout();
   }
 }
 
 function toggleDark() {
-  settings.setMode(settings.isDark ? "light" : "dark");
+  settings.setMode(settings.isDark ? 'light' : 'dark');
 }
 </script>
 
@@ -44,7 +44,7 @@ function toggleDark() {
     class="flex items-center justify-between h-14 px-4 shrink-0 bg-[var(--app-bg-card)] border-b border-[var(--app-border)]"
   >
     <div>
-      <span class="text-15px font-600">{{ $route.meta.title ?? "" }}</span>
+      <span class="text-15px font-600">{{ $route.meta.title ?? '' }}</span>
     </div>
 
     <div class="flex items-center gap-2">
@@ -60,7 +60,12 @@ function toggleDark() {
       </button>
 
       <!-- AI 助手 -->
-      <button v-permission="'ai:chat'" class="icon-btn" title="AI 助手" @click="emit('openAi')">
+      <button
+        v-permission="'ai:chat'"
+        class="icon-btn"
+        title="AI 助手"
+        @click="emit('openAi')"
+      >
         <Bot :size="17" />
       </button>
 
@@ -99,7 +104,9 @@ function toggleDark() {
           >
             {{ userStore.username.slice(0, 1).toUpperCase() }}
           </span>
-          <span class="text-13px text-[var(--app-text-primary)]">{{ userStore.username }}</span>
+          <span class="text-13px text-[var(--app-text-primary)]">{{
+            userStore.username
+          }}</span>
         </button>
       </LewDropdown>
     </div>

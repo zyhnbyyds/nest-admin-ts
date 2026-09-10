@@ -1,10 +1,10 @@
-import { get, patch, post } from "~/request";
-import { useUserStore } from "~/store/user";
-import type { AiMessage, AiResult, AiSession, AiSseEvent } from "~/types/api";
+import { get, patch, post } from '~/request';
+import { useUserStore } from '~/store/user';
+import type { AiMessage, AiResult, AiSession, AiSseEvent } from '~/types/api';
 
 /** 创建 AI 会话 */
 export function createSession(title?: string) {
-  return post<AiSession>("/ai/sessions", { title });
+  return post<AiSession>('/ai/sessions', { title });
 }
 
 /** 更新 AI 会话标题 */
@@ -14,7 +14,7 @@ export function updateSessionTitle(id: number, title: string) {
 
 /** 获取 AI 会话列表 */
 export function listSessions() {
-  return get<AiSession[]>("/ai/sessions");
+  return get<AiSession[]>('/ai/sessions');
 }
 
 /** 获取 AI 会话详情 */
@@ -41,9 +41,9 @@ export async function sendMessage(
   const response = await fetch(
     `${import.meta.env.VITE_API_BASE_URL}/ai/sessions/${sessionId}/messages`,
     {
-      method: "POST",
+      method: 'POST',
       headers: {
-        "Content-Type": "application/json",
+        'Content-Type': 'application/json',
         Authorization: `Bearer ${userStore.accessToken}`,
       },
       body: JSON.stringify({ content }),
@@ -51,12 +51,12 @@ export async function sendMessage(
   );
 
   if (!response.ok || !response.body) {
-    throw new Error("AI 请求失败");
+    throw new Error('AI 请求失败');
   }
 
   const reader = response.body.getReader();
   const decoder = new TextDecoder();
-  let buffer = "";
+  let buffer = '';
   let result: AiResult | null = null;
 
   while (true) {
@@ -65,21 +65,21 @@ export async function sendMessage(
     buffer += decoder.decode(value, { stream: true });
 
     // SSE 事件以空行分隔
-    const events = buffer.split("\n\n");
-    buffer = events.pop() ?? "";
+    const events = buffer.split('\n\n');
+    buffer = events.pop() ?? '';
 
     for (const event of events) {
-      const lines = event.split("\n");
-      let type = "message";
-      let data = "";
+      const lines = event.split('\n');
+      let type = 'message';
+      let data = '';
       for (const line of lines) {
-        if (line.startsWith("event:")) type = line.slice(6).trim();
-        if (line.startsWith("data:")) data += line.slice(5).trim();
+        if (line.startsWith('event:')) type = line.slice(6).trim();
+        if (line.startsWith('data:')) data += line.slice(5).trim();
       }
       if (!data) continue;
       try {
         const parsed = JSON.parse(data);
-        if (type === "task_complete") result = parsed as AiResult;
+        if (type === 'task_complete') result = parsed as AiResult;
         onEvent({ type, data: parsed });
       } catch {
         onEvent({ type, data });
@@ -88,14 +88,17 @@ export async function sendMessage(
   }
 
   if (!result) {
-    throw new Error("AI 未返回结果");
+    throw new Error('AI 未返回结果');
   }
   return result;
 }
 
 /** 批准 AI 操作意图 */
 export function approveAction(intentId: number) {
-  return post<{ id: number; status: string }>(`/ai/action-intents/${intentId}/approve`, {});
+  return post<{ id: number; status: string }>(
+    `/ai/action-intents/${intentId}/approve`,
+    {},
+  );
 }
 
 /** 拒绝 AI 操作意图（后端同步历史状态并返回收尾文案） */
@@ -109,7 +112,7 @@ export function rejectAction(intentId: number, reason?: string) {
 /** 确认执行 AI 操作意图（后端执行工具并生成总结回复） */
 export function confirmAction(intentId: number, confirmToken: string) {
   return post<{ result: unknown; toolName: string; content: string }>(
-    "/ai/action-intents/confirm",
+    '/ai/action-intents/confirm',
     {
       intentId,
       confirmToken,
@@ -124,7 +127,13 @@ export interface AiTaskStepItem {
   taskId: number;
   stepIndex: number;
   toolName: string;
-  status: "PENDING" | "RUNNING" | "SUCCESS" | "FAILED" | "SKIPPED" | "WAITING_APPROVAL";
+  status:
+    | 'PENDING'
+    | 'RUNNING'
+    | 'SUCCESS'
+    | 'FAILED'
+    | 'SKIPPED'
+    | 'WAITING_APPROVAL';
   input?: unknown;
   output?: unknown;
   riskLevel: string;
@@ -133,7 +142,7 @@ export interface AiTaskStepItem {
 
 export interface AiTaskItem {
   id: number;
-  status: "PENDING" | "RUNNING" | "SUCCESS" | "FAILED" | "CANCELLED";
+  status: 'PENDING' | 'RUNNING' | 'SUCCESS' | 'FAILED' | 'CANCELLED';
   riskLevel: string;
   goal: string;
   error?: string | null;
@@ -144,7 +153,7 @@ export interface AiTaskItem {
 
 /** 获取 AI 任务列表 */
 export function listTasks() {
-  return get<AiTaskItem[]>("/ai/tasks");
+  return get<AiTaskItem[]>('/ai/tasks');
 }
 
 /** 获取 AI 任务详情（含步骤） */
@@ -154,5 +163,8 @@ export function getTask(taskId: number) {
 
 /** 撤销任务（Undo） */
 export function rollbackTask(taskId: number) {
-  return post<{ taskId: number; rolledBack: number }>(`/ai/tasks/${taskId}/rollback`, {});
+  return post<{ taskId: number; rolledBack: number }>(
+    `/ai/tasks/${taskId}/rollback`,
+    {},
+  );
 }

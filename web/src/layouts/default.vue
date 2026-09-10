@@ -1,15 +1,15 @@
 <script setup lang="ts">
-import { computed, ref } from "vue";
-import { useRoute } from "vue-router";
-import { ChevronsLeft, ChevronsRight } from "lucide-vue-next";
-import { usePermissionStore } from "~/store/permission";
-import { useSettingsStore } from "~/store/settings";
-import type { SidebarItem } from "~/types/app";
-import SidebarMenu from "./components/SidebarMenu.vue";
-import AppHeader from "./components/AppHeader.vue";
-import TabsBar from "./components/TabsBar.vue";
-import ThemePanel from "./components/ThemePanel.vue";
-import AiChatPanel from "./components/AiChatPanel.vue";
+import { computed, ref } from 'vue';
+import { useRoute } from 'vue-router';
+import { ChevronsLeft, ChevronsRight } from 'lucide-vue-next';
+import { usePermissionStore } from '~/store/permission';
+import { useSettingsStore } from '~/store/settings';
+import type { SidebarItem } from '~/types/app';
+import SidebarMenu from './components/SidebarMenu.vue';
+import AppHeader from './components/AppHeader.vue';
+import TabsBar from './components/TabsBar.vue';
+import ThemePanel from './components/ThemePanel.vue';
+import AiChatPanel from './components/AiChatPanel.vue';
 
 const route = useRoute();
 const settings = useSettingsStore();
@@ -18,42 +18,46 @@ const themeVisible = ref(false);
 const aiVisible = ref(false);
 
 const sidebarWidth = computed(() =>
-  settings.collapsed ? "var(--app-sidebar-collapsed-width)" : "var(--app-sidebar-width)",
+  settings.collapsed
+    ? 'var(--app-sidebar-collapsed-width)'
+    : 'var(--app-sidebar-width)',
 );
 
 /** 侧边栏菜单：AI 整页入口改由悬浮球承载，故从菜单中移除 /ai */
 const sidebarItems = computed<SidebarItem[]>(() => {
   const dropAi = (list: SidebarItem[]): SidebarItem[] =>
     list
-      .filter((item) => item.path !== "/ai")
-      .map((item) => (item.children ? { ...item, children: dropAi(item.children) } : item));
+      .filter((item) => item.path !== '/ai')
+      .map((item) =>
+        item.children ? { ...item, children: dropAi(item.children) } : item,
+      );
   return dropAi(permissionStore.sidebar);
 });
 
 /** 页面过渡：JS 驱动淡入（不依赖 transitionend，避免路由切换卡死） */
 const pageTransition = {
-  enterActiveClass: "",
-  enterFromClass: "",
-  enterToClass: "",
-  leaveActiveClass: "",
-  leaveFromClass: "",
-  leaveToClass: "",
+  enterActiveClass: '',
+  enterFromClass: '',
+  enterToClass: '',
+  leaveActiveClass: '',
+  leaveFromClass: '',
+  leaveToClass: '',
   enter(el: Element, done: () => void) {
     const node = el as HTMLElement;
-    node.style.opacity = "0";
-    node.style.transform = "translateY(8px)";
+    node.style.opacity = '0';
+    node.style.transform = 'translateY(8px)';
     requestAnimationFrame(() => {
-      node.style.transition = "opacity 0.2s ease, transform 0.2s ease";
-      node.style.opacity = "1";
-      node.style.transform = "translateY(0)";
+      node.style.transition = 'opacity 0.2s ease, transform 0.2s ease';
+      node.style.opacity = '1';
+      node.style.transform = 'translateY(0)';
       setTimeout(done, 220);
     });
   },
   leave(el: Element, done: () => void) {
     const node = el as HTMLElement;
-    node.style.transition = "opacity 0.15s ease, transform 0.15s ease";
-    node.style.opacity = "0";
-    node.style.transform = "translateY(-4px)";
+    node.style.transition = 'opacity 0.15s ease, transform 0.15s ease';
+    node.style.opacity = '0';
+    node.style.transform = 'translateY(-4px)';
     setTimeout(done, 170);
   },
 };
@@ -93,7 +97,10 @@ const pageTransition = {
 
     <!-- 主区域 -->
     <div class="flex flex-col flex-1 min-w-0 overflow-hidden">
-      <AppHeader @open-theme="themeVisible = true" @open-ai="aiVisible = true" />
+      <AppHeader
+        @open-theme="themeVisible = true"
+        @open-ai="aiVisible = true"
+      />
       <TabsBar />
       <main class="flex-1 overflow-y-auto p-5">
         <RouterView v-slot="{ Component }">

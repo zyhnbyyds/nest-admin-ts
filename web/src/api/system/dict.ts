@@ -6,17 +6,17 @@ import type {
   PageResult,
   UpdateDictDataBody,
   UpdateDictTypeBody,
-} from "~/types/api";
-import { del, get, patch, post } from "~/request";
+} from '~/types/api';
+import { del, get, patch, post } from '~/request';
 
 // ---------- 字典类型 ----------
 
 export function listDictTypes(page = 1, pageSize = 20) {
-  return get<PageResult<DictType>>("/system/dict-types", { page, pageSize });
+  return get<PageResult<DictType>>('/system/dict-types', { page, pageSize });
 }
 
 export function createDictType(body: CreateDictTypeBody) {
-  return post<{ id: number }>("/system/dict-types", body);
+  return post<{ id: number }>('/system/dict-types', body);
 }
 
 export function updateDictType(id: number, body: UpdateDictTypeBody) {
@@ -30,7 +30,7 @@ export function deleteDictType(id: number) {
 // ---------- 字典数据 ----------
 
 export function listDictData(page = 1, pageSize = 20, type?: string) {
-  return get<PageResult<DictData>>("/system/dict-data", {
+  return get<PageResult<DictData>>('/system/dict-data', {
     page,
     pageSize,
     type,
@@ -51,7 +51,7 @@ export function getDictByType(type: string) {
 }
 
 export function createDictData(body: CreateDictDataBody) {
-  return post<{ id: number }>("/system/dict-data", body);
+  return post<{ id: number }>('/system/dict-data', body);
 }
 
 export function updateDictData(id: number, body: UpdateDictDataBody) {

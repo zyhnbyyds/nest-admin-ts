@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import { computed } from "vue";
-import { useRoute, useRouter } from "vue-router";
-import { LewMenu } from "lew-ui";
-import type { LewMenuOption } from "lew-ui";
-import type { SidebarItem } from "~/types/app";
-import { resolveMenuIcon } from "~/utils/menu-icon";
+import { computed } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
+import { LewMenu } from 'lew-ui';
+import type { LewMenuOption } from 'lew-ui';
+import type { SidebarItem } from '~/types/app';
+import { resolveMenuIcon } from '~/utils/menu-icon';
 
 const props = defineProps<{
   items: SidebarItem[];
@@ -31,7 +31,9 @@ const menuOptions = computed<LewMenuOption[]>(() =>
 
 /** 折叠态：仅图标按钮列表 */
 const collapsedItems = computed(() =>
-  props.items.flatMap((item) => (item.children?.length ? item.children : [item])),
+  props.items.flatMap((item) =>
+    item.children?.length ? item.children : [item],
+  ),
 );
 
 function handleChange(item: LewMenuOption) {
@@ -46,11 +48,18 @@ function go(path: string) {
 <template>
   <!-- 展开态：使用 lew-ui LewMenu 组件 -->
   <nav v-if="!collapsed" class="flex-1 overflow-y-auto p-2">
-    <LewMenu :options="menuOptions" :model-value="activeValue" @change="handleChange" />
+    <LewMenu
+      :options="menuOptions"
+      :model-value="activeValue"
+      @change="handleChange"
+    />
   </nav>
 
   <!-- 折叠态：仅图标 -->
-  <nav v-else class="flex-1 overflow-y-auto p-2 flex flex-col items-center gap-1">
+  <nav
+    v-else
+    class="flex-1 overflow-y-auto p-2 flex flex-col items-center gap-1"
+  >
     <button
       v-for="item in collapsedItems"
       :key="item.key"

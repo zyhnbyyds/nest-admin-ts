@@ -1,18 +1,22 @@
 <script setup lang="ts">
-import { computed } from "vue";
-import { LewColorPicker, LewDrawer, LewMessage, LewTabs } from "lew-ui";
-import type { LewTabsOption } from "lew-ui";
-import { RotateCcw } from "lucide-vue-next";
-import { RADIUS_LEVELS, THEME_COLORS, useSettingsStore } from "~/store/settings";
-import type { ColorMode, RadiusLevel } from "~/types/app";
+import { computed } from 'vue';
+import { LewColorPicker, LewDrawer, LewMessage, LewTabs } from 'lew-ui';
+import type { LewTabsOption } from 'lew-ui';
+import { RotateCcw } from 'lucide-vue-next';
+import {
+  RADIUS_LEVELS,
+  THEME_COLORS,
+  useSettingsStore,
+} from '~/store/settings';
+import type { ColorMode, RadiusLevel } from '~/types/app';
 
-const visible = defineModel<boolean>("visible", { default: false });
+const visible = defineModel<boolean>('visible', { default: false });
 const settings = useSettingsStore();
 
 const modeOptions: LewTabsOption[] = [
-  { label: "浅色", value: "light" },
-  { label: "深色", value: "dark" },
-  { label: "跟随系统", value: "auto" },
+  { label: '浅色', value: 'light' },
+  { label: '深色', value: 'dark' },
+  { label: '跟随系统', value: 'auto' },
 ];
 
 const radiusOptions: LewTabsOption[] = RADIUS_LEVELS.map((r) => ({
@@ -22,7 +26,9 @@ const radiusOptions: LewTabsOption[] = RADIUS_LEVELS.map((r) => ({
 
 /** 当前主色是否来自预设色板（用于高亮） */
 const isPreset = computed(() =>
-  THEME_COLORS.some((c) => c.value.toLowerCase() === settings.primaryColor.toLowerCase()),
+  THEME_COLORS.some(
+    (c) => c.value.toLowerCase() === settings.primaryColor.toLowerCase(),
+  ),
 );
 
 /** 外观模式双向绑定（v-model 驱动 setMode 持久化） */
@@ -39,7 +45,7 @@ const radiusModel = computed({
 
 function handleReset() {
   settings.resetTheme();
-  LewMessage.success("已恢复默认主题");
+  LewMessage.success('已恢复默认主题');
 }
 </script>
 
@@ -55,7 +61,11 @@ function handleReset() {
     <div class="p-5">
       <!-- 外观模式 -->
       <section class="mb-6">
-        <h4 class="m-0 mb-3 text-13px font-600 text-[var(--app-text-secondary)]">外观模式</h4>
+        <h4
+          class="m-0 mb-3 text-13px font-600 text-[var(--app-text-secondary)]"
+        >
+          外观模式
+        </h4>
         <LewTabs
           class="inline-block"
           v-model="modeModel"
@@ -67,7 +77,11 @@ function handleReset() {
 
       <!-- 主题色 -->
       <section class="mb-6">
-        <h4 class="m-0 mb-3 text-13px font-600 text-[var(--app-text-secondary)]">主题色</h4>
+        <h4
+          class="m-0 mb-3 text-13px font-600 text-[var(--app-text-secondary)]"
+        >
+          主题色
+        </h4>
         <!-- 圆形 tabs 色板 -->
         <div class="flex items-center gap-2.5">
           <button
@@ -100,8 +114,17 @@ function handleReset() {
 
       <!-- 圆角 -->
       <section class="mb-6">
-        <h4 class="m-0 mb-3 text-13px font-600 text-[var(--app-text-secondary)]">圆角风格</h4>
-        <LewTabs v-model="radiusModel" :options="radiusOptions" type="block" round />
+        <h4
+          class="m-0 mb-3 text-13px font-600 text-[var(--app-text-secondary)]"
+        >
+          圆角风格
+        </h4>
+        <LewTabs
+          v-model="radiusModel"
+          :options="radiusOptions"
+          type="block"
+          round
+        />
       </section>
 
       <!-- 重置 -->

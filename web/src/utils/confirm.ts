@@ -1,4 +1,4 @@
-import { LewDialog } from "lew-ui";
+import { LewDialog } from 'lew-ui';
 
 /**
  * 危险/确认操作弹窗（删除、清空、手动执行等）。
@@ -12,26 +12,26 @@ export function confirmDanger(opts: {
   title: string;
   content: string;
   /** 弹窗类型，默认 warning（删除/清空），手动执行等可用 normal */
-  type?: "warning" | "normal" | "info" | "error" | "success";
+  type?: 'warning' | 'normal' | 'info' | 'error' | 'success';
   confirmText?: string;
   /** 确认按钮颜色，默认 error；手动执行等可用 primary */
-  confirmColor?: "error" | "primary" | "warning" | "success" | "info" | "gray";
+  confirmColor?: 'error' | 'primary' | 'warning' | 'success' | 'info' | 'gray';
   onConfirm: () => Promise<void> | void;
 }) {
-  const method = (opts.type ?? "warning") as "warning" | "normal";
+  const method = (opts.type ?? 'warning') as 'warning' | 'normal';
   LewDialog[method]({
     title: opts.title,
     content: opts.content,
     footerButtons: [
       {
-        props: { text: "取消", type: "text", color: "gray", size: "small" },
+        props: { text: '取消', type: 'text', color: 'gray', size: 'small' },
       },
       {
         props: {
-          text: opts.confirmText ?? "删除",
-          type: "fill",
-          color: opts.confirmColor ?? "error",
-          size: "small",
+          text: opts.confirmText ?? '删除',
+          type: 'fill',
+          color: opts.confirmColor ?? 'error',
+          size: 'small',
           request: async () => {
             await opts.onConfirm();
           },

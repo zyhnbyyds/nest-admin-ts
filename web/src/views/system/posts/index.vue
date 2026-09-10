@@ -1,39 +1,55 @@
 <script setup lang="ts">
-import { nextTick, ref } from "vue";
-import { Pencil, Plus, Trash2 } from "lucide-vue-next";
-import { LewButton, LewForm, LewMessage, LewModal, LewPagination, LewTable } from "lew-ui";
-import type { LewTableColumn } from "lew-ui";
-import { createPost, deletePost, updatePost } from "~/api/system/posts";
-import { useTable } from "~/composables/useTable";
-import { formatDateTime } from "~/composables/useFormat";
-import type { CreatePostBody, Post } from "~/types/api";
-import { renderStatus } from "~/utils/render";
-import { confirmDanger } from "~/utils/confirm";
-import IconButton from "~/components/IconButton.vue";
+import { nextTick, ref } from 'vue';
+import { Pencil, Plus, Trash2 } from 'lucide-vue-next';
+import {
+  LewButton,
+  LewForm,
+  LewMessage,
+  LewModal,
+  LewPagination,
+  LewTable,
+} from 'lew-ui';
+import type { LewTableColumn } from 'lew-ui';
+import { createPost, deletePost, updatePost } from '~/api/system/posts';
+import { useTable } from '~/composables/useTable';
+import { formatDateTime } from '~/composables/useFormat';
+import type { CreatePostBody, Post } from '~/types/api';
+import { renderStatus } from '~/utils/render';
+import { confirmDanger } from '~/utils/confirm';
+import IconButton from '~/components/IconButton.vue';
 
 // ---------- 列表 ----------
-const { items, loading, currentPage, pageSize, total, search, refresh, handleChange } =
-  useTable<Post>({ url: "/system/posts" });
+const {
+  items,
+  loading,
+  currentPage,
+  pageSize,
+  total,
+  search,
+  refresh,
+  handleChange,
+} = useTable<Post>({ url: '/system/posts' });
 
 const columns: LewTableColumn[] = [
-  { title: "ID", field: "id", width: 70 },
-  { title: "岗位名称", field: "name", width: 180 },
-  { title: "岗位标识", field: "key", width: 180 },
-  { title: "排序", field: "sort", width: 80 },
+  { title: 'ID', field: 'id', width: 70 },
+  { title: '岗位名称', field: 'name', width: 180 },
+  { title: '岗位标识', field: 'key', width: 180 },
+  { title: '排序', field: 'sort', width: 80 },
   {
-    title: "状态",
-    field: "status",
+    title: '状态',
+    field: 'status',
     width: 90,
     customRender: ({ row }) => renderStatus((row as { status: string }).status),
   },
-  { title: "备注", field: "remark" },
+  { title: '备注', field: 'remark' },
   {
-    title: "创建时间",
-    field: "createdAt",
+    title: '创建时间',
+    field: 'createdAt',
     width: 170,
-    customRender: ({ row }) => formatDateTime((row as unknown as Post).createdAt),
+    customRender: ({ row }) =>
+      formatDateTime((row as unknown as Post).createdAt),
   },
-  { title: "操作", field: "operation", width: 100, fixed: "right" },
+  { title: '操作', field: 'operation', width: 100, fixed: 'right' },
 ];
 
 void search();
@@ -42,7 +58,7 @@ void search();
 const modalVisible = ref(false);
 const editingId = ref<number | null>(null);
 const formRef = ref();
-const form = ref({ name: "", key: "", sort: 0, status: true, remark: "" });
+const form = ref({ name: '', key: '', sort: 0, status: true, remark: '' });
 /** 表单 key：每次打开弹窗自增，强制重建 LewForm 以回填数据 */
 const formKey = ref(0);
 
@@ -51,7 +67,13 @@ function openCreate() {
   formKey.value += 1;
   modalVisible.value = true;
   void nextTick(() => {
-    formRef.value?.setForm?.({ name: "", key: "", sort: 0, status: true, remark: "" });
+    formRef.value?.setForm?.({
+      name: '',
+      key: '',
+      sort: 0,
+      status: true,
+      remark: '',
+    });
   });
 }
 
@@ -64,8 +86,8 @@ function openEdit(row: Post) {
       name: row.name,
       key: row.key,
       sort: row.sort,
-      status: row.status === "active",
-      remark: row.remark ?? "",
+      status: row.status === 'active',
+      remark: row.remark ?? '',
     });
   });
 }
@@ -73,20 +95,21 @@ function openEdit(row: Post) {
 async function handleSubmit() {
   const valid = await formRef.value?.validate();
   if (!valid) return;
-  const values = (formRef.value?.getForm?.() ?? form.value) as typeof form.value;
+  const values = (formRef.value?.getForm?.() ??
+    form.value) as typeof form.value;
   const body: CreatePostBody = {
     name: values.name,
     key: values.key,
     sort: values.sort,
-    status: values.status ? "active" : "disabled",
+    status: values.status ? 'active' : 'disabled',
     remark: values.remark || undefined,
   };
   if (editingId.value === null) {
     await createPost(body);
-    LewMessage.success("创建成功");
+    LewMessage.success('创建成功');
   } else {
     await updatePost(editingId.value, body);
-    LewMessage.success("更新成功");
+    LewMessage.success('更新成功');
   }
   modalVisible.value = false;
   void refresh();
@@ -95,11 +118,11 @@ async function handleSubmit() {
 // ---------- 删除 ----------
 function handleDelete(row: Post) {
   confirmDanger({
-    title: "删除确认",
+    title: '删除确认',
     content: `确定删除岗位「${row.name}」吗？`,
     onConfirm: async () => {
       await deletePost(row.id);
-      LewMessage.success("删除成功");
+      LewMessage.success('删除成功');
       void refresh();
     },
   });
@@ -114,7 +137,11 @@ function handleDelete(row: Post) {
         <h2 class="page-title m-0">岗位管理</h2>
         <p class="page-subtitle mt-1 mb-0">管理岗位信息</p>
       </div>
-      <LewButton v-permission="'system:post:create'" type="fill" @click="openCreate">
+      <LewButton
+        v-permission="'system:post:create'"
+        type="fill"
+        @click="openCreate"
+      >
         <Plus :size="15" style="margin-right: 4px" /> 新增岗位
       </LewButton>
     </div>
@@ -208,7 +235,12 @@ function handleDelete(row: Post) {
               rule: `Yup.string().required('不能为空')`,
               props: { placeholder: '小写字母/数字/:-_', clearable: true },
             },
-            { field: 'sort', label: '排序', as: 'input-number', props: { min: 0 } },
+            {
+              field: 'sort',
+              label: '排序',
+              as: 'input-number',
+              props: { min: 0 },
+            },
             { field: 'status', label: '状态', as: 'switch' },
             {
               field: 'remark',

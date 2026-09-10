@@ -1,5 +1,5 @@
-import { nextTick, onMounted, ref } from "vue";
-import { LewMessage } from "lew-ui";
+import { nextTick, onMounted, ref } from 'vue';
+import { LewMessage } from 'lew-ui';
 import {
   confirmAction,
   createSession,
@@ -11,7 +11,7 @@ import {
   rollbackTask,
   sendMessage,
   updateSessionTitle,
-} from "~/api/ai";
+} from '~/api/ai';
 import type {
   AiApprovalRequired,
   AiMessage,
@@ -20,8 +20,8 @@ import type {
   AiTaskInfo,
   AiTaskStep,
   AiToolCall,
-} from "~/types/api";
-import { isPlainOutcome } from "../utils/display";
+} from '~/types/api';
+import { isPlainOutcome } from '../utils/display';
 
 /**
  * AI 操作页核心逻辑。
@@ -36,22 +36,22 @@ export function useAiChat() {
   const messages = ref<AiMessage[]>([]);
 
   // ---------- 发送状态 ----------
-  const input = ref("");
+  const input = ref('');
   const sending = ref(false);
   const thinking = ref(false);
   const toolCalls = ref<AiToolCall[]>([]);
 
   // ---------- 审批 ----------
   const waitingApproval = ref(false);
-  const riskLevel = ref<string>("");
+  const riskLevel = ref<string>('');
   const pendingApproval = ref<AiApprovalRequired | null>(null);
   /** 内嵌确认条交互中：'confirm' | 'cancel'（按钮 loading / 互斥防连点） */
-  const approving = ref<"confirm" | "cancel" | null>(null);
+  const approving = ref<'confirm' | 'cancel' | null>(null);
 
   // ---------- 任务时间线 ----------
   const currentTaskId = ref<number | null>(null);
   const taskSteps = ref<AiTaskStep[]>([]);
-  const taskStatus = ref<string>("");
+  const taskStatus = ref<string>('');
   const rollbacking = ref(false);
   const taskHistory = ref<AiTaskInfo[]>([]);
 
@@ -64,7 +64,7 @@ export function useAiChat() {
   }
 
   async function handleCreateSession() {
-    const session = await createSession("新会话");
+    const session = await createSession('新会话');
     sessions.value.unshift(session);
     await selectSession(session.id);
   }
@@ -74,11 +74,11 @@ export function useAiChat() {
     messages.value = await listMessages(id);
     toolCalls.value = [];
     waitingApproval.value = false;
-    riskLevel.value = "";
+    riskLevel.value = '';
     pendingApproval.value = null;
     currentTaskId.value = null;
     taskSteps.value = [];
-    taskStatus.value = "";
+    taskStatus.value = '';
     // 任务历史为该用户全局数据：切换会话时一并刷新，避免展示滞后
     void loadTaskHistory();
     await scrollToBottom();
@@ -91,9 +91,9 @@ export function useAiChat() {
       const idx = sessions.value.findIndex((s) => s.id === id);
       if (idx !== -1) sessions.value[idx] = updated;
       if (currentSession.value?.id === id) currentSession.value = updated;
-      LewMessage.success("标题已更新");
+      LewMessage.success('标题已更新');
     } catch (error) {
-      LewMessage.error(error instanceof Error ? error.message : "更新标题失败");
+      LewMessage.error(error instanceof Error ? error.message : '更新标题失败');
     }
   }
 
@@ -102,7 +102,7 @@ export function useAiChat() {
     const content = input.value.trim();
     if (!content || !currentSession.value || sending.value) return;
 
-    input.value = "";
+    input.value = '';
     sending.value = true;
     thinking.value = true;
     toolCalls.value = [];
@@ -110,13 +110,13 @@ export function useAiChat() {
     pendingApproval.value = null;
     currentTaskId.value = null;
     taskSteps.value = [];
-    taskStatus.value = "";
+    taskStatus.value = '';
 
     // 用户消息
     messages.value.push({
       id: Date.now(),
       sessionId: currentSession.value.id,
-      role: "user",
+      role: 'user',
       content,
       toolCalls: null,
       toolResults: null,
@@ -128,7 +128,7 @@ export function useAiChat() {
     const fresh: AiMessage = {
       id: freshId,
       sessionId: currentSession.value.id,
-      role: "assistant",
+      role: 'assistant',
       content: null,
       toolCalls: [],
       toolResults: null,
@@ -139,7 +139,11 @@ export function useAiChat() {
     await scrollToBottom();
 
     try {
-      const result = await sendMessage(currentSession.value.id, content, handleSseEvent);
+      const result = await sendMessage(
+        currentSession.value.id,
+        content,
+        handleSseEvent,
+      );
       // SSE 收尾：内容已在流式中实时累积，此处回填工具结果并结束「生成中」状态
       const freshMsg = messages.value.find((m) => m.id === freshId);
       if (freshMsg) {
@@ -150,7 +154,7 @@ export function useAiChat() {
       riskLevel.value = result.riskLevel;
       waitingApproval.value = result.waitingApproval;
     } catch (error) {
-      LewMessage.error(error instanceof Error ? error.message : "AI 请求失败");
+      LewMessage.error(error instanceof Error ? error.message : 'AI 请求失败');
       // 失败时移除占位 assistant 消息，避免残留空白气泡
       messages.value = messages.value.filter((m) => m.id !== freshId);
     } finally {
@@ -167,11 +171,14 @@ export function useAiChat() {
     const freshMsg = messages.value.find((m) => m._fresh);
 
     switch (event.type) {
-      case "thinking":
+      case 'thinking':
         thinking.value = true;
         break;
-      case "tool_call": {
-        const data = event.data as { name: string; arguments: Record<string, unknown> };
+      case 'tool_call': {
+        const data = event.data as {
+          name: string;
+          arguments: Record<string, unknown>;
+        };
         const call = { name: data.name, arguments: data.arguments };
         toolCalls.value.push(call);
         // 同步到占位消息 → 对话区实时出现该步骤（running）
@@ -179,7 +186,7 @@ export function useAiChat() {
         void scrollToBottom();
         break;
       }
-      case "tool_result": {
+      case 'tool_result': {
         const data = event.data as { name: string; result: unknown };
         const update = (list?: AiToolCall[] | null) => {
           if (!list) return;
@@ -196,7 +203,7 @@ export function useAiChat() {
         void scrollToBottom();
         break;
       }
-      case "approval_required": {
+      case 'approval_required': {
         const data = event.data as AiApprovalRequired;
         pendingApproval.value = data;
         waitingApproval.value = true;
@@ -205,8 +212,14 @@ export function useAiChat() {
         const markWaiting = (list?: AiToolCall[] | null) => {
           if (!list) return;
           for (let i = list.length - 1; i >= 0; i--) {
-            if (list[i]?.name === data.toolName && list[i]?.result === undefined) {
-              list[i]!.result = { status: "waiting_approval", intentId: data.intentId };
+            if (
+              list[i]?.name === data.toolName &&
+              list[i]?.result === undefined
+            ) {
+              list[i]!.result = {
+                status: 'waiting_approval',
+                intentId: data.intentId,
+              };
               break;
             }
           }
@@ -215,36 +228,44 @@ export function useAiChat() {
         markWaiting(freshMsg?.toolCalls);
         break;
       }
-      case "message": {
+      case 'message': {
         // 真流式：文本增量到达即追加到占位消息（实时渲染，无需假打字机）
         const data = event.data as { content?: string };
         thinking.value = false;
         if (freshMsg && data.content) {
-          freshMsg.content = (freshMsg.content ?? "") + data.content;
+          freshMsg.content = (freshMsg.content ?? '') + data.content;
           void scrollToBottom();
         }
         break;
       }
-      case "error":
-        LewMessage.error((event.data as { message?: string })?.message ?? "AI 处理失败");
+      case 'error':
+        LewMessage.error(
+          (event.data as { message?: string })?.message ?? 'AI 处理失败',
+        );
         break;
       // ---------- 任务时间线 ----------
-      case "task_created": {
-        const data = event.data as { taskId: number; goal: string; stepCount: number };
+      case 'task_created': {
+        const data = event.data as {
+          taskId: number;
+          goal: string;
+          stepCount: number;
+        };
         currentTaskId.value = data.taskId;
         taskSteps.value = [];
-        taskStatus.value = "RUNNING";
+        taskStatus.value = 'RUNNING';
         break;
       }
-      case "task_step": {
+      case 'task_step': {
         const data = event.data as {
           taskId: number;
           index: number;
           toolName: string;
-          status: "RUNNING" | "SUCCESS" | "FAILED";
+          status: 'RUNNING' | 'SUCCESS' | 'FAILED';
           result?: unknown;
         };
-        const existing = taskSteps.value.find((s) => s.stepIndex === data.index);
+        const existing = taskSteps.value.find(
+          (s) => s.stepIndex === data.index,
+        );
         if (existing) {
           existing.status = data.status;
           existing.output = data.result;
@@ -256,13 +277,17 @@ export function useAiChat() {
             toolName: data.toolName,
             status: data.status,
             output: data.result,
-            riskLevel: "",
+            riskLevel: '',
           });
         }
         break;
       }
-      case "task_completed": {
-        const data = event.data as { taskId: number; status: string; error?: string };
+      case 'task_completed': {
+        const data = event.data as {
+          taskId: number;
+          status: string;
+          error?: string;
+        };
         taskStatus.value = data.status;
         if (data.error) LewMessage.error(data.error);
         break;
@@ -272,7 +297,7 @@ export function useAiChat() {
 
   async function scrollToBottom() {
     await nextTick();
-    const container = document.getElementById("ai-messages");
+    const container = document.getElementById('ai-messages');
     if (container) container.scrollTop = container.scrollHeight;
   }
 
@@ -285,18 +310,22 @@ export function useAiChat() {
    * 历史中同名但已完结的步骤。不依赖占位消息的 _fresh 状态——审批等待期间
    * 占位消息可能已被打字机完成事件标记为 _fresh=false，仍需能精确回填。
    */
-  function updateToolStepStatus(toolName: string, result: unknown, intentId?: number) {
+  function updateToolStepStatus(
+    toolName: string,
+    result: unknown,
+    intentId?: number,
+  ) {
     const isTarget = (c: AiToolCall) => {
       if (c.name !== toolName) return false;
       const r = c.result as { status?: string; intentId?: number } | undefined;
-      if (r?.status !== "waiting_approval") return false;
+      if (r?.status !== 'waiting_approval') return false;
       return intentId === undefined || r.intentId === intentId;
     };
     toolCalls.value.forEach((c) => {
       if (isTarget(c)) c.result = result;
     });
     messages.value.forEach((m) => {
-      if (m.role !== "assistant") return;
+      if (m.role !== 'assistant') return;
       m.toolCalls?.forEach((c) => {
         if (isTarget(c)) c.result = result;
       });
@@ -311,16 +340,26 @@ export function useAiChat() {
   async function handleApprove() {
     const approval = pendingApproval.value;
     if (!approval || approving.value) return;
-    approving.value = "confirm";
+    approving.value = 'confirm';
     try {
       const { toolName, result, content } = await confirmAction(
         approval.intentId,
         approval.confirmToken,
       );
-      await finishApproval(toolName, result ?? { status: "executed" }, content, approval.intentId);
+      await finishApproval(
+        toolName,
+        result ?? { status: 'executed' },
+        content,
+        approval.intentId,
+      );
     } catch {
       // 错误提示已由请求拦截器统一弹出，这里把步骤标记为失败并收尾
-      await finishApproval(approval.toolName, { status: "error" }, undefined, approval.intentId);
+      await finishApproval(
+        approval.toolName,
+        { status: 'error' },
+        undefined,
+        approval.intentId,
+      );
     } finally {
       approving.value = null;
     }
@@ -330,15 +369,20 @@ export function useAiChat() {
   async function handleReject() {
     const approval = pendingApproval.value;
     if (!approval || approving.value) return;
-    approving.value = "cancel";
+    approving.value = 'cancel';
     try {
-      const { content } = await rejectAction(approval.intentId, "用户取消");
-      await finishApproval(approval.toolName, { status: "cancelled" }, content, approval.intentId);
+      const { content } = await rejectAction(approval.intentId, '用户取消');
+      await finishApproval(
+        approval.toolName,
+        { status: 'cancelled' },
+        content,
+        approval.intentId,
+      );
     } catch {
       // 错误提示已由请求拦截器统一弹出，这里只做状态收尾
       await finishApproval(
         approval.toolName,
-        { status: "cancelled" },
+        { status: 'cancelled' },
         undefined,
         approval.intentId,
       );
@@ -364,12 +408,15 @@ export function useAiChat() {
 
     // 仅当本次步骤仍在本会话消息中才就地收尾，避免会话切换后误写入其它会话
     const hasStep = messages.value.some(
-      (m) => m.role === "assistant" && m.toolCalls?.some((c) => c.name === toolName),
+      (m) =>
+        m.role === 'assistant' && m.toolCalls?.some((c) => c.name === toolName),
     );
     if (hasStep) {
       // 结束「生成中」占位消息：步骤已定稿，避免残留“正在处理...”动画
       messages.value
-        .filter((m) => m._fresh && m.toolCalls?.some((c) => c.name === toolName))
+        .filter(
+          (m) => m._fresh && m.toolCalls?.some((c) => c.name === toolName),
+        )
         .forEach((m) => {
           m._fresh = false;
         });
@@ -377,18 +424,22 @@ export function useAiChat() {
       // 审批结果作为对话下文展示：结果条（图标 + 标题）+ 实质正文
       if (summary && currentSession.value) {
         const status = (result as { status?: string } | undefined)?.status;
-        const outcome: "success" | "cancelled" | "error" =
-          status === "cancelled" ? "cancelled" : status === "error" ? "error" : "success";
+        const outcome: 'success' | 'cancelled' | 'error' =
+          status === 'cancelled'
+            ? 'cancelled'
+            : status === 'error'
+              ? 'error'
+              : 'success';
         // 后端兜底单句（如“操作「xxx」已执行完成。”）不再重复正文，仅由结果条表达
         const body = isPlainOutcome(summary) ? null : summary;
         messages.value.push({
           id: Date.now(),
           sessionId: currentSession.value.id,
-          role: "assistant",
+          role: 'assistant',
           content: body,
           toolCalls: null,
           // 审批结果元数据持久化于 toolResults，刷新会话后仍能还原结果条
-          toolResults: [{ type: "approval_result", outcome, toolName }],
+          toolResults: [{ type: 'approval_result', outcome, toolName }],
           createdAt: new Date().toISOString(),
         });
         await scrollToBottom();
@@ -414,10 +465,10 @@ export function useAiChat() {
     rollbacking.value = true;
     try {
       await rollbackTask(taskId);
-      LewMessage.success("已撤销操作");
+      LewMessage.success('已撤销操作');
       taskHistory.value = await listTasks();
     } catch (error) {
-      LewMessage.error(error instanceof Error ? error.message : "撤销失败");
+      LewMessage.error(error instanceof Error ? error.message : '撤销失败');
     } finally {
       rollbacking.value = false;
     }

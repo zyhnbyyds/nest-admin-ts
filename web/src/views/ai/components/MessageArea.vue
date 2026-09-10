@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import { computed } from "vue";
-import { CircleAlert, CircleCheck, CircleX, Sparkles } from "lucide-vue-next";
-import type { AiApprovalRequired, AiMessage, AiToolCall } from "~/types/api";
-import { approvalResultOf, isPlainOutcome } from "../utils/display";
-import ApprovalPanel from "./ApprovalPanel.vue";
-import MarkdownContent from "./MarkdownContent.vue";
-import ToolStepCard from "./ToolStepCard.vue";
+import { computed } from 'vue';
+import { CircleAlert, CircleCheck, CircleX, Sparkles } from 'lucide-vue-next';
+import type { AiApprovalRequired, AiMessage, AiToolCall } from '~/types/api';
+import { approvalResultOf, isPlainOutcome } from '../utils/display';
+import ApprovalPanel from './ApprovalPanel.vue';
+import MarkdownContent from './MarkdownContent.vue';
+import ToolStepCard from './ToolStepCard.vue';
 
 const props = defineProps<{
   messages: AiMessage[];
@@ -13,14 +13,14 @@ const props = defineProps<{
   /** 当前等待确认的操作（内嵌在对应消息底部展示） */
   pendingApproval: AiApprovalRequired | null;
   /** 确认/取消按钮处理中 */
-  approving: "confirm" | "cancel" | null;
+  approving: 'confirm' | 'cancel' | null;
 }>();
 
 const emit = defineEmits<{
   /** 确认当前待审批操作 */
-  (e: "confirm"): void;
+  (e: 'confirm'): void;
   /** 取消当前待审批操作 */
-  (e: "cancel"): void;
+  (e: 'cancel'): void;
 }>();
 
 /** 判断消息是否为「正在生成中」 */
@@ -29,18 +29,20 @@ function isFresh(message: AiMessage): boolean {
 }
 
 /** 根据 tool 调用推断步骤状态 */
-function toolStatus(call: AiToolCall): "running" | "success" | "approval" | "error" | "cancelled" {
-  if (call.result === undefined) return "running";
+function toolStatus(
+  call: AiToolCall,
+): 'running' | 'success' | 'approval' | 'error' | 'cancelled' {
+  if (call.result === undefined) return 'running';
   const status = (call.result as { status?: string })?.status;
-  if (status === "waiting_approval") return "approval";
-  if (status === "error") return "error";
-  if (status === "cancelled") return "cancelled";
-  return "success";
+  if (status === 'waiting_approval') return 'approval';
+  if (status === 'error') return 'error';
+  if (status === 'cancelled') return 'cancelled';
+  return 'success';
 }
 
 /** 消息中是否含有「等待审批」的步骤 */
 function hasWaitingApproval(message: AiMessage): boolean {
-  return !!message.toolCalls?.some((c) => toolStatus(c) === "approval");
+  return !!message.toolCalls?.some((c) => toolStatus(c) === 'approval');
 }
 
 /** 找到携带「等待审批」步骤的消息（内嵌确认条挂载于此） */
@@ -49,9 +51,11 @@ const approvalMessageId = computed<number | null>(() => {
   for (let i = list.length - 1; i >= 0; i--) {
     const msg = list[i]!;
     if (
-      msg.role === "assistant" &&
+      msg.role === 'assistant' &&
       msg.toolCalls?.some(
-        (c) => (c.result as { status?: string } | undefined)?.status === "waiting_approval",
+        (c) =>
+          (c.result as { status?: string } | undefined)?.status ===
+          'waiting_approval',
       )
     ) {
       return msg.id;
@@ -61,10 +65,10 @@ const approvalMessageId = computed<number | null>(() => {
 });
 
 /** 审批结果标题文案 */
-function outcomeLabel(outcome: "success" | "cancelled" | "error"): string {
-  if (outcome === "success") return "操作已执行完成";
-  if (outcome === "cancelled") return "操作已取消";
-  return "操作执行失败";
+function outcomeLabel(outcome: 'success' | 'cancelled' | 'error'): string {
+  if (outcome === 'success') return '操作已执行完成';
+  if (outcome === 'cancelled') return '操作已取消';
+  return '操作执行失败';
 }
 
 /** 审批结果消息：正文为后端兜底短句时隐藏正文（结果条标题已表达） */
@@ -131,7 +135,9 @@ function shouldShowContent(message: AiMessage): boolean {
             />
             <CircleAlert v-else :size="18" class="shrink-0" />
             <span class="text-14px font-600">
-              {{ outcomeLabel(approvalResultOf(message)?.outcome ?? "success") }}
+              {{
+                outcomeLabel(approvalResultOf(message)?.outcome ?? 'success')
+              }}
             </span>
           </div>
 

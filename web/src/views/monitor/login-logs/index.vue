@@ -1,63 +1,79 @@
 <script setup lang="ts">
-import { ref } from "vue";
-import { Trash2 } from "lucide-vue-next";
-import { LewButton, LewInput, LewMessage, LewPagination, LewSelect, LewTable } from "lew-ui";
-import type { LewTableColumn } from "lew-ui";
-import { clearLoginLogs, deleteLoginLog } from "~/api/monitor";
-import { useTable } from "~/composables/useTable";
-import { formatDateTime } from "~/composables/useFormat";
-import { confirmDanger } from "~/utils/confirm";
-import { renderTag } from "~/utils/render";
-import type { LoginLog } from "~/types/api";
-import IconButton from "~/components/IconButton.vue";
+import { ref } from 'vue';
+import { Trash2 } from 'lucide-vue-next';
+import {
+  LewButton,
+  LewInput,
+  LewMessage,
+  LewPagination,
+  LewSelect,
+  LewTable,
+} from 'lew-ui';
+import type { LewTableColumn } from 'lew-ui';
+import { clearLoginLogs, deleteLoginLog } from '~/api/monitor';
+import { useTable } from '~/composables/useTable';
+import { formatDateTime } from '~/composables/useFormat';
+import { confirmDanger } from '~/utils/confirm';
+import { renderTag } from '~/utils/render';
+import type { LoginLog } from '~/types/api';
+import IconButton from '~/components/IconButton.vue';
 
 // ---------- 列表 ----------
 const query = ref<{ username?: string; status?: string }>({});
-const { items, loading, currentPage, pageSize, total, search, refresh, handleChange } =
-  useTable<LoginLog>({
-    url: "/monitor/login-logs",
-    query: () => query.value,
-  });
+const {
+  items,
+  loading,
+  currentPage,
+  pageSize,
+  total,
+  search,
+  refresh,
+  handleChange,
+} = useTable<LoginLog>({
+  url: '/monitor/login-logs',
+  query: () => query.value,
+});
 
 const columns: LewTableColumn[] = [
-  { title: "ID", field: "id", width: 70 },
-  { title: "用户名", field: "username", width: 140 },
-  { title: "IP", field: "ip", width: 140 },
-  { title: "User-Agent", field: "userAgent" },
+  { title: 'ID', field: 'id', width: 70 },
+  { title: '用户名', field: 'username', width: 140 },
+  { title: 'IP', field: 'ip', width: 140 },
+  { title: 'User-Agent', field: 'userAgent' },
   {
-    title: "状态",
-    field: "status",
+    title: '状态',
+    field: 'status',
     width: 90,
     customRender: ({ row }) =>
-      (row as unknown as LoginLog).status === "success"
-        ? renderTag("成功", "tag-success")
-        : renderTag("失败", "tag-failure"),
+      (row as unknown as LoginLog).status === 'success'
+        ? renderTag('成功', 'tag-success')
+        : renderTag('失败', 'tag-failure'),
   },
-  { title: "消息", field: "message", width: 200 },
+  { title: '消息', field: 'message', width: 200 },
   {
-    title: "时间",
-    field: "createdAt",
+    title: '时间',
+    field: 'createdAt',
     width: 170,
-    customRender: ({ row }) => formatDateTime((row as unknown as LoginLog).createdAt),
+    customRender: ({ row }) =>
+      formatDateTime((row as unknown as LoginLog).createdAt),
   },
-  { title: "操作", field: "operation", width: 80, fixed: "right" },
+  { title: '操作', field: 'operation', width: 80, fixed: 'right' },
 ];
 
 void search();
 
 const statusOptions = [
-  { label: "成功", value: "success" },
-  { label: "失败", value: "failure" },
+  { label: '成功', value: 'success' },
+  { label: '失败', value: 'failure' },
 ];
 
 // ---------- 删除/清空 ----------
 function handleDelete(row: LoginLog) {
   confirmDanger({
-    title: "删除确认",
+    title: '删除确认',
     content: `确定删除该条登录日志吗？`,
     onConfirm: async () => {
       await deleteLoginLog(row.id);
-      LewMessage.success("删除成功");
+      LewMessage.success('删除成功');
       void refresh();
     },
   });
@@ -65,12 +81,12 @@ function handleDelete(row: LoginLog) {
 
 function handleClear() {
   confirmDanger({
-    title: "清空确认",
-    content: "确定清空所有登录日志吗？此操作不可恢复。",
-    confirmText: "清空",
+    title: '清空确认',
+    content: '确定清空所有登录日志吗？此操作不可恢复。',
+    confirmText: '清空',
     onConfirm: async () => {
       await clearLoginLogs();
-      LewMessage.success("已清空");
+      LewMessage.success('已清空');
       void refresh();
     },
   });
@@ -111,7 +127,9 @@ function handleClear() {
         clearable
         :options="statusOptions"
       />
-      <LewButton type="light" :loading="loading" @click="search()">查询</LewButton>
+      <LewButton type="light" :loading="loading" @click="search()"
+        >查询</LewButton
+      >
     </div>
 
     <!-- 表格 -->

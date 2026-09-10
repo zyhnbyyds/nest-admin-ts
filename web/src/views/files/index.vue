@@ -1,37 +1,50 @@
 <script setup lang="ts">
-import { ref } from "vue";
-import { Download, Eye, Trash2, Upload } from "lucide-vue-next";
-import { LewButton, LewMessage, LewModal, LewPagination, LewTable } from "lew-ui";
-import type { LewTableColumn } from "lew-ui";
-import { deleteFile, fileDownloadUrl, filePreviewUrl, uploadFile } from "~/api/files";
-import { useTable } from "~/composables/useTable";
-import { formatDateTime, formatSize } from "~/composables/useFormat";
-import type { FileItem } from "~/types/api";
-import { confirmDanger } from "~/utils/confirm";
-import IconButton from "~/components/IconButton.vue";
+import { ref } from 'vue';
+import { Download, Eye, Trash2, Upload } from 'lucide-vue-next';
+import {
+  LewButton,
+  LewMessage,
+  LewModal,
+  LewPagination,
+  LewTable,
+} from 'lew-ui';
+import type { LewTableColumn } from 'lew-ui';
+import {
+  deleteFile,
+  fileDownloadUrl,
+  filePreviewUrl,
+  uploadFile,
+} from '~/api/files';
+import { useTable } from '~/composables/useTable';
+import { formatDateTime, formatSize } from '~/composables/useFormat';
+import type { FileItem } from '~/types/api';
+import { confirmDanger } from '~/utils/confirm';
+import IconButton from '~/components/IconButton.vue';
 
 // ---------- 列表 ----------
-const { items, loading, currentPage, pageSize, total, refresh, handleChange } = useTable<FileItem>({
-  url: "/files",
-});
+const { items, loading, currentPage, pageSize, total, refresh, handleChange } =
+  useTable<FileItem>({
+    url: '/files',
+  });
 
 const columns: LewTableColumn[] = [
-  { title: "ID", field: "id", width: 70 },
-  { title: "文件名", field: "originalName", width: 240 },
-  { title: "类型", field: "mime", width: 140 },
+  { title: 'ID', field: 'id', width: 70 },
+  { title: '文件名', field: 'originalName', width: 240 },
+  { title: '类型', field: 'mime', width: 140 },
   {
-    title: "大小",
-    field: "size",
+    title: '大小',
+    field: 'size',
     width: 110,
     customRender: ({ row }) => formatSize((row as unknown as FileItem).size),
   },
   {
-    title: "上传时间",
-    field: "createdAt",
+    title: '上传时间',
+    field: 'createdAt',
     width: 170,
-    customRender: ({ row }) => formatDateTime((row as unknown as FileItem).createdAt),
+    customRender: ({ row }) =>
+      formatDateTime((row as unknown as FileItem).createdAt),
   },
-  { title: "操作", field: "operation", width: 120, fixed: "right" },
+  { title: '操作', field: 'operation', width: 120, fixed: 'right' },
 ];
 
 void refresh();
@@ -51,17 +64,17 @@ async function handleFileChange(event: Event) {
   uploading.value = true;
   try {
     await uploadFile(file);
-    LewMessage.success("上传成功");
+    LewMessage.success('上传成功');
     void refresh();
   } finally {
     uploading.value = false;
-    input.value = "";
+    input.value = '';
   }
 }
 
 // ---------- 下载 ----------
 function handleDownload(row: FileItem) {
-  window.open(fileDownloadUrl(row.id), "_blank");
+  window.open(fileDownloadUrl(row.id), '_blank');
 }
 
 // ---------- 图片预览 ----------
@@ -70,7 +83,7 @@ const previewFile = ref<FileItem | null>(null);
 const previewLoading = ref(true);
 
 function isImage(item: FileItem) {
-  return item.mime?.toLowerCase().startsWith("image/");
+  return item.mime?.toLowerCase().startsWith('image/');
 }
 
 function handlePreview(row: FileItem) {
@@ -83,11 +96,11 @@ function handlePreview(row: FileItem) {
 // ---------- 删除 ----------
 function handleDelete(row: FileItem) {
   confirmDanger({
-    title: "删除确认",
+    title: '删除确认',
     content: `确定删除文件「${row.originalName}」吗？`,
     onConfirm: async () => {
       await deleteFile(row.id);
-      LewMessage.success("删除成功");
+      LewMessage.success('删除成功');
       void refresh();
     },
   });
@@ -110,7 +123,12 @@ function handleDelete(row: FileItem) {
       >
         <Upload :size="15" style="margin-right: 4px" /> 上传文件
       </LewButton>
-      <input ref="fileInput" type="file" class="hidden" @change="handleFileChange" />
+      <input
+        ref="fileInput"
+        type="file"
+        class="hidden"
+        @change="handleFileChange"
+      />
     </div>
 
     <!-- 表格 -->

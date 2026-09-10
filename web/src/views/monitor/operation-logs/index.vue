@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { ref } from "vue";
-import { Eye, Trash2 } from "lucide-vue-next";
+import { ref } from 'vue';
+import { Eye, Trash2 } from 'lucide-vue-next';
 import {
   LewButton,
   LewInput,
@@ -9,108 +9,119 @@ import {
   LewPagination,
   LewSelect,
   LewTable,
-} from "lew-ui";
-import type { LewTableColumn } from "lew-ui";
-import { clearOperationLogs, deleteOperationLog } from "~/api/monitor";
-import { useTable } from "~/composables/useTable";
-import { formatDateTime } from "~/composables/useFormat";
-import type { OperationLog } from "~/types/api";
-import { confirmDanger } from "~/utils/confirm";
-import IconButton from "~/components/IconButton.vue";
+} from 'lew-ui';
+import type { LewTableColumn } from 'lew-ui';
+import { clearOperationLogs, deleteOperationLog } from '~/api/monitor';
+import { useTable } from '~/composables/useTable';
+import { formatDateTime } from '~/composables/useFormat';
+import type { OperationLog } from '~/types/api';
+import { confirmDanger } from '~/utils/confirm';
+import IconButton from '~/components/IconButton.vue';
 
 // ---------- 列表 ----------
 const query = ref<{ status?: string; username?: string }>({});
-const { items, loading, currentPage, pageSize, total, search, refresh, handleChange } =
-  useTable<OperationLog>({
-    url: "/monitor/operation-logs",
-    query: () => ({
-      status: query.value.status,
-      username: query.value.username || undefined,
-    }),
-  });
+const {
+  items,
+  loading,
+  currentPage,
+  pageSize,
+  total,
+  search,
+  refresh,
+  handleChange,
+} = useTable<OperationLog>({
+  url: '/monitor/operation-logs',
+  query: () => ({
+    status: query.value.status,
+    username: query.value.username || undefined,
+  }),
+});
 
-const businessTypeLabels: Record<OperationLog["businessType"], string> = {
-  insert: "新增",
-  update: "修改",
-  delete: "删除",
-  other: "其他",
+const businessTypeLabels: Record<OperationLog['businessType'], string> = {
+  insert: '新增',
+  update: '修改',
+  delete: '删除',
+  other: '其他',
 };
 
 /** 模块名：UsersController.create → Users */
 function moduleOf(log: OperationLog | null | undefined): string {
-  if (!log) return "-";
-  return log.title.split(".")[0]?.replace(/Controller$/, "") || "-";
+  if (!log) return '-';
+  return log.title.split('.')[0]?.replace(/Controller$/, '') || '-';
 }
 
 /** 操作名：UsersController.create → 新增 · create */
 function actionOf(log: OperationLog): string {
-  const handler = log.method.split(".").pop() ?? "-";
+  const handler = log.method.split('.').pop() ?? '-';
   return `${businessTypeLabels[log.businessType] || log.businessType} · ${handler}`;
 }
 
 const columns: LewTableColumn[] = [
-  { title: "ID", field: "id", width: 70 },
+  { title: 'ID', field: 'id', width: 70 },
   {
-    title: "操作人",
-    field: "username",
+    title: '操作人',
+    field: 'username',
     width: 120,
     customRender: ({ row }) => {
       const log = row as unknown as OperationLog;
-      return log.username ?? (log.userId ? `用户#${log.userId}` : "-");
+      return log.username ?? (log.userId ? `用户#${log.userId}` : '-');
     },
   },
   {
-    title: "模块",
-    field: "title",
+    title: '模块',
+    field: 'title',
     width: 100,
     customRender: ({ row }) => moduleOf(row as unknown as OperationLog),
   },
   {
-    title: "操作",
-    field: "method",
+    title: '操作',
+    field: 'method',
     width: 180,
     customRender: ({ row }) => actionOf(row as unknown as OperationLog),
   },
-  { title: "方法", field: "requestMethod", width: 90 },
-  { title: "路径", field: "url", width: 220 },
+  { title: '方法', field: 'requestMethod', width: 90 },
+  { title: '路径', field: 'url', width: 220 },
   {
-    title: "状态",
-    field: "status",
+    title: '状态',
+    field: 'status',
     width: 80,
     customRender: ({ row }) => {
       const log = row as unknown as OperationLog;
-      const success = log.status === "success";
+      const success = log.status === 'success';
       return h(
-        "span",
+        'span',
         {
-          class: success ? "text-[var(--lew-color-success)]" : "text-[var(--lew-color-error)]",
-          style: "font-weight: 600",
+          class: success
+            ? 'text-[var(--lew-color-success)]'
+            : 'text-[var(--lew-color-error)]',
+          style: 'font-weight: 600',
         },
-        success ? "成功" : "失败",
+        success ? '成功' : '失败',
       );
     },
   },
-  { title: "耗时(ms)", field: "durationMs", width: 90 },
+  { title: '耗时(ms)', field: 'durationMs', width: 90 },
   {
-    title: "IP",
-    field: "ip",
+    title: 'IP',
+    field: 'ip',
     width: 130,
-    customRender: ({ row }) => (row as unknown as OperationLog).ip || "-",
+    customRender: ({ row }) => (row as unknown as OperationLog).ip || '-',
   },
   {
-    title: "时间",
-    field: "createdAt",
+    title: '时间',
+    field: 'createdAt',
     width: 170,
-    customRender: ({ row }) => formatDateTime((row as unknown as OperationLog).createdAt),
+    customRender: ({ row }) =>
+      formatDateTime((row as unknown as OperationLog).createdAt),
   },
-  { title: "操作", field: "operation", width: 90, fixed: "right" },
+  { title: '操作', field: 'operation', width: 90, fixed: 'right' },
 ];
 
 void search();
 
 const statusOptions = [
-  { label: "成功", value: "success" },
-  { label: "失败", value: "failure" },
+  { label: '成功', value: 'success' },
+  { label: '失败', value: 'failure' },
 ];
 
 // ---------- 详情弹窗 ----------
@@ -123,7 +134,7 @@ function openDetail(row: OperationLog) {
 }
 
 function formatJson(value: unknown): string {
-  if (value === null || value === undefined) return "";
+  if (value === null || value === undefined) return '';
   try {
     return JSON.stringify(value, null, 2);
   } catch {
@@ -134,11 +145,11 @@ function formatJson(value: unknown): string {
 // ---------- 删除/清空 ----------
 function handleDelete(row: OperationLog) {
   confirmDanger({
-    title: "删除确认",
-    content: "确定删除该条操作日志吗？",
+    title: '删除确认',
+    content: '确定删除该条操作日志吗？',
     onConfirm: async () => {
       await deleteOperationLog(row.id);
-      LewMessage.success("删除成功");
+      LewMessage.success('删除成功');
       void refresh();
     },
   });
@@ -146,12 +157,12 @@ function handleDelete(row: OperationLog) {
 
 function handleClear() {
   confirmDanger({
-    title: "清空确认",
-    content: "确定清空所有操作日志吗？此操作不可恢复。",
-    confirmText: "清空",
+    title: '清空确认',
+    content: '确定清空所有操作日志吗？此操作不可恢复。',
+    confirmText: '清空',
     onConfirm: async () => {
       await clearOperationLogs();
-      LewMessage.success("已清空");
+      LewMessage.success('已清空');
       void refresh();
     },
   });
@@ -192,7 +203,9 @@ function handleClear() {
         clearable
         @keydown.enter="search()"
       />
-      <LewButton type="light" :loading="loading" @click="search()">查询</LewButton>
+      <LewButton type="light" :loading="loading" @click="search()"
+        >查询</LewButton
+      >
     </div>
 
     <!-- 表格 -->
@@ -206,7 +219,10 @@ function handleClear() {
       >
         <template #operation="{ row }">
           <div class="flex items-center gap-1">
-            <IconButton title="详情" @click="openDetail(row as unknown as OperationLog)">
+            <IconButton
+              title="详情"
+              @click="openDetail(row as unknown as OperationLog)"
+            >
               <Eye :size="14" />
             </IconButton>
             <IconButton
@@ -243,20 +259,25 @@ function handleClear() {
         <div class="mb-3 grid grid-cols-2 gap-x-4 gap-y-2 text-13px">
           <div>
             <span class="text-[var(--app-text-muted)]">操作人：</span
-            >{{ detail?.username ?? "-" }}（ <span class="text-[var(--app-text-muted)]">ID:</span>
-            {{ detail?.userId ?? "-" }}）
+            >{{ detail?.username ?? '-' }}（
+            <span class="text-[var(--app-text-muted)]">ID:</span>
+            {{ detail?.userId ?? '-' }}）
           </div>
-          <div><span class="text-[var(--app-text-muted)]">模块：</span>{{ moduleOf(detail) }}</div>
+          <div>
+            <span class="text-[var(--app-text-muted)]">模块：</span
+            >{{ moduleOf(detail) }}
+          </div>
           <div>
             <span class="text-[var(--app-text-muted)]">操作：</span
-            >{{ detail ? actionOf(detail) : "-" }}
+            >{{ detail ? actionOf(detail) : '-' }}
           </div>
           <div>
             <span class="text-[var(--app-text-muted)]">方法：</span
-            >{{ detail?.requestMethod ?? "-" }}
+            >{{ detail?.requestMethod ?? '-' }}
           </div>
           <div class="col-span-2">
-            <span class="text-[var(--app-text-muted)]">路径：</span>{{ detail?.url ?? "-" }}
+            <span class="text-[var(--app-text-muted)]">路径：</span
+            >{{ detail?.url ?? '-' }}
           </div>
           <div>
             <span class="text-[var(--app-text-muted)]">状态：</span>
@@ -268,17 +289,20 @@ function handleClear() {
               "
               class="font-600"
             >
-              {{ detail?.status === "success" ? "成功" : "失败" }}
+              {{ detail?.status === 'success' ? '成功' : '失败' }}
             </span>
           </div>
           <div>
             <span class="text-[var(--app-text-muted)]">耗时：</span
-            >{{ detail?.durationMs ?? "-" }} ms
+            >{{ detail?.durationMs ?? '-' }} ms
           </div>
-          <div><span class="text-[var(--app-text-muted)]">IP：</span>{{ detail?.ip || "-" }}</div>
+          <div>
+            <span class="text-[var(--app-text-muted)]">IP：</span
+            >{{ detail?.ip || '-' }}
+          </div>
           <div>
             <span class="text-[var(--app-text-muted)]">时间：</span
-            >{{ detail ? formatDateTime(detail.createdAt) : "-" }}
+            >{{ detail ? formatDateTime(detail.createdAt) : '-' }}
           </div>
         </div>
 
@@ -300,7 +324,9 @@ function handleClear() {
 
         <!-- 错误信息 -->
         <div v-if="detail?.errorMessage">
-          <div class="mb-1 text-13px font-600 text-[var(--lew-color-error)]">错误信息</div>
+          <div class="mb-1 text-13px font-600 text-[var(--lew-color-error)]">
+            错误信息
+          </div>
           <pre
             class="m-0 rounded-lg bg-[var(--app-bg-hover)] p-3 text-12px whitespace-pre-wrap break-all text-[var(--lew-color-error)]"
             >{{ detail.errorMessage }}</pre>

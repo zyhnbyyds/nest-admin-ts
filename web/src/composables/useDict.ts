@@ -1,5 +1,5 @@
-import { ref } from "vue";
-import { getDictByType } from "~/api/system/dict";
+import { ref } from 'vue';
+import { getDictByType } from '~/api/system/dict';
 
 export interface DictOption {
   label: string;

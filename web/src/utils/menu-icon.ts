@@ -1,4 +1,4 @@
-import type { Component } from "vue";
+import type { Component } from 'vue';
 import {
   Activity,
   Clock,
@@ -25,7 +25,7 @@ import {
   ScrollText,
   UserCheck,
   HardDrive,
-} from "lucide-vue-next";
+} from 'lucide-vue-next';
 
 /**
  * 菜单图标映射：后端菜单 icon 字段 → lucide 图标组件

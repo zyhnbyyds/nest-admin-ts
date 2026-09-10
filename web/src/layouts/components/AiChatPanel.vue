@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { onBeforeUnmount, onMounted, ref, watch } from "vue";
-import { useRoute } from "vue-router";
-import { Bot, Maximize, Minimize, X } from "lucide-vue-next";
-import AiChatPage from "~/views/ai/index.vue";
+import { onBeforeUnmount, onMounted, ref, watch } from 'vue';
+import { useRoute } from 'vue-router';
+import { Bot, Maximize, Minimize, X } from 'lucide-vue-next';
+import AiChatPage from '~/views/ai/index.vue';
 
 /**
  * AI 操作助手弹出面板：由 Header 图标触发，从底部滑出。
@@ -14,14 +14,14 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits<{
-  (e: "update:visible", value: boolean): void;
+  (e: 'update:visible', value: boolean): void;
 }>();
 
 const route = useRoute();
 const fullscreen = ref(false);
 
 function close() {
-  emit("update:visible", false);
+  emit('update:visible', false);
 }
 
 // 每次重新打开时恢复为非全屏
@@ -41,17 +41,21 @@ watch(
 );
 
 function onKeydown(event: KeyboardEvent) {
-  if (event.key === "Escape" && props.visible) close();
+  if (event.key === 'Escape' && props.visible) close();
 }
 
-onMounted(() => window.addEventListener("keydown", onKeydown));
-onBeforeUnmount(() => window.removeEventListener("keydown", onKeydown));
+onMounted(() => window.addEventListener('keydown', onKeydown));
+onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown));
 </script>
 
 <template>
   <Teleport to="body">
     <Transition name="fade">
-      <div v-if="props.visible" class="fixed inset-0 z-1200 bg-black/45" @click="close" />
+      <div
+        v-if="props.visible"
+        class="fixed inset-0 z-1200 bg-black/45"
+        @click="close"
+      />
     </Transition>
 
     <Transition name="rise">
@@ -70,7 +74,9 @@ onBeforeUnmount(() => window.removeEventListener("keydown", onKeydown));
         >
           <Bot :size="17" class="text-[var(--lew-color-primary)]" />
           <span class="text-15px font-700">AI 操作助手</span>
-          <span class="text-12px text-[var(--app-text-muted)]"> Esc 或右上角关闭 </span>
+          <span class="text-12px text-[var(--app-text-muted)]">
+            Esc 或右上角关闭
+          </span>
           <div class="ml-auto flex items-center gap-1">
             <button
               type="button"

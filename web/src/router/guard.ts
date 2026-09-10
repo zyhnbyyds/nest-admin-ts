@@ -1,8 +1,8 @@
-import type { Router } from "vue-router";
-import { usePermissionStore } from "~/store/permission";
-import { useUserStore } from "~/store/user";
+import type { Router } from 'vue-router';
+import { usePermissionStore } from '~/store/permission';
+import { useUserStore } from '~/store/user';
 
-const WHITE_LIST = ["/login"];
+const WHITE_LIST = ['/login'];
 
 /** 动态路由是否已注册 */
 let dynamicRoutesAdded = false;
@@ -19,13 +19,13 @@ export function setupGuard(router: Router) {
     // 白名单直接放行
     if (WHITE_LIST.includes(to.path)) {
       // 已登录访问登录页 → 跳首页
-      if (userStore.accessToken) return "/";
+      if (userStore.accessToken) return '/';
       return true;
     }
 
     // 未登录 → 登录页（带 redirect）
     if (!userStore.accessToken && !userStore.refreshToken) {
-      return { path: "/login", query: { redirect: to.fullPath } };
+      return { path: '/login', query: { redirect: to.fullPath } };
     }
 
     // 有 refreshToken 但内存态 accessToken 丢失（刷新页面）→ 等待请求拦截器自动刷新
@@ -33,7 +33,7 @@ export function setupGuard(router: Router) {
     if (!dynamicRoutesAdded) {
       try {
         const records = await permissionStore.generateRoutes();
-        records.forEach((record) => router.addRoute("layout", record));
+        records.forEach((record) => router.addRoute('layout', record));
         dynamicRoutesAdded = true;
         // 拉取当前用户完整资料（头像等 JWT 之外的信息），失败不阻塞导航
         void userStore.fetchProfile().catch(() => undefined);
@@ -49,7 +49,7 @@ export function setupGuard(router: Router) {
         };
       } catch {
         userStore.reset();
-        return { path: "/login", query: { redirect: to.fullPath } };
+        return { path: '/login', query: { redirect: to.fullPath } };
       }
     }
 
@@ -58,6 +58,6 @@ export function setupGuard(router: Router) {
 
   router.afterEach((to) => {
     const title = to.meta.title as string | undefined;
-    document.title = title ? `${title} - Nest Admin` : "Nest Admin";
+    document.title = title ? `${title} - Nest Admin` : 'Nest Admin';
   });
 }

@@ -1,6 +1,6 @@
-import { computed, ref, shallowRef } from "vue";
-import type { PageResult } from "~/types/api";
-import { get } from "~/request";
+import { computed, ref, shallowRef } from 'vue';
+import type { PageResult } from '~/types/api';
+import { get } from '~/request';
 
 export interface UseTableOptions<T, Q extends Record<string, unknown>> {
   /** 请求路径 */

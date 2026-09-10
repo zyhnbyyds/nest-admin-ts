@@ -1,9 +1,17 @@
 <script setup lang="ts">
-import { nextTick, reactive, ref } from "vue";
-import { KeyRound, Pencil, Plus, Trash2 } from "lucide-vue-next";
-import { LewButton, LewDialog, LewForm, LewMessage, LewModal, LewTable, LewTree } from "lew-ui";
-import type { LewFormOption, LewTreeDataSource } from "lew-ui";
-import type { LewTableColumn } from "lew-ui";
+import { nextTick, reactive, ref } from 'vue';
+import { KeyRound, Pencil, Plus, Trash2 } from 'lucide-vue-next';
+import {
+  LewButton,
+  LewDialog,
+  LewForm,
+  LewMessage,
+  LewModal,
+  LewTable,
+  LewTree,
+} from 'lew-ui';
+import type { LewFormOption, LewTreeDataSource } from 'lew-ui';
+import type { LewTableColumn } from 'lew-ui';
 import {
   assignRoleMenus,
   createRole,
@@ -11,21 +19,21 @@ import {
   getRoleMenuIds,
   listRoles,
   updateRole,
-} from "~/api/system/roles";
-import { listMenus } from "~/api/system/menus";
-import { listDepts } from "~/api/system/depts";
-import { formatDateTime } from "~/composables/useFormat";
-import type { DataScope, Dept, Menu, Role } from "~/types/api";
-import { renderStatus } from "~/utils/render";
-import IconButton from "~/components/IconButton.vue";
+} from '~/api/system/roles';
+import { listMenus } from '~/api/system/menus';
+import { listDepts } from '~/api/system/depts';
+import { formatDateTime } from '~/composables/useFormat';
+import type { DataScope, Dept, Menu, Role } from '~/types/api';
+import { renderStatus } from '~/utils/render';
+import IconButton from '~/components/IconButton.vue';
 
 // ---------- 数据范围 ----------
 const dataScopeOptions = [
-  { label: "全部数据权限", value: "all" },
-  { label: "自定义数据权限", value: "custom" },
-  { label: "本部门数据权限", value: "dept" },
-  { label: "本部门及以下数据权限", value: "dept_and_children" },
-  { label: "仅本人数据权限", value: "self" },
+  { label: '全部数据权限', value: 'all' },
+  { label: '自定义数据权限', value: 'custom' },
+  { label: '本部门数据权限', value: 'dept' },
+  { label: '本部门及以下数据权限', value: 'dept_and_children' },
+  { label: '仅本人数据权限', value: 'self' },
 ];
 const dataScopeLabels = Object.fromEntries(
   dataScopeOptions.map((option) => [option.value, option.label]),
@@ -52,30 +60,32 @@ const roles = ref<Role[]>([]);
 const loading = ref(false);
 
 const columns: LewTableColumn[] = [
-  { title: "ID", field: "id", width: 70 },
-  { title: "角色名称", field: "name", width: 160 },
-  { title: "角色标识", field: "key", width: 160 },
-  { title: "排序", field: "sort", width: 80 },
+  { title: 'ID', field: 'id', width: 70 },
+  { title: '角色名称', field: 'name', width: 160 },
+  { title: '角色标识', field: 'key', width: 160 },
+  { title: '排序', field: 'sort', width: 80 },
   {
-    title: "数据范围",
-    field: "dataScope",
+    title: '数据范围',
+    field: 'dataScope',
     width: 150,
-    customRender: ({ row }) => dataScopeLabels[(row as { dataScope: string }).dataScope] ?? "-",
+    customRender: ({ row }) =>
+      dataScopeLabels[(row as { dataScope: string }).dataScope] ?? '-',
   },
   {
-    title: "状态",
-    field: "status",
+    title: '状态',
+    field: 'status',
     width: 90,
     customRender: ({ row }) => renderStatus((row as { status: string }).status),
   },
-  { title: "备注", field: "remark" },
+  { title: '备注', field: 'remark' },
   {
-    title: "创建时间",
-    field: "createdAt",
+    title: '创建时间',
+    field: 'createdAt',
     width: 170,
-    customRender: ({ row }) => formatDateTime((row as unknown as Role).createdAt),
+    customRender: ({ row }) =>
+      formatDateTime((row as unknown as Role).createdAt),
   },
-  { title: "操作", field: "operation", width: 140, fixed: "right" },
+  { title: '操作', field: 'operation', width: 140, fixed: 'right' },
 ];
 
 async function fetchList() {
@@ -100,46 +110,52 @@ const form = ref<{
   remark: string;
   dataScope: DataScope;
   deptIds: string[];
-}>({ name: "", key: "", sort: 0, remark: "", dataScope: "all", deptIds: [] });
+}>({ name: '', key: '', sort: 0, remark: '', dataScope: 'all', deptIds: [] });
 /** 表单 key：每次打开弹窗自增，强制重建 LewForm 以回填数据 */
 const formKey = ref(0);
 
 const formOptions: LewFormOption[] = [
   {
-    field: "name",
-    label: "角色名称",
-    as: "input",
+    field: 'name',
+    label: '角色名称',
+    as: 'input',
     rule: "Yup.string().required('不能为空')",
-    props: { placeholder: "请输入角色名称", clearable: true },
+    props: { placeholder: '请输入角色名称', clearable: true },
   },
   {
-    field: "key",
-    label: "角色标识",
-    as: "input",
+    field: 'key',
+    label: '角色标识',
+    as: 'input',
     rule: "Yup.string().required('不能为空')",
-    props: { placeholder: "小写字母/数字/:-_", clearable: true },
+    props: { placeholder: '小写字母/数字/:-_', clearable: true },
   },
-  { field: "sort", label: "排序", as: "input-number", props: { min: 0 } },
+  { field: 'sort', label: '排序', as: 'input-number', props: { min: 0 } },
   {
-    field: "dataScope",
-    label: "数据范围",
-    as: "select",
-    props: { options: dataScopeOptions, placeholder: "请选择数据范围" },
+    field: 'dataScope',
+    label: '数据范围',
+    as: 'select',
+    props: { options: dataScopeOptions, placeholder: '请选择数据范围' },
   },
   {
-    field: "deptIds",
-    label: "授权部门",
-    as: "tree-select",
-    rule: "Yup.array().nullable()",
-    visible: (formData: Record<string, unknown>) => formData.dataScope === "custom",
+    field: 'deptIds',
+    label: '授权部门',
+    as: 'tree-select',
+    rule: 'Yup.array().nullable()',
+    visible: (formData: Record<string, unknown>) =>
+      formData.dataScope === 'custom',
     props: {
       dataSource: deptTree,
       multiple: true,
       checkable: true,
-      placeholder: "请勾选可见部门（自定义数据权限时生效）",
+      placeholder: '请勾选可见部门（自定义数据权限时生效）',
     },
   },
-  { field: "remark", label: "备注", as: "textarea", props: { placeholder: "选填", rows: 2 } },
+  {
+    field: 'remark',
+    label: '备注',
+    as: 'textarea',
+    props: { placeholder: '选填', rows: 2 },
+  },
 ];
 
 function openCreate() {
@@ -149,11 +165,11 @@ function openCreate() {
   // LewForm 为受控组件，需在挂载后通过 setForm 填充
   void nextTick(() => {
     formRef.value?.setForm?.({
-      name: "",
-      key: "",
+      name: '',
+      key: '',
       sort: 0,
-      remark: "",
-      dataScope: "all",
+      remark: '',
+      dataScope: 'all',
       deptIds: [],
     });
   });
@@ -169,7 +185,7 @@ function openEdit(row: Role) {
       name: row.name,
       key: row.key,
       sort: row.sort,
-      remark: row.remark ?? "",
+      remark: row.remark ?? '',
       dataScope: row.dataScope,
       deptIds: (row.deptIds ?? []).map(String),
     });
@@ -180,21 +196,24 @@ async function handleSubmit() {
   const valid = await formRef.value?.validate();
   if (!valid) return;
   // 用 getForm 读取表单当前值，确保拿到用户真实输入
-  const values = (formRef.value?.getForm?.() ?? form.value) as typeof form.value;
+  const values = (formRef.value?.getForm?.() ??
+    form.value) as typeof form.value;
   const body = {
     name: values.name,
     key: values.key,
     sort: values.sort,
     remark: values.remark || undefined,
     dataScope: values.dataScope,
-    ...(values.dataScope === "custom" ? { deptIds: (values.deptIds ?? []).map(Number) } : {}),
+    ...(values.dataScope === 'custom'
+      ? { deptIds: (values.deptIds ?? []).map(Number) }
+      : {}),
   };
   if (editingId.value === null) {
     await createRole(body);
-    LewMessage.success("创建成功");
+    LewMessage.success('创建成功');
   } else {
     await updateRole(editingId.value, body);
-    LewMessage.success("更新成功");
+    LewMessage.success('更新成功');
   }
   modalVisible.value = false;
   void fetchList();
@@ -221,7 +240,10 @@ function toTreeData(list: Menu[]): LewTreeDataSource[] {
 async function openAuth(role: Role) {
   authRole.value = role;
   // 先加载数据，再打开弹窗（LewTree 只在挂载时读取 dataSource，不会响应后续变化）
-  const [menus, ids] = await Promise.all([listMenus(), getRoleMenuIds(role.id)]);
+  const [menus, ids] = await Promise.all([
+    listMenus(),
+    getRoleMenuIds(role.id),
+  ]);
   menuTree.value = toTreeData(menus);
   checkedKeys.value = ids.map(String);
   authVisible.value = true;
@@ -229,23 +251,25 @@ async function openAuth(role: Role) {
 
 async function handleAuthSubmit() {
   if (!authRole.value) return;
-  await assignRoleMenus(authRole.value.id, { menuIds: checkedKeys.value.map(Number) });
-  LewMessage.success("权限已更新");
+  await assignRoleMenus(authRole.value.id, {
+    menuIds: checkedKeys.value.map(Number),
+  });
+  LewMessage.success('权限已更新');
   authVisible.value = false;
 }
 
 // ---------- 删除角色 ----------
 function handleDelete(row: Role) {
   LewDialog.warning({
-    title: "删除确认",
+    title: '删除确认',
     content: `确定删除角色「${row.name}」吗？此操作不可恢复。`,
     footerButtons: [
       {
         props: {
-          type: "text",
-          color: "gray",
-          size: "small",
-          text: "取消",
+          type: 'text',
+          color: 'gray',
+          size: 'small',
+          text: '取消',
           request: () => {
             authVisible.value = false;
           },
@@ -253,13 +277,13 @@ function handleDelete(row: Role) {
       },
       {
         props: {
-          type: "fill",
-          color: "error",
-          size: "small",
-          text: "删除",
+          type: 'fill',
+          color: 'error',
+          size: 'small',
+          text: '删除',
           request: async () => {
             await deleteRole(row.id);
-            LewMessage.success("删除成功");
+            LewMessage.success('删除成功');
             void fetchList();
           },
         },
@@ -277,7 +301,11 @@ function handleDelete(row: Role) {
         <h2 class="page-title m-0">角色管理</h2>
         <p class="page-subtitle mt-1 mb-0">管理系统角色与菜单权限</p>
       </div>
-      <LewButton v-permission="'system:role:create'" type="fill" @click="openCreate">
+      <LewButton
+        v-permission="'system:role:create'"
+        type="fill"
+        @click="openCreate"
+      >
         <Plus :size="15" style="margin-right: 4px" /> 新增角色
       </LewButton>
     </div>
@@ -391,7 +419,12 @@ function handleDelete(row: Role) {
           <p class="text-13px text-[var(--app-text-muted)] m-0 mb-2">
             勾选菜单后保存（按钮权限随其父菜单自动关联）
           </p>
-          <LewTree multiple v-model="checkedKeys" checkable :data-source="menuTree" />
+          <LewTree
+            multiple
+            v-model="checkedKeys"
+            checkable
+            :data-source="menuTree"
+          />
         </div>
       </div>
     </LewModal>

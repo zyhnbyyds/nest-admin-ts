@@ -11,7 +11,7 @@ export interface PageQuery {
   pageSize?: number;
 }
 
-export type EntityStatus = "active" | "disabled";
+export type EntityStatus = 'active' | 'disabled';
 
 export interface TimestampFields {
   createdAt: string;
@@ -125,7 +125,7 @@ export interface AiSession {
   id: number;
   userId: number;
   title: string;
-  status: "active" | "closed";
+  status: 'active' | 'closed';
   createdAt: string;
   updatedAt: string;
 }
@@ -138,15 +138,15 @@ export interface AiToolCall {
 
 /** 审批结果元数据：存于收尾 assistant 消息的 toolResults[0]（持久化，刷新后仍可还原结果条） */
 export interface AiApprovalResult {
-  type: "approval_result";
-  outcome: "success" | "cancelled" | "error";
+  type: 'approval_result';
+  outcome: 'success' | 'cancelled' | 'error';
   toolName?: string;
 }
 
 export interface AiMessage {
   id: number;
   sessionId: number;
-  role: "user" | "assistant" | "tool" | "system";
+  role: 'user' | 'assistant' | 'tool' | 'system';
   content: string | null;
   toolCalls: AiToolCall[] | null;
   /** 附加结果元数据：审批收尾消息为 [AiApprovalResult]，持久化于 toolResults 列 */
@@ -160,7 +160,7 @@ export interface AiResult {
   content: string;
   toolCalls: AiToolCall[];
   waitingApproval: boolean;
-  riskLevel: "L0" | "L1" | "L2" | "L3";
+  riskLevel: 'L0' | 'L1' | 'L2' | 'L3';
 }
 
 export interface AiSseEvent {
@@ -181,7 +181,7 @@ export interface AiApprovalRequired {
   confirmToken: string;
   toolName: string;
   input: Record<string, unknown>;
-  riskLevel: "L0" | "L1" | "L2" | "L3";
+  riskLevel: 'L0' | 'L1' | 'L2' | 'L3';
   preview?: AiApprovalPreview;
 }
 
@@ -190,7 +190,13 @@ export interface AiTaskStep {
   taskId: number;
   stepIndex: number;
   toolName: string;
-  status: "PENDING" | "RUNNING" | "SUCCESS" | "FAILED" | "SKIPPED" | "WAITING_APPROVAL";
+  status:
+    | 'PENDING'
+    | 'RUNNING'
+    | 'SUCCESS'
+    | 'FAILED'
+    | 'SKIPPED'
+    | 'WAITING_APPROVAL';
   input?: unknown;
   output?: unknown;
   riskLevel: string;
@@ -201,7 +207,7 @@ export interface AiTaskStep {
 
 export interface AiTaskInfo {
   id: number;
-  status: "PENDING" | "RUNNING" | "SUCCESS" | "FAILED" | "CANCELLED";
+  status: 'PENDING' | 'RUNNING' | 'SUCCESS' | 'FAILED' | 'CANCELLED';
   riskLevel: string;
   goal: string;
   error?: string | null;
@@ -211,7 +217,7 @@ export interface AiTaskInfo {
 }
 
 export interface AiTaskSseEvent {
-  type: "task_created" | "task_step" | "task_completed";
+  type: 'task_created' | 'task_step' | 'task_completed';
   data: {
     taskId: number;
     goal?: string;
@@ -226,7 +232,12 @@ export interface AiTaskSseEvent {
 
 // ============ roles ============
 
-export type DataScope = "all" | "custom" | "dept" | "dept_and_children" | "self";
+export type DataScope =
+  | 'all'
+  | 'custom'
+  | 'dept'
+  | 'dept_and_children'
+  | 'self';
 
 export interface Role {
   id: number;
@@ -268,7 +279,7 @@ export interface AssignRoleMenusBody {
 
 // ============ menus ============
 
-export type MenuType = "M" | "C" | "F";
+export type MenuType = 'M' | 'C' | 'F';
 
 export interface Menu {
   id: number;
@@ -446,7 +457,7 @@ export interface LoginLog {
   username: string;
   ip: string | null;
   userAgent: string | null;
-  status: "success" | "failed";
+  status: 'success' | 'failed';
   message: string | null;
   createdAt: string;
 }
@@ -458,7 +469,7 @@ export interface OperationLog {
   username: string | null;
   /** 模块.操作（如 UsersController.create） */
   title: string;
-  businessType: "insert" | "update" | "delete" | "other";
+  businessType: 'insert' | 'update' | 'delete' | 'other';
   method: string;
   /** HTTP 方法 */
   requestMethod: string;
@@ -466,7 +477,7 @@ export interface OperationLog {
   ip: string | null;
   requestBody: unknown | null;
   responseBody: unknown | null;
-  status: "success" | "failure";
+  status: 'success' | 'failure';
   errorMessage: string | null;
   durationMs: number;
   createdAt: string;
@@ -515,7 +526,7 @@ export interface JobLog {
   jobId: number;
   startedAt: string;
   finishedAt: string | null;
-  status: "success" | "failed" | "running";
+  status: 'success' | 'failed' | 'running';
   error: string | null;
 }
 

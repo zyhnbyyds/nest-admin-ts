@@ -1,14 +1,19 @@
-import type { AssignRoleMenusBody, CreateRoleBody, Role, UpdateRoleBody } from "~/types/api";
-import { del, get, patch, post } from "~/request";
+import type {
+  AssignRoleMenusBody,
+  CreateRoleBody,
+  Role,
+  UpdateRoleBody,
+} from '~/types/api';
+import { del, get, patch, post } from '~/request';
 
 /** 角色列表（全量） */
 export function listRoles() {
-  return get<Role[]>("/system/roles");
+  return get<Role[]>('/system/roles');
 }
 
 /** 新增角色 */
 export function createRole(body: CreateRoleBody) {
-  return post<{ id: number }>("/system/roles", body);
+  return post<{ id: number }>('/system/roles', body);
 }
 
 /** 修改角色 */
@@ -28,8 +33,11 @@ export function assignRoleMenus(id: number, body: AssignRoleMenusBody) {
 
 /** 查询角色已分配的菜单 ID（走兼容层接口，返回 { code, data, message } 包裹格式） */
 export async function getRoleMenuIds(roleId: number) {
-  const res = await post<{ code: number; data: number[]; message: string }>("/role/auth/list", {
-    roleId,
-  });
+  const res = await post<{ code: number; data: number[]; message: string }>(
+    '/role/auth/list',
+    {
+      roleId,
+    },
+  );
   return res.data;
 }

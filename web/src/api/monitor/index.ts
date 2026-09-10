@@ -1,5 +1,11 @@
-import type { CacheInfo, LoginLog, OnlineSession, OperationLog, PageResult } from "~/types/api";
-import { del, get } from "~/request";
+import type {
+  CacheInfo,
+  LoginLog,
+  OnlineSession,
+  OperationLog,
+  PageResult,
+} from '~/types/api';
+import { del, get } from '~/request';
 
 // ---------- 登录日志 ----------
 
@@ -8,7 +14,7 @@ export function listLoginLogs(
   pageSize = 20,
   query?: { username?: string; status?: string },
 ) {
-  return get<PageResult<LoginLog>>("/monitor/login-logs", {
+  return get<PageResult<LoginLog>>('/monitor/login-logs', {
     page,
     pageSize,
     ...query,
@@ -20,7 +26,7 @@ export function deleteLoginLog(id: number) {
 }
 
 export function clearLoginLogs() {
-  return del<void>("/monitor/login-logs");
+  return del<void>('/monitor/login-logs');
 }
 
 // ---------- 操作日志 ----------
@@ -30,7 +36,7 @@ export function listOperationLogs(
   pageSize = 20,
   query?: { status?: string; userId?: number },
 ) {
-  return get<PageResult<OperationLog>>("/monitor/operation-logs", {
+  return get<PageResult<OperationLog>>('/monitor/operation-logs', {
     page,
     pageSize,
     ...query,
@@ -42,13 +48,13 @@ export function deleteOperationLog(id: number) {
 }
 
 export function clearOperationLogs() {
-  return del<void>("/monitor/operation-logs");
+  return del<void>('/monitor/operation-logs');
 }
 
 // ---------- 在线用户 ----------
 
 export function listOnlineUsers() {
-  return get<OnlineSession[]>("/monitor/online");
+  return get<OnlineSession[]>('/monitor/online');
 }
 
 /** 强制下线 */
@@ -59,5 +65,5 @@ export function forceLogout(userId: number) {
 // ---------- 缓存监控 ----------
 
 export function getCacheInfo() {
-  return get<CacheInfo>("/monitor/cache");
+  return get<CacheInfo>('/monitor/cache');
 }

@@ -1,9 +1,15 @@
 <script setup lang="ts">
-import { ref } from "vue";
-import { Bot, ChevronsLeft, ChevronsRight, Pencil, Plus } from "lucide-vue-next";
-import { LewButton, LewInput } from "lew-ui";
-import { formatDateTime } from "~/composables/useFormat";
-import type { AiSession } from "~/types/api";
+import { ref } from 'vue';
+import {
+  Bot,
+  ChevronsLeft,
+  ChevronsRight,
+  Pencil,
+  Plus,
+} from 'lucide-vue-next';
+import { LewButton, LewInput } from 'lew-ui';
+import { formatDateTime } from '~/composables/useFormat';
+import type { AiSession } from '~/types/api';
 
 defineProps<{
   sessions: AiSession[];
@@ -12,15 +18,15 @@ defineProps<{
 }>();
 
 const emit = defineEmits<{
-  (e: "create"): void;
-  (e: "select", id: number): void;
-  (e: "toggle"): void;
-  (e: "rename", id: number, title: string): void;
+  (e: 'create'): void;
+  (e: 'select', id: number): void;
+  (e: 'toggle'): void;
+  (e: 'rename', id: number, title: string): void;
 }>();
 
 /** 正在编辑标题的会话 id */
 const editingId = ref<number | null>(null);
-const editingTitle = ref("");
+const editingTitle = ref('');
 
 function startEdit(session: AiSession) {
   editingId.value = session.id;
@@ -30,7 +36,7 @@ function startEdit(session: AiSession) {
 function commitEdit() {
   const title = editingTitle.value.trim();
   if (editingId.value !== null && title) {
-    emit("rename", editingId.value, title);
+    emit('rename', editingId.value, title);
   }
   editingId.value = null;
 }
@@ -86,7 +92,11 @@ function cancelEdit() {
           >
             <Bot
               :size="14"
-              :color="currentSession?.id === session.id ? '#fff' : 'var(--lew-color-primary)'"
+              :color="
+                currentSession?.id === session.id
+                  ? '#fff'
+                  : 'var(--lew-color-primary)'
+              "
             />
           </div>
           <div class="flex-1 min-w-0">
@@ -102,7 +112,11 @@ function cancelEdit() {
               @keydown.esc="cancelEdit"
             />
             <!-- 展示态：双击标题可重命名 -->
-            <div v-else class="group flex items-center gap-1" @dblclick.stop="startEdit(session)">
+            <div
+              v-else
+              class="group flex items-center gap-1"
+              @dblclick.stop="startEdit(session)"
+            >
               <span class="truncate">{{ session.title }}</span>
               <Pencil
                 :size="11"
@@ -117,7 +131,9 @@ function cancelEdit() {
             <div
               class="text-11px mt-0.5"
               :class="
-                currentSession?.id === session.id ? 'text-white/70' : 'text-[var(--app-text-muted)]'
+                currentSession?.id === session.id
+                  ? 'text-white/70'
+                  : 'text-[var(--app-text-muted)]'
               "
             >
               {{ formatDateTime(session.updatedAt) }}

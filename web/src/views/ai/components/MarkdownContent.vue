@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { computed, nextTick, onUpdated, ref } from "vue";
-import { Marked } from "marked";
-import DOMPurify from "dompurify";
+import { computed, nextTick, onUpdated, ref } from 'vue';
+import { Marked } from 'marked';
+import DOMPurify from 'dompurify';
 
 const props = defineProps<{
   /** Markdown 内容 */
@@ -15,7 +15,7 @@ const md = new Marked({ gfm: true, breaks: false });
 const rootEl = ref<HTMLElement | null>(null);
 
 const html = computed(() => {
-  const source = props.content ?? "";
+  const source = props.content ?? '';
   try {
     // 未启用 async 扩展，parse 始终同步返回 string
     return DOMPurify.sanitize(md.parse(source) as string);
@@ -27,13 +27,13 @@ const html = computed(() => {
 
 /** 让外部链接在新窗口打开（站内相对链接保持默认） */
 function enhanceLinks() {
-  const nodes = rootEl.value?.querySelectorAll<HTMLAnchorElement>("a");
+  const nodes = rootEl.value?.querySelectorAll<HTMLAnchorElement>('a');
   if (!nodes) return;
   nodes.forEach((a) => {
     try {
       if (a.hostname && a.hostname !== window.location.hostname) {
-        a.target = "_blank";
-        a.rel = "noopener noreferrer";
+        a.target = '_blank';
+        a.rel = 'noopener noreferrer';
       }
     } catch {
       // 忽略无法解析的链接

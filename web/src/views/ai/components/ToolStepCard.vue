@@ -1,14 +1,21 @@
 <script setup lang="ts">
-import { computed, ref } from "vue";
-import { Check, ChevronRight, Clock, Database, Loader2, X } from "lucide-vue-next";
-import { LewCollapse, LewCollapseItem, LewTag } from "lew-ui";
+import { computed, ref } from 'vue';
+import {
+  Check,
+  ChevronRight,
+  Clock,
+  Database,
+  Loader2,
+  X,
+} from 'lucide-vue-next';
+import { LewCollapse, LewCollapseItem, LewTag } from 'lew-ui';
 import {
   USER_TABLE_COLUMNS,
   formatArgs,
   isStatusColumn,
   isUserList,
   userCellValue,
-} from "../utils/display";
+} from '../utils/display';
 
 const props = withDefaults(
   defineProps<{
@@ -19,9 +26,9 @@ const props = withDefaults(
     /** 执行结果（可为空：执行中/待审批） */
     result?: unknown;
     /** 步骤状态 */
-    status?: "running" | "success" | "approval" | "error" | "cancelled";
+    status?: 'running' | 'success' | 'approval' | 'error' | 'cancelled';
   }>(),
-  { result: undefined, status: "success" },
+  { result: undefined, status: 'success' },
 );
 
 // 默认闭合：LewCollapse 的 modelValue 控制展开的 key 集合
@@ -32,9 +39,11 @@ const expanded = computed(() => expandedKeys.value.includes(props.name));
 
 const isWaiting = computed(() => {
   const r = props.result as { status?: string } | undefined;
-  return props.status === "approval" || r?.status === "waiting_approval";
+  return props.status === 'approval' || r?.status === 'waiting_approval';
 });
-const isRunning = computed(() => props.status === "running" || props.result === undefined);
+const isRunning = computed(
+  () => props.status === 'running' || props.result === undefined,
+);
 
 function prettyJson(value: unknown): string {
   return JSON.stringify(value, null, 2);
@@ -50,7 +59,10 @@ function prettyJson(value: unknown): string {
       <LewCollapseItem :collapse-key="name" :radius="'0px'">
         <template #title>
           <div class="flex items-center gap-2 w-full min-w-0">
-            <Database :size="13" class="shrink-0 text-[var(--lew-color-primary)]" />
+            <Database
+              :size="13"
+              class="shrink-0 text-[var(--lew-color-primary)]"
+            />
             <span class="text-13px font-600 text-[var(--app-text-primary)]">
               {{ name }}
             </span>
@@ -66,16 +78,28 @@ function prettyJson(value: unknown): string {
               :size="12"
               class="ml-1 shrink-0 text-[var(--app-text-muted)]"
             />
-            <Check v-else-if="!isWaiting" :size="12" class="ml-1 shrink-0 text-green-500" />
+            <Check
+              v-else-if="!isWaiting"
+              :size="12"
+              class="ml-1 shrink-0 text-green-500"
+            />
             <Clock v-else :size="12" class="ml-1 shrink-0 text-orange-500" />
 
             <!-- 参数摘要（截断） -->
-            <span class="flex-1 min-w-0 text-12px text-[var(--app-text-muted)] truncate ml-1">
+            <span
+              class="flex-1 min-w-0 text-12px text-[var(--app-text-muted)] truncate ml-1"
+            >
               {{ formatArgs(args) }}
             </span>
 
             <!-- 状态标签 -->
-            <LewTag v-if="isWaiting" :type="'light'" color="warning" size="small" class="shrink-0">
+            <LewTag
+              v-if="isWaiting"
+              :type="'light'"
+              color="warning"
+              size="small"
+              class="shrink-0"
+            >
               待确认
             </LewTag>
             <LewTag
@@ -87,7 +111,10 @@ function prettyJson(value: unknown): string {
             >
               已取消
             </LewTag>
-            <span v-else-if="isRunning" class="shrink-0 text-11px text-[var(--lew-color-primary)]">
+            <span
+              v-else-if="isRunning"
+              class="shrink-0 text-11px text-[var(--lew-color-primary)]"
+            >
               执行中
             </span>
             <ChevronRight
@@ -110,8 +137,12 @@ function prettyJson(value: unknown): string {
 
           <!-- 结果 -->
           <div v-if="isRunning">
-            <div class="text-11px text-[var(--app-text-muted)] mb-1">执行中</div>
-            <div class="flex items-center gap-1.5 text-11.5px text-[var(--lew-color-primary)]">
+            <div class="text-11px text-[var(--app-text-muted)] mb-1">
+              执行中
+            </div>
+            <div
+              class="flex items-center gap-1.5 text-11.5px text-[var(--lew-color-primary)]"
+            >
               <Loader2 :size="12" class="animate-spin" />
               正在执行，请稍候...
             </div>
@@ -135,7 +166,9 @@ function prettyJson(value: unknown): string {
                 </span>
                 条记录
               </div>
-              <div class="overflow-x-auto rounded-md border border-[var(--app-border)]">
+              <div
+                class="overflow-x-auto rounded-md border border-[var(--app-border)]"
+              >
                 <table class="w-full text-12px">
                   <thead>
                     <tr class="bg-[var(--app-bg-hover)]">
@@ -150,8 +183,9 @@ function prettyJson(value: unknown): string {
                   </thead>
                   <tbody>
                     <tr
-                      v-for="(row, i) in (result as { items: Array<Record<string, unknown>> })
-                        .items"
+                      v-for="(row, i) in (
+                        result as { items: Array<Record<string, unknown>> }
+                      ).items"
                       :key="i"
                       class="border-t border-[var(--app-border)] transition-colors hover:bg-[var(--app-bg-hover)]"
                     >
@@ -163,14 +197,20 @@ function prettyJson(value: unknown): string {
                         <LewTag
                           v-if="isStatusColumn(col.key)"
                           :type="'light'"
-                          :color="row.status === 'active' ? 'success' : 'warning'"
+                          :color="
+                            row.status === 'active' ? 'success' : 'warning'
+                          "
                           size="small"
                         >
-                          {{ row.status === "active" ? "启用" : "禁用" }}
+                          {{ row.status === 'active' ? '启用' : '禁用' }}
                         </LewTag>
                         <span
                           v-else
-                          :class="col.key === 'id' ? 'text-[var(--app-text-muted)]' : ''"
+                          :class="
+                            col.key === 'id'
+                              ? 'text-[var(--app-text-muted)]'
+                              : ''
+                          "
                         >
                           {{ userCellValue(row, col.key) }}
                         </span>
@@ -191,10 +231,14 @@ function prettyJson(value: unknown): string {
           <div
             v-if="status === 'error' || status === 'cancelled'"
             class="flex items-center gap-1.5 text-11.5px"
-            :class="status === 'error' ? 'text-red-500' : 'text-[var(--app-text-muted)]'"
+            :class="
+              status === 'error'
+                ? 'text-red-500'
+                : 'text-[var(--app-text-muted)]'
+            "
           >
             <X :size="12" />
-            {{ status === "error" ? "执行失败" : "已取消" }}
+            {{ status === 'error' ? '执行失败' : '已取消' }}
           </div>
         </div>
       </LewCollapseItem>

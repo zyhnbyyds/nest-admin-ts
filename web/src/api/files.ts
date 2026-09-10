@@ -1,14 +1,14 @@
-import type { FileItem, PageResult } from "~/types/api";
-import { del, get, upload } from "~/request";
+import type { FileItem, PageResult } from '~/types/api';
+import { del, get, upload } from '~/request';
 
 /** 文件列表（分页） */
 export function listFiles(page = 1, pageSize = 20) {
-  return get<PageResult<FileItem>>("/files", { page, pageSize });
+  return get<PageResult<FileItem>>('/files', { page, pageSize });
 }
 
 /** 上传文件 */
 export function uploadFile(file: File) {
-  return upload<FileItem>("/files/upload", file);
+  return upload<FileItem>('/files/upload', file);
 }
 
 /** 删除文件 */

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, h, nextTick, reactive, ref } from "vue";
+import { computed, h, nextTick, reactive, ref } from 'vue';
 import {
   ChevronDown,
   ChevronUp,
@@ -8,15 +8,20 @@ import {
   Pencil,
   Plus,
   Trash2,
-} from "lucide-vue-next";
-import { LewButton, LewForm, LewMessage, LewModal, LewTable } from "lew-ui";
-import type { LewFormOption, LewTableColumn } from "lew-ui";
-import { createMenu, deleteMenu, listMenus, updateMenu } from "~/api/system/menus";
-import type { CreateMenuBody, Menu, MenuType } from "~/types/api";
-import { renderStatus } from "~/utils/render";
-import { MENU_ICON_OPTIONS, resolveMenuIcon } from "~/utils/menu-icon";
-import { confirmDanger } from "~/utils/confirm";
-import IconButton from "~/components/IconButton.vue";
+} from 'lucide-vue-next';
+import { LewButton, LewForm, LewMessage, LewModal, LewTable } from 'lew-ui';
+import type { LewFormOption, LewTableColumn } from 'lew-ui';
+import {
+  createMenu,
+  deleteMenu,
+  listMenus,
+  updateMenu,
+} from '~/api/system/menus';
+import type { CreateMenuBody, Menu, MenuType } from '~/types/api';
+import { renderStatus } from '~/utils/render';
+import { MENU_ICON_OPTIONS, resolveMenuIcon } from '~/utils/menu-icon';
+import { confirmDanger } from '~/utils/confirm';
+import IconButton from '~/components/IconButton.vue';
 
 // ---------- 菜单树 ----------
 const menus = ref<Menu[]>([]);
@@ -44,12 +49,12 @@ function menuOf(row: unknown): Menu {
 
 const columns: LewTableColumn[] = [
   {
-    title: "名称",
-    field: "title",
+    title: '名称',
+    field: 'title',
     width: 240,
     customRender: ({ row }) => {
       const { menu, depth } = row as unknown as FlatMenu;
-      return h("span", { class: "inline-flex items-center gap-1" }, [
+      return h('span', { class: 'inline-flex items-center gap-1' }, [
         depth > 0
           ? h(CornerDownRight, {
               size: 13,
@@ -57,12 +62,15 @@ const columns: LewTableColumn[] = [
             })
           : null,
         menu.icon
-          ? h(resolveMenuIcon(menu.icon), { size: 14, style: "color: var(--app-text-muted)" })
+          ? h(resolveMenuIcon(menu.icon), {
+              size: 14,
+              style: 'color: var(--app-text-muted)',
+            })
           : null,
         h(
-          "span",
+          'span',
           {
-            class: depth > 0 ? "text-12.5px" : "text-13px font-600",
+            class: depth > 0 ? 'text-12.5px' : 'text-13px font-600',
           },
           menu.title,
         ),
@@ -70,60 +78,66 @@ const columns: LewTableColumn[] = [
     },
   },
   {
-    title: "类型",
-    field: "type",
+    title: '类型',
+    field: 'type',
     width: 90,
     customRender: ({ row }) => {
       const { menu } = row as unknown as FlatMenu;
-      const map: Record<MenuType, string> = { M: "目录", C: "菜单", F: "按钮" };
-      return h("span", {}, map[menu.type]);
+      const map: Record<MenuType, string> = { M: '目录', C: '菜单', F: '按钮' };
+      return h('span', {}, map[menu.type]);
     },
   },
   {
-    title: "路由路径",
-    field: "path",
+    title: '路由路径',
+    field: 'path',
     width: 180,
-    customRender: ({ row }) => h("span", {}, (row as unknown as FlatMenu).menu.path ?? "-"),
+    customRender: ({ row }) =>
+      h('span', {}, (row as unknown as FlatMenu).menu.path ?? '-'),
   },
   {
-    title: "组件",
-    field: "component",
+    title: '组件',
+    field: 'component',
     width: 200,
-    customRender: ({ row }) => h("span", {}, (row as unknown as FlatMenu).menu.component ?? "-"),
+    customRender: ({ row }) =>
+      h('span', {}, (row as unknown as FlatMenu).menu.component ?? '-'),
   },
   {
-    title: "权限标识",
-    field: "permission",
+    title: '权限标识',
+    field: 'permission',
     width: 200,
-    customRender: ({ row }) => h("span", {}, (row as unknown as FlatMenu).menu.permission ?? "-"),
+    customRender: ({ row }) =>
+      h('span', {}, (row as unknown as FlatMenu).menu.permission ?? '-'),
   },
   {
-    title: "排序",
-    field: "sort",
+    title: '排序',
+    field: 'sort',
     width: 120,
     customRender: ({ row }) => {
       const { menu } = row as unknown as FlatMenu;
-      return h("div", { class: "flex items-center gap-1" }, [
+      return h('div', { class: 'flex items-center gap-1' }, [
         h(
-          "button",
+          'button',
           {
-            class: "icon-btn !w-22px !h-22px",
-            title: "上移",
+            class: 'icon-btn !w-22px !h-22px',
+            title: '上移',
             disabled: movingId.value !== null,
             onClick: () => moveMenu(menu, -1),
           },
           [h(ChevronUp, { size: 14 })],
         ),
         h(
-          "span",
-          { class: "text-12.5px text-[var(--app-text-secondary)] w-16px text-center" },
+          'span',
+          {
+            class:
+              'text-12.5px text-[var(--app-text-secondary)] w-16px text-center',
+          },
           String(menu.sort),
         ),
         h(
-          "button",
+          'button',
           {
-            class: "icon-btn !w-22px !h-22px",
-            title: "下移",
+            class: 'icon-btn !w-22px !h-22px',
+            title: '下移',
             disabled: movingId.value !== null,
             onClick: () => moveMenu(menu, 1),
           },
@@ -133,12 +147,13 @@ const columns: LewTableColumn[] = [
     },
   },
   {
-    title: "状态",
-    field: "status",
+    title: '状态',
+    field: 'status',
     width: 90,
-    customRender: ({ row }) => renderStatus((row as unknown as FlatMenu).menu.status),
+    customRender: ({ row }) =>
+      renderStatus((row as unknown as FlatMenu).menu.status),
   },
-  { title: "操作", field: "operation", width: 170, fixed: "right" },
+  { title: '操作', field: 'operation', width: 170, fixed: 'right' },
 ];
 
 async function fetchList() {
@@ -157,10 +172,15 @@ void fetchList();
 const movingId = ref<number | null>(null);
 
 /** 扁平化树为带层级路径的列表 */
-function flattenWithPath(list: Menu[], path: number[] = []): { menu: Menu; path: number[] }[] {
+function flattenWithPath(
+  list: Menu[],
+  path: number[] = [],
+): { menu: Menu; path: number[] }[] {
   return list.flatMap((menu, index) => {
     const current = [...path, index];
-    const children = menu.children?.length ? flattenWithPath(menu.children, current) : [];
+    const children = menu.children?.length
+      ? flattenWithPath(menu.children, current)
+      : [];
     return [{ menu, path: current }, ...children];
   });
 }
@@ -190,7 +210,7 @@ async function moveMenu(menu: Menu, direction: -1 | 1) {
       updateMenu(menu.id, { sort: target.sort }),
       updateMenu(target.id, { sort: menu.sort }),
     ]);
-    LewMessage.success("排序已更新");
+    LewMessage.success('排序已更新');
     void fetchList();
   } finally {
     movingId.value = null;
@@ -202,36 +222,40 @@ const modalVisible = ref(false);
 const editingId = ref<number | null>(null);
 const formRef = ref();
 /** 当前表单的类型（供弹窗标题等使用，跟随表单 @change 更新） */
-const formType = ref<MenuType>("M");
+const formType = ref<MenuType>('M');
 /** 上级菜单下拉框里的“根目录”哨兵值（LewSelect 对假值 0 不显示选中标签） */
 const ROOT_PARENT = -1;
 const form = ref({
   parentId: ROOT_PARENT,
-  name: "",
-  title: "",
-  type: "M" as MenuType,
-  path: "",
-  component: "",
-  permission: "",
+  name: '',
+  title: '',
+  type: 'M' as MenuType,
+  path: '',
+  component: '',
+  permission: '',
   sort: 0,
   status: true,
 });
 /** 图标字段独立于 LewForm 管理（LewForm 选项不支持自定义控件） */
-const icon = ref("");
+const icon = ref('');
 /** 表单 key：每次打开弹窗自增，强制重建 LewForm 以回填数据 */
 const formKey = ref(0);
 
 const typeOptions = [
-  { label: "目录", value: "M" },
-  { label: "菜单", value: "C" },
-  { label: "按钮", value: "F" },
+  { label: '目录', value: 'M' },
+  { label: '菜单', value: 'C' },
+  { label: '按钮', value: 'F' },
 ];
 
-const typeLabels: Record<MenuType, string> = { M: "目录", C: "菜单", F: "按钮" };
+const typeLabels: Record<MenuType, string> = {
+  M: '目录',
+  C: '菜单',
+  F: '按钮',
+};
 
 const modalTitle = computed(() => {
   const type = formType.value;
-  return `${editingId.value === null ? "新增" : "编辑"}${typeLabels[type]}`;
+  return `${editingId.value === null ? '新增' : '编辑'}${typeLabels[type]}`;
 });
 
 /** 树中查找指定菜单节点 */
@@ -264,39 +288,42 @@ function flattenMenuOptions(
   list: Menu[],
   excludeIds: Set<number> = new Set(),
 ): { label: string; value: number }[] {
-  const walk = (nodes: Menu[], prefix: string): { label: string; value: number }[] =>
+  const walk = (
+    nodes: Menu[],
+    prefix: string,
+  ): { label: string; value: number }[] =>
     nodes.flatMap((menu) => {
-      if (menu.type === "F" || excludeIds.has(menu.id)) return [];
+      if (menu.type === 'F' || excludeIds.has(menu.id)) return [];
       const label = `${prefix}${menu.title}`;
       const self = { label, value: menu.id };
       return [self, ...walk(menu.children ?? [], `${label} / `)];
     });
-  return walk(list, "");
+  return walk(list, '');
 }
 
 const parentOptions = reactive<{ label: string; value: number }[]>([]);
 
-function openCreate(parentId = 0, presetType: MenuType = "M") {
+function openCreate(parentId = 0, presetType: MenuType = 'M') {
   editingId.value = null;
   parentOptions.splice(
     0,
     parentOptions.length,
-    { label: "根目录", value: ROOT_PARENT },
+    { label: '根目录', value: ROOT_PARENT },
     ...flattenMenuOptions(menus.value),
   );
   formType.value = presetType;
-  icon.value = "";
+  icon.value = '';
   formKey.value += 1;
   modalVisible.value = true;
   void nextTick(() => {
     formRef.value?.setForm?.({
       parentId: parentId === 0 ? ROOT_PARENT : parentId,
-      name: "",
-      title: "",
+      name: '',
+      title: '',
       type: presetType,
-      path: "",
-      component: "",
-      permission: "",
+      path: '',
+      component: '',
+      permission: '',
       sort: 0,
       status: true,
     });
@@ -311,11 +338,11 @@ function openEdit(row: Menu) {
   parentOptions.splice(
     0,
     parentOptions.length,
-    { label: "根目录", value: ROOT_PARENT },
+    { label: '根目录', value: ROOT_PARENT },
     ...flattenMenuOptions(menus.value, excludeIds),
   );
   formType.value = row.type;
-  icon.value = row.icon ?? "";
+  icon.value = row.icon ?? '';
   formKey.value += 1;
   modalVisible.value = true;
   void nextTick(() => {
@@ -324,11 +351,11 @@ function openEdit(row: Menu) {
       name: row.name,
       title: row.title,
       type: row.type,
-      path: row.path ?? "",
-      component: row.component ?? "",
-      permission: row.permission ?? "",
+      path: row.path ?? '',
+      component: row.component ?? '',
+      permission: row.permission ?? '',
       sort: row.sort,
-      status: row.status === "active",
+      status: row.status === 'active',
     });
   });
 }
@@ -341,69 +368,70 @@ function onFormChange() {
 
 const formOptions: LewFormOption[] = [
   {
-    field: "parentId",
-    label: "上级菜单",
-    as: "select",
+    field: 'parentId',
+    label: '上级菜单',
+    as: 'select',
     // 按钮固定挂在当前菜单下，不允许改父级
-    disabled: (values) => values.type === "F",
+    disabled: (values) => values.type === 'F',
     props: { options: parentOptions },
   },
   {
-    field: "type",
-    label: "类型",
-    as: "select",
+    field: 'type',
+    label: '类型',
+    as: 'select',
     rule: `Yup.string().required('不能为空')`,
     props: { options: typeOptions },
   },
   {
-    field: "name",
-    label: "路由名称",
-    as: "input",
+    field: 'name',
+    label: '路由名称',
+    as: 'input',
     rule: `Yup.string().required('不能为空')`,
-    props: { placeholder: "如 system", clearable: true },
+    props: { placeholder: '如 system', clearable: true },
   },
   {
-    field: "title",
-    label: "菜单标题",
-    as: "input",
+    field: 'title',
+    label: '菜单标题',
+    as: 'input',
     rule: `Yup.string().required('不能为空')`,
-    props: { placeholder: "如 系统管理", clearable: true },
+    props: { placeholder: '如 系统管理', clearable: true },
   },
   {
-    field: "path",
-    label: "路由路径",
-    as: "input",
+    field: 'path',
+    label: '路由路径',
+    as: 'input',
     // 按钮不需要路由路径（后端要求 M/C 必填）
-    visible: (values) => values.type !== "F",
+    visible: (values) => values.type !== 'F',
     rule: `Yup.string().when('type', { is: 'F', then: (s) => s, otherwise: (s) => s.required('不能为空') })`,
-    props: { placeholder: "如 /system", clearable: true },
+    props: { placeholder: '如 /system', clearable: true },
   },
   {
-    field: "component",
-    label: "组件路径",
-    as: "input",
+    field: 'component',
+    label: '组件路径',
+    as: 'input',
     // 仅菜单(C)需要组件路径（后端要求 C 必填）
-    visible: (values) => values.type === "C",
+    visible: (values) => values.type === 'C',
     rule: `Yup.string().when('type', { is: 'C', then: (s) => s.required('不能为空'), otherwise: (s) => s })`,
-    props: { placeholder: "如 system/users/index", clearable: true },
+    props: { placeholder: '如 system/users/index', clearable: true },
   },
   {
-    field: "permission",
-    label: "权限标识",
-    as: "input",
+    field: 'permission',
+    label: '权限标识',
+    as: 'input',
     // 目录不需要权限标识；按钮必须填写（后端要求 F 必填）
-    visible: (values) => values.type !== "M",
+    visible: (values) => values.type !== 'M',
     rule: `Yup.string().when('type', { is: 'F', then: (s) => s.required('不能为空'), otherwise: (s) => s })`,
-    props: { placeholder: "如 system:user:list", clearable: true },
+    props: { placeholder: '如 system:user:list', clearable: true },
   },
-  { field: "sort", label: "排序", as: "input-number", props: { min: 0 } },
-  { field: "status", label: "状态", as: "switch" },
+  { field: 'sort', label: '排序', as: 'input-number', props: { min: 0 } },
+  { field: 'status', label: '状态', as: 'switch' },
 ];
 
 async function handleSubmit() {
   const valid = await formRef.value?.validate();
   if (!valid) return;
-  const values = (formRef.value?.getForm?.() ?? form.value) as typeof form.value;
+  const values = (formRef.value?.getForm?.() ??
+    form.value) as typeof form.value;
   const body: CreateMenuBody = {
     parentId: values.parentId === ROOT_PARENT ? 0 : values.parentId,
     name: values.name,
@@ -414,14 +442,14 @@ async function handleSubmit() {
     permission: values.permission || undefined,
     icon: icon.value || undefined,
     sort: values.sort,
-    status: values.status ? "active" : "disabled",
+    status: values.status ? 'active' : 'disabled',
   };
   if (editingId.value === null) {
     await createMenu(body);
-    LewMessage.success("创建成功");
+    LewMessage.success('创建成功');
   } else {
     await updateMenu(editingId.value, body);
-    LewMessage.success("更新成功");
+    LewMessage.success('更新成功');
   }
   modalVisible.value = false;
   void fetchList();
@@ -431,20 +459,21 @@ async function handleSubmit() {
 const btnAuthVisible = ref(false);
 const btnAuthMenu = ref<Menu | null>(null);
 const btnAuthList = computed<Menu[]>(
-  () => btnAuthMenu.value?.children?.filter((child) => child.type === "F") ?? [],
+  () =>
+    btnAuthMenu.value?.children?.filter((child) => child.type === 'F') ?? [],
 );
 
 const btnAuthColumns: LewTableColumn[] = [
-  { title: "名称", field: "title", width: 160 },
-  { title: "权限标识", field: "permission", width: 220 },
-  { title: "排序", field: "sort", width: 70 },
+  { title: '名称', field: 'title', width: 160 },
+  { title: '权限标识', field: 'permission', width: 220 },
+  { title: '排序', field: 'sort', width: 70 },
   {
-    title: "状态",
-    field: "status",
+    title: '状态',
+    field: 'status',
     width: 80,
     customRender: ({ row }) => renderStatus((row as { status: string }).status),
   },
-  { title: "操作", field: "operation", width: 100, fixed: "right" },
+  { title: '操作', field: 'operation', width: 100, fixed: 'right' },
 ];
 
 function openBtnAuth(row: Menu) {
@@ -455,7 +484,7 @@ function openBtnAuth(row: Menu) {
 /** 在按钮权限弹窗中为当前菜单新增按钮（type=F） */
 function createBtnFromAuth() {
   if (!btnAuthMenu.value) return;
-  openCreate(btnAuthMenu.value.id, "F");
+  openCreate(btnAuthMenu.value.id, 'F');
 }
 
 /** 弹窗内操作后刷新列表时，同步按钮权限弹窗绑定的菜单节点（避免展示过期数据） */
@@ -468,11 +497,11 @@ function syncBtnAuthMenu() {
 // ---------- 删除 ----------
 function handleDelete(row: Menu) {
   confirmDanger({
-    title: "删除确认",
+    title: '删除确认',
     content: `确定删除菜单「${row.title}」吗？`,
     onConfirm: async () => {
       await deleteMenu(row.id);
-      LewMessage.success("删除成功");
+      LewMessage.success('删除成功');
       void fetchList();
     },
   });
@@ -487,7 +516,11 @@ function handleDelete(row: Menu) {
         <h2 class="page-title m-0">菜单管理</h2>
         <p class="page-subtitle mt-1 mb-0">管理系统菜单、路由与按钮权限</p>
       </div>
-      <LewButton v-permission="'system:menu:create'" type="fill" @click="openCreate(0)">
+      <LewButton
+        v-permission="'system:menu:create'"
+        type="fill"
+        @click="openCreate(0)"
+      >
         <Plus :size="15" style="margin-right: 4px" /> 新增菜单
       </LewButton>
     </div>
@@ -520,7 +553,11 @@ function handleDelete(row: Menu) {
             >
               <KeyRound :size="14" />
             </IconButton>
-            <IconButton permission="system:menu:update" title="编辑" @click="openEdit(menuOf(row))">
+            <IconButton
+              permission="system:menu:update"
+              title="编辑"
+              @click="openEdit(menuOf(row))"
+            >
               <Pencil :size="14" />
             </IconButton>
             <IconButton
@@ -586,7 +623,7 @@ function handleDelete(row: Menu) {
             <div class="flex items-center gap-1.5">
               <component :is="resolveMenuIcon(icon)" :size="17" />
               <span class="text-12.5px text-[var(--app-text-muted)]">
-                {{ icon || "未设置（显示默认图标）" }}
+                {{ icon || '未设置（显示默认图标）' }}
               </span>
             </div>
           </div>

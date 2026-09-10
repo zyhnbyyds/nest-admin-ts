@@ -1,22 +1,27 @@
 <script setup lang="ts">
-import { ref } from "vue";
-import { Eye, Wand2 } from "lucide-vue-next";
-import { LewButton, LewMessage, LewModal, LewSelect, LewTable } from "lew-ui";
-import type { LewTableColumn } from "lew-ui";
-import { generateCode, getTableColumns, listTables, previewCode } from "~/api/generator";
-import type { GeneratedFile, TableInfo } from "~/api/generator";
-import type { ColumnMeta } from "~/types/api";
+import { ref } from 'vue';
+import { Eye, Wand2 } from 'lucide-vue-next';
+import { LewButton, LewMessage, LewModal, LewSelect, LewTable } from 'lew-ui';
+import type { LewTableColumn } from 'lew-ui';
+import {
+  generateCode,
+  getTableColumns,
+  listTables,
+  previewCode,
+} from '~/api/generator';
+import type { GeneratedFile, TableInfo } from '~/api/generator';
+import type { ColumnMeta } from '~/types/api';
 
 // ---------- 表列表 ----------
 const tables = ref<TableInfo[]>([]);
 const loading = ref(false);
-const selectedTable = ref<string>("");
+const selectedTable = ref<string>('');
 
 const columns: LewTableColumn[] = [
-  { title: "表名", field: "tableName", width: 220 },
-  { title: "注释", field: "comment" },
-  { title: "创建时间", field: "createdAt", width: 180 },
-  { title: "操作", field: "operation", width: 100, fixed: "right" },
+  { title: '表名', field: 'tableName', width: 220 },
+  { title: '注释', field: 'comment' },
+  { title: '创建时间', field: 'createdAt', width: 180 },
+  { title: '操作', field: 'operation', width: 100, fixed: 'right' },
 ];
 
 async function fetchTables() {
@@ -53,7 +58,7 @@ const previewLoading = ref(false);
 
 async function openPreview() {
   if (!selectedTable.value) {
-    LewMessage.warning("请先选择表");
+    LewMessage.warning('请先选择表');
     return;
   }
   previewVisible.value = true;
@@ -68,12 +73,12 @@ async function openPreview() {
 }
 
 // ---------- 生成代码 ----------
-const directory = ref("src/modules/generated");
+const directory = ref('src/modules/generated');
 const generating = ref(false);
 
 async function handleGenerate() {
   if (!selectedTable.value) {
-    LewMessage.warning("请先选择表");
+    LewMessage.warning('请先选择表');
     return;
   }
   generating.value = true;
@@ -91,7 +96,9 @@ async function handleGenerate() {
     <!-- 页头 -->
     <div>
       <h2 class="page-title m-0">代码生成器</h2>
-      <p class="page-subtitle mt-1 mb-0">根据数据库表生成 CRUD 代码（低优先级功能）</p>
+      <p class="page-subtitle mt-1 mb-0">
+        根据数据库表生成 CRUD 代码（低优先级功能）
+      </p>
     </div>
 
     <!-- 工具栏 -->
@@ -107,8 +114,14 @@ async function handleGenerate() {
           }))
         "
       />
-      <LewButton type="light" :loading="loading" @click="fetchTables">刷新</LewButton>
-      <LewButton v-permission="'system:generator:list'" type="light" @click="openPreview">
+      <LewButton type="light" :loading="loading" @click="fetchTables"
+        >刷新</LewButton
+      >
+      <LewButton
+        v-permission="'system:generator:list'"
+        type="light"
+        @click="openPreview"
+      >
         <Eye :size="15" style="margin-right: 4px" /> 预览代码
       </LewButton>
       <LewButton
@@ -131,7 +144,11 @@ async function handleGenerate() {
         size="small"
       >
         <template #operation="{ row }">
-          <LewButton type="text" size="small" @click="openColumns(row as unknown as TableInfo)">
+          <LewButton
+            type="text"
+            size="small"
+            @click="openColumns(row as unknown as TableInfo)"
+          >
             查看字段
           </LewButton>
         </template>
@@ -139,7 +156,12 @@ async function handleGenerate() {
     </div>
 
     <!-- 字段弹窗 -->
-    <LewModal v-model:visible="columnsVisible" title="表字段信息" width="720px" :hide-footer="true">
+    <LewModal
+      v-model:visible="columnsVisible"
+      title="表字段信息"
+      width="720px"
+      :hide-footer="true"
+    >
       <div class="p-5">
         <LewTable
           :data-source="tableColumns"
@@ -159,7 +181,12 @@ async function handleGenerate() {
     </LewModal>
 
     <!-- 代码预览弹窗 -->
-    <LewModal v-model:visible="previewVisible" title="代码预览" width="860px" :hide-footer="true">
+    <LewModal
+      v-model:visible="previewVisible"
+      title="代码预览"
+      width="860px"
+      :hide-footer="true"
+    >
       <div class="p-5">
         <div class="flex gap-3" style="height: 480px">
           <!-- 文件列表 -->

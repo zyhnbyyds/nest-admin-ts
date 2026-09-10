@@ -1,9 +1,9 @@
-import type { CreateDeptBody, Dept, UpdateDeptBody } from "~/types/api";
-import { del, get, patch, post } from "~/request";
+import type { CreateDeptBody, Dept, UpdateDeptBody } from '~/types/api';
+import { del, get, patch, post } from '~/request';
 
 /** 部门树（全量） */
 export function listDepts() {
-  return get<Dept[]>("/system/depts");
+  return get<Dept[]>('/system/depts');
 }
 
 /** 部门详情 */
@@ -13,7 +13,7 @@ export function getDept(id: number) {
 
 /** 新增部门 */
 export function createDept(body: CreateDeptBody) {
-  return post<{ id: number }>("/system/depts", body);
+  return post<{ id: number }>('/system/depts', body);
 }
 
 /** 修改部门 */

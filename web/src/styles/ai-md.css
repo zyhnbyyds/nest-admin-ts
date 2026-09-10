@@ -63,7 +63,7 @@
   border-radius: 4px;
   padding: 0.12em 0.4em;
   font-size: 0.9em;
-  font-family: "JetBrains Mono", "Fira Code", Consolas, monospace;
+  font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
 }
 .ai-md-preview pre {
   background: var(--app-bg-hover);
