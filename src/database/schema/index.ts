@@ -39,7 +39,6 @@ export const departments = mysqlTable(
     ancestors: varchar('ancestors', { length: 500 }).default('0').notNull(),
     name: varchar('name', { length: 50 }).notNull(),
     sort: int('sort').default(0).notNull(),
-    leaderUserId: int('leader_user_id', { unsigned: true }),
     phone: varchar('phone', { length: 20 }),
     email: varchar('email', { length: 100 }),
     status: mysqlEnum('status', ['active', 'disabled'])

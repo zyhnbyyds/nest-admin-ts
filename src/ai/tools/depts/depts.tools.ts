@@ -62,7 +62,7 @@ export class DeptGetTool extends BaseCrudTool<DeptsService> {
 export class DeptCreateTool extends BaseCrudTool<DeptsService> {
   name = 'dept.create';
   description =
-    '创建一个新部门。需要提供名称，可选上级部门、排序、负责人、电话、邮箱、状态。';
+    '创建一个新部门。需要提供名称，可选上级部门、排序、电话、邮箱、状态。';
   permission = 'system:dept:create';
   riskLevel = RiskLevel.L1;
   approvalPolicy = ApprovalPolicy.CONFIRM;
@@ -72,7 +72,6 @@ export class DeptCreateTool extends BaseCrudTool<DeptsService> {
       parentId: { type: 'number', description: '上级部门 ID（默认 0 为顶级）' },
       name: { type: 'string', description: '部门名称（1-50 字符）' },
       sort: { type: 'number', description: '排序' },
-      leaderUserId: { type: 'number', description: '负责人用户 ID' },
       phone: { type: 'string', description: '联系电话' },
       email: { type: 'string', description: '邮箱' },
       status: {
@@ -116,8 +115,7 @@ export class DeptCreateTool extends BaseCrudTool<DeptsService> {
 @Injectable()
 export class DeptUpdateTool extends BaseCrudTool<DeptsService> {
   name = 'dept.update';
-  description =
-    '更新部门信息，可修改上级部门、名称、排序、负责人、电话、邮箱、状态。';
+  description = '更新部门信息，可修改上级部门、名称、排序、电话、邮箱、状态。';
   permission = 'system:dept:update';
   riskLevel = RiskLevel.L2;
   approvalPolicy = ApprovalPolicy.CONFIRM;
@@ -128,7 +126,6 @@ export class DeptUpdateTool extends BaseCrudTool<DeptsService> {
       parentId: { type: 'number', description: '上级部门 ID' },
       name: { type: 'string', description: '部门名称' },
       sort: { type: 'number', description: '排序' },
-      leaderUserId: { type: 'number', description: '负责人用户 ID' },
       phone: { type: 'string', description: '联系电话' },
       email: { type: 'string', description: '邮箱' },
       status: {

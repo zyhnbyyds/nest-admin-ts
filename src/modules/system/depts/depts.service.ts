@@ -15,7 +15,6 @@ export type CreateDeptInput = {
   parentId?: number | undefined;
   name: string;
   sort?: number | undefined;
-  leaderUserId?: number | undefined;
   phone?: string | undefined;
   email?: string | undefined;
   status?: 'active' | 'disabled' | undefined;
@@ -25,7 +24,6 @@ export type UpdateDeptInput = {
   parentId?: number | undefined;
   name?: string | undefined;
   sort?: number | undefined;
-  leaderUserId?: number | null | undefined;
   phone?: string | null | undefined;
   email?: string | null | undefined;
   status?: 'active' | 'disabled' | undefined;
@@ -92,9 +90,7 @@ export class DeptsService {
       await this.assertParentExists(parentId);
       const descendants = await this.descendantIds(id);
       if (descendants.includes(parentId))
-        throw new BadRequestException(
-          '不能将部门移动到自己的下级部门下',
-        );
+        throw new BadRequestException('不能将部门移动到自己的下级部门下');
     }
     await this.database.db
       .update(departments)
@@ -110,15 +106,13 @@ export class DeptsService {
       .from(departments)
       .where(and(eq(departments.parentId, id), isNull(departments.deletedAt)))
       .limit(1);
-    if (child)
-      throw new BadRequestException('存在子部门，无法删除');
+    if (child) throw new BadRequestException('存在子部门，无法删除');
     const [assigned] = await this.database.db
       .select({ id: users.id })
       .from(users)
       .where(and(eq(users.deptId, id), isNull(users.deletedAt)))
       .limit(1);
-    if (assigned)
-      throw new BadRequestException('部门下存在用户，无法删除');
+    if (assigned) throw new BadRequestException('部门下存在用户，无法删除');
     await this.database.db
       .update(departments)
       .set({ deletedAt: new Date(), updatedBy: actorId })

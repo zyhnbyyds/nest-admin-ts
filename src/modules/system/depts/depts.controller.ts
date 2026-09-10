@@ -40,12 +40,6 @@ const createSchema = z.object({
     .min(0)
     .optional()
     .openapi({ example: 1, description: '排序' }),
-  leaderUserId: z
-    .number()
-    .int()
-    .positive()
-    .optional()
-    .openapi({ example: 1, description: '负责人用户ID' }),
   phone: z
     .string()
     .max(20)
@@ -62,13 +56,6 @@ const createSchema = z.object({
     .openapi({ example: 'active', description: '状态' }),
 });
 const updateSchema = createSchema.partial().extend({
-  leaderUserId: z
-    .number()
-    .int()
-    .positive()
-    .nullable()
-    .optional()
-    .openapi({ example: 1, description: '负责人用户ID' }),
   phone: z
     .string()
     .max(20)
@@ -86,7 +73,9 @@ const updateSchema = createSchema.partial().extend({
 registerComponent('CreateDeptRequest', createSchema);
 registerComponent('UpdateDeptRequest', updateSchema);
 
-type AuthRequest = { user: { id: number; roles: string[]; permissions: string[] } };
+type AuthRequest = {
+  user: { id: number; roles: string[]; permissions: string[] };
+};
 
 @ApiTags('部门管理')
 @ApiBearerAuth('access-token')

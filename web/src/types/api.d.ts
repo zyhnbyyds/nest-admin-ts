@@ -333,7 +333,6 @@ export interface Dept {
   parentId: number;
   name: string;
   sort: number;
-  leaderUserId: number | null;
   phone: string | null;
   email: string | null;
   status: EntityStatus;
@@ -344,7 +343,6 @@ export interface CreateDeptBody {
   parentId?: number;
   name: string;
   sort?: number;
-  leaderUserId?: number;
   phone?: string;
   email?: string;
   status?: EntityStatus;

@@ -1,0 +1,1 @@
+ALTER TABLE `sys_dept` DROP COLUMN `leader_user_id`;
