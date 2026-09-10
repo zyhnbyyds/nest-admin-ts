@@ -4,5 +4,5 @@
   "trailingComma": "all",
   "printWidth": 80,
   "sortPackageJson": false,
-  "ignorePatterns": ["dist", "pnpm-lock.yaml", "types/auto-imports.d.ts"]
+  "ignorePatterns": ["dist", "types/auto-imports.d.ts"]
 }

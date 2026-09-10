@@ -157,7 +157,7 @@ web/
 - Bun >= 1.4 (single runtime for the backend: app, migrations, seed, and tests all run on Bun)
 - MySQL 8
 - Redis (optional; cache/online-user/jobs modules auto-degrade if not configured)
-- Node.js + pnpm (optional, for the web frontend)
+- bun (optional, for the web frontend; same runtime and package manager as the backend, no Node.js/pnpm required)
 
 ### Backend
 
@@ -189,7 +189,7 @@ The backend runs on `http://localhost:3000` by default; Swagger is at `http://lo
 
 ```bash
 cd web
-bun install        # or pnpm install
+bun install
 bun run dev        # http://localhost:5173
 ```
 

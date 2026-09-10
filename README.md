@@ -176,7 +176,7 @@ web/
 - Bun >= 1.4（后端单一运行时：应用、迁移、seed、测试均运行在 Bun 上）
 - MySQL 8
 - Redis（可选，不配置则缓存/在线用户/任务模块自动降级）
-- Node.js + pnpm（可选，用于 web 前端）
+- bun（可选，用于 web 前端；与后端同一运行时与包管理器，无需 Node.js/pnpm）
 
 ### 后端启动
 
@@ -208,7 +208,7 @@ bun run dev
 
 ```bash
 cd web
-bun install        # 或 pnpm install
+bun install
 bun run dev        # http://localhost:5173
 ```
 
