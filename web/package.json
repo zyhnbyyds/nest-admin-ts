@@ -2,6 +2,10 @@
   "name": "nest-admin-web",
   "private": true,
   "type": "module",
+  "packageManager": "bun@1.4.0",
+  "engines": {
+    "bun": ">=1.4"
+  },
   "scripts": {
     "dev": "vite --port 5173 --open",
     "build": "vue-tsc --noEmit && vite build",
