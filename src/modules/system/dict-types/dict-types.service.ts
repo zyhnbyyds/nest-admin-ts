@@ -70,8 +70,7 @@ export class DictTypesService {
       .update(dictTypes)
       .set({ ...patch, updatedBy: actorId })
       .where(and(eq(dictTypes.id, id), isNull(dictTypes.deletedAt)));
-    if (!result[0].affectedRows)
-      throw new NotFoundException('字典类型不存在');
+    if (!result[0].affectedRows) throw new NotFoundException('字典类型不存在');
   }
 
   async remove(id: number, actorId: number): Promise<void> {
@@ -104,8 +103,7 @@ export class DictTypesService {
       .from(dictTypes)
       .where(and(...conditions))
       .limit(1);
-    if (duplicate)
-      throw new ConflictException('字典类型标识已存在');
+    if (duplicate) throw new ConflictException('字典类型标识已存在');
   }
 }
 

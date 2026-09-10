@@ -31,10 +31,10 @@ const actor: RequestActor = {
 describe('resolveDataScope', () => {
   it('returns all for super admin without querying roles', async () => {
     const select = buildSelect([]);
-    const scope = await resolveDataScope(
-      { select } as never,
-      { ...actor, permissions: ['*:*:*'] },
-    );
+    const scope = await resolveDataScope({ select } as never, {
+      ...actor,
+      permissions: ['*:*:*'],
+    });
     expect(scope).toEqual({ kind: 'all' });
     expect(select).not.toHaveBeenCalled();
   });
@@ -67,11 +67,7 @@ describe('resolveDataScope', () => {
   it('returns custom dept ids from role_dept', async () => {
     const select = buildSelect([
       [{ id: 1, dataScope: 'custom' }],
-      [
-        { deptId: 2 },
-        { deptId: 3 },
-        { deptId: 2 },
-      ],
+      [{ deptId: 2 }, { deptId: 3 }, { deptId: 2 }],
     ]);
     const scope = await resolveDataScope({ select } as never, actor);
     expect(scope).toEqual({ kind: 'deptIds', ids: [2, 3] });
@@ -125,7 +121,10 @@ describe('resolveDataScope', () => {
   });
 
   it('returns empty dept ids when dept scope but actor has no dept', async () => {
-    const select = buildSelect([[{ id: 1, dataScope: 'dept' }], [{ deptId: null }]]);
+    const select = buildSelect([
+      [{ id: 1, dataScope: 'dept' }],
+      [{ deptId: null }],
+    ]);
     const scope = await resolveDataScope({ select } as never, actor);
     expect(scope).toEqual({ kind: 'deptIds', ids: [] });
   });

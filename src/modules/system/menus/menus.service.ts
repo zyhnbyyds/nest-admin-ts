@@ -152,9 +152,7 @@ export class MenusService {
       await this.assertParentExists(merged.parentId);
       const descendants = await this.descendantIds(id);
       if (descendants.includes(merged.parentId))
-        throw new BadRequestException(
-          '不能将菜单移动到自己的下级菜单下',
-        );
+        throw new BadRequestException('不能将菜单移动到自己的下级菜单下');
     }
     if (patch.permission)
       await this.assertPermissionUnique(patch.permission, id);
@@ -171,8 +169,7 @@ export class MenusService {
       .from(menus)
       .where(and(eq(menus.parentId, id), isNull(menus.deletedAt)))
       .limit(1);
-    if (child)
-      throw new BadRequestException('存在子菜单，无法删除');
+    if (child) throw new BadRequestException('存在子菜单，无法删除');
     await this.database.db.transaction(async (tx) => {
       await tx.delete(roleMenus).where(eq(roleMenus.menuId, id));
       await tx
@@ -234,8 +231,7 @@ export class MenusService {
       .from(menus)
       .where(and(...conditions))
       .limit(1);
-    if (duplicate)
-      throw new ConflictException('菜单权限标识已存在');
+    if (duplicate) throw new ConflictException('菜单权限标识已存在');
   }
 
   private async descendantIds(id: number): Promise<number[]> {
@@ -268,9 +264,7 @@ export class MenusService {
     permission?: string | null | undefined;
   }): void {
     if (input.type !== 'F' && !input.path)
-      throw new BadRequestException(
-        '目录和菜单必须填写路由路径',
-      );
+      throw new BadRequestException('目录和菜单必须填写路由路径');
     if (input.type === 'C' && !input.component)
       throw new BadRequestException('菜单必须填写组件路径');
     if (input.type === 'F' && !input.permission)

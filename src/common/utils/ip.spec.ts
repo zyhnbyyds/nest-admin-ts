@@ -30,7 +30,9 @@ describe('resolveClientIp', () => {
   });
 
   it('无任何转发头时回退 request.ip', () => {
-    expect(resolveClientIp({ ip: '192.168.1.5', headers: {} })).toBe('192.168.1.5');
+    expect(resolveClientIp({ ip: '192.168.1.5', headers: {} })).toBe(
+      '192.168.1.5',
+    );
   });
 
   it('x-forwarded-for 为数组时取第一个元素', () => {

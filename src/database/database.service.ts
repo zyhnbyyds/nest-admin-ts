@@ -31,7 +31,10 @@ export class DatabaseService implements OnApplicationShutdown {
     // promise 版的 Pool 类型未暴露底层 'connection' 事件，这里显式断言
     (
       this.pool as unknown as {
-        on: (event: 'connection', cb: (conn: RawPoolConnection) => void) => unknown;
+        on: (
+          event: 'connection',
+          cb: (conn: RawPoolConnection) => void,
+        ) => unknown;
       }
     ).on('connection', (conn) => {
       conn.query("SET time_zone = '+00:00'", (error) => {

@@ -37,17 +37,17 @@ The admin frontend lives in [`web/`](./web). It is a standalone **Vue 3 + Vite**
 
 ### Tech Stack
 
-| Category   | Choice                                              |
-| ---------- | --------------------------------------------------- |
-| Framework  | Vue 3.5 + Vite 8 + TypeScript 5.9                   |
-| Router     | Vue Router 5                                        |
-| State      | Pinia 3                                             |
-| UI         | lew-ui                                              |
-| Styling    | UnoCSS (atomic CSS, on-demand)                      |
-| Charts     | ECharts 6 (login trend / status distribution / dashboard) |
-| HTTP       | axios (JWT auto-refresh + concurrent refresh queue) |
-| Utilities  | dayjs, lucide-vue-next, @vueuse/core                |
-| Build      | unplugin-auto-import + unplugin-vue-components      |
+| Category  | Choice                                                    |
+| --------- | --------------------------------------------------------- |
+| Framework | Vue 3.5 + Vite 8 + TypeScript 5.9                         |
+| Router    | Vue Router 5                                              |
+| State     | Pinia 3                                                   |
+| UI        | lew-ui                                                    |
+| Styling   | UnoCSS (atomic CSS, on-demand)                            |
+| Charts    | ECharts 6 (login trend / status distribution / dashboard) |
+| HTTP      | axios (JWT auto-refresh + concurrent refresh queue)       |
+| Utilities | dayjs, lucide-vue-next, @vueuse/core                      |
+| Build     | unplugin-auto-import + unplugin-vue-components            |
 
 ### Core Features
 
@@ -61,25 +61,25 @@ The admin frontend lives in [`web/`](./web). It is a standalone **Vue 3 + Vite**
 
 ### Pages
 
-| Module       | Path                     | Description                                |
-| ------------ | ------------------------ | ------------------------------------------ |
-| Login        | `/login`                 | Sign in                                    |
-| Dashboard    | `/dashboard`             | Stats, login trend, recent logins          |
-| Users        | `/system/users`          | CRUD, role assignment, status, soft delete |
-| Roles        | `/system/roles`          | CRUD, menu permissions, data scope         |
-| Menus        | `/system/menus`          | Tree menus, button permissions, frontend routes |
-| Departments  | `/system/depts`          | Tree departments                           |
-| Posts        | `/system/posts`          | Post CRUD, user association                |
-| Dicts        | `/system/dicts`          | Dict types / dict data                     |
-| Configs      | `/system/configs`        | System configs, protected built-ins        |
-| Jobs         | `/system/jobs`           | Cron scheduling, manual run, execution logs |
-| Files        | `/files`                 | Upload / preview / download                |
-| Login Logs   | `/monitor/login-logs`    | Query, delete, clear                       |
-| Operation Logs | `/monitor/operation-logs` | Audit of create/update/delete operations |
-| Online Users | `/monitor/online`        | Redis sessions, force logout               |
-| Cache Monitor | `/monitor/cache`         | Redis info                                 |
-| Generator    | `/generator`             | Read table schema and generate scaffolding  |
-| Profile      | `/profile`               | Profile, avatar, change password           |
+| Module         | Path                      | Description                                     |
+| -------------- | ------------------------- | ----------------------------------------------- |
+| Login          | `/login`                  | Sign in                                         |
+| Dashboard      | `/dashboard`              | Stats, login trend, recent logins               |
+| Users          | `/system/users`           | CRUD, role assignment, status, soft delete      |
+| Roles          | `/system/roles`           | CRUD, menu permissions, data scope              |
+| Menus          | `/system/menus`           | Tree menus, button permissions, frontend routes |
+| Departments    | `/system/depts`           | Tree departments                                |
+| Posts          | `/system/posts`           | Post CRUD, user association                     |
+| Dicts          | `/system/dicts`           | Dict types / dict data                          |
+| Configs        | `/system/configs`         | System configs, protected built-ins             |
+| Jobs           | `/system/jobs`            | Cron scheduling, manual run, execution logs     |
+| Files          | `/files`                  | Upload / preview / download                     |
+| Login Logs     | `/monitor/login-logs`     | Query, delete, clear                            |
+| Operation Logs | `/monitor/operation-logs` | Audit of create/update/delete operations        |
+| Online Users   | `/monitor/online`         | Redis sessions, force logout                    |
+| Cache Monitor  | `/monitor/cache`          | Redis info                                      |
+| Generator      | `/generator`              | Read table schema and generate scaffolding      |
+| Profile        | `/profile`                | Profile, avatar, change password                |
 
 ### Frontend Structure
 
@@ -109,25 +109,25 @@ web/
 
 ## Features
 
-| Module          | Description                                                              |
-| --------------- | ------------------------------------------------------------------------ |
-| **Authentication** | JWT dual tokens (access + refresh), HS256 signing, Bun.password argon2id hashing |
-| **Users**       | User CRUD, role assignment, status management, soft delete               |
-| **Roles**       | Role CRUD, menu permission assignment, data-scope ranges                 |
-| **Menus**       | Tree menu CRUD, button permission flags, frontend route data             |
-| **Departments** | Tree department CRUD, ancestor path maintenance                          |
-| **Posts**       | Post CRUD, user–post association                                         |
-| **Dicts**       | Dict type / dict data CRUD, enabled items by type                        |
-| **Configs**     | System config item CRUD, query by key, built-in protection               |
-| **Dashboard**   | Aggregated user/department/role/menu/post stats, login trend & status    |
-| **Login Logs**  | Login record query, delete, clear                                        |
-| **Operation Logs** | Automatic audit of create/update/delete operations via interceptor    |
-| **Online Users** | Redis session tracking, force logout                                    |
-| **Scheduled Jobs** | Cron scheduling, manual run, execution logs                            |
-| **File Management** | Upload (multipart), download, type/size validation                    |
-| **Code Generator** | Reads `information_schema` to auto-generate module scaffolding          |
-| **Health Check** | `GET /health`, no auth required                                         |
-| **Swagger**     | Auto-enabled in dev, path `/api/v1/docs`                                 |
+| Module              | Description                                                                      |
+| ------------------- | -------------------------------------------------------------------------------- |
+| **Authentication**  | JWT dual tokens (access + refresh), HS256 signing, Bun.password argon2id hashing |
+| **Users**           | User CRUD, role assignment, status management, soft delete                       |
+| **Roles**           | Role CRUD, menu permission assignment, data-scope ranges                         |
+| **Menus**           | Tree menu CRUD, button permission flags, frontend route data                     |
+| **Departments**     | Tree department CRUD, ancestor path maintenance                                  |
+| **Posts**           | Post CRUD, user–post association                                                 |
+| **Dicts**           | Dict type / dict data CRUD, enabled items by type                                |
+| **Configs**         | System config item CRUD, query by key, built-in protection                       |
+| **Dashboard**       | Aggregated user/department/role/menu/post stats, login trend & status            |
+| **Login Logs**      | Login record query, delete, clear                                                |
+| **Operation Logs**  | Automatic audit of create/update/delete operations via interceptor               |
+| **Online Users**    | Redis session tracking, force logout                                             |
+| **Scheduled Jobs**  | Cron scheduling, manual run, execution logs                                      |
+| **File Management** | Upload (multipart), download, type/size validation                               |
+| **Code Generator**  | Reads `information_schema` to auto-generate module scaffolding                   |
+| **Health Check**    | `GET /health`, no auth required                                                  |
+| **Swagger**         | Auto-enabled in dev, path `/api/v1/docs`                                         |
 
 ## Tech Stack
 
@@ -197,8 +197,8 @@ The frontend dev server runs on `http://localhost:5173`; `/api` is proxied to th
 
 ### Default Admin
 
-| Username | Password                       |
-| -------- | ------------------------------ |
+| Username | Password                          |
+| -------- | --------------------------------- |
 | `admin`  | The password set during `db:seed` |
 
 ## Project Structure
@@ -236,23 +236,23 @@ The frontend dev server runs on `http://localhost:5173`; `/api` is proxied to th
 
 ## Environment Variables
 
-| Variable             | Required | Default                 | Description                          |
-| -------------------- | :------: | ----------------------- | ------------------------------------ |
-| `NODE_ENV`           |    No    | `development`           | Runtime environment                  |
-| `PORT`               |    No    | `3000`                  | Service port                         |
-| `API_PREFIX`         |    No    | `api/v1`                | API prefix                           |
-| `DATABASE_URL`       | **Yes**  | —                       | MySQL connection string              |
-| `REDIS_URL`          |    No    | —                       | Redis connection (optional)          |
-| `JWT_ISSUER`         | **Yes**  | —                       | JWT issuer                           |
-| `JWT_AUDIENCE`       | **Yes**  | —                       | JWT audience                         |
-| `JWT_ACCESS_SECRET`  | **Yes**  | —                       | Access Token secret (≥32 chars)      |
-| `JWT_REFRESH_SECRET` | **Yes**  | —                       | Refresh Token secret (≥32 chars)     |
-| `JWT_ACCESS_TTL`     |    No    | `15m`                   | Access Token TTL                     |
-| `JWT_REFRESH_TTL`    |    No    | `7d`                    | Refresh Token TTL                    |
+| Variable             | Required | Default                 | Description                            |
+| -------------------- | :------: | ----------------------- | -------------------------------------- |
+| `NODE_ENV`           |    No    | `development`           | Runtime environment                    |
+| `PORT`               |    No    | `3000`                  | Service port                           |
+| `API_PREFIX`         |    No    | `api/v1`                | API prefix                             |
+| `DATABASE_URL`       | **Yes**  | —                       | MySQL connection string                |
+| `REDIS_URL`          |    No    | —                       | Redis connection (optional)            |
+| `JWT_ISSUER`         | **Yes**  | —                       | JWT issuer                             |
+| `JWT_AUDIENCE`       | **Yes**  | —                       | JWT audience                           |
+| `JWT_ACCESS_SECRET`  | **Yes**  | —                       | Access Token secret (≥32 chars)        |
+| `JWT_REFRESH_SECRET` | **Yes**  | —                       | Refresh Token secret (≥32 chars)       |
+| `JWT_ACCESS_TTL`     |    No    | `15m`                   | Access Token TTL                       |
+| `JWT_REFRESH_TTL`    |    No    | `7d`                    | Refresh Token TTL                      |
 | `CORS_ORIGINS`       |    No    | `http://localhost:5173` | Allowed CORS origins (comma-separated) |
-| `UPLOAD_DIR`         |    No    | `uploads`               | Upload directory                     |
-| `SWAGGER_ENABLED`    |    No    | `true`                  | Enable Swagger                       |
-| `SWAGGER_PATH`       |    No    | `docs`                  | Swagger path                         |
+| `UPLOAD_DIR`         |    No    | `uploads`               | Upload directory                       |
+| `SWAGGER_ENABLED`    |    No    | `true`                  | Enable Swagger                         |
+| `SWAGGER_PATH`       |    No    | `docs`                  | Swagger path                           |
 
 ## Commands
 

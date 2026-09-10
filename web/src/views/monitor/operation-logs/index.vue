@@ -287,8 +287,7 @@ function handleClear() {
           <div class="mb-1 text-13px font-600">请求参数</div>
           <pre
             class="m-0 rounded-lg bg-[var(--app-bg-hover)] p-3 text-12px whitespace-pre-wrap break-all"
-            >{{ formatJson(detail.requestBody) }}</pre
-          >
+            >{{ formatJson(detail.requestBody) }}</pre>
         </div>
 
         <!-- 返回参数 -->
@@ -296,8 +295,7 @@ function handleClear() {
           <div class="mb-1 text-13px font-600">返回参数</div>
           <pre
             class="m-0 rounded-lg bg-[var(--app-bg-hover)] p-3 text-12px whitespace-pre-wrap break-all"
-            >{{ formatJson(detail.responseBody) }}</pre
-          >
+            >{{ formatJson(detail.responseBody) }}</pre>
         </div>
 
         <!-- 错误信息 -->
@@ -305,8 +303,7 @@ function handleClear() {
           <div class="mb-1 text-13px font-600 text-[var(--lew-color-error)]">错误信息</div>
           <pre
             class="m-0 rounded-lg bg-[var(--app-bg-hover)] p-3 text-12px whitespace-pre-wrap break-all text-[var(--lew-color-error)]"
-            >{{ detail.errorMessage }}</pre
-          >
+            >{{ detail.errorMessage }}</pre>
         </div>
       </div>
     </LewModal>

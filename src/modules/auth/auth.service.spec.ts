@@ -277,9 +277,8 @@ describe('AuthService', () => {
     it('changes password with valid old password', async () => {
       const { db } = mockDb();
       db.select = selectWithLimit([{ passwordHash: 'hash' }]);
-      const passwordService = await import(
-        '../../common/password/password.service'
-      );
+      const passwordService =
+        await import('../../common/password/password.service');
       (
         passwordService.verifyPassword as ReturnType<typeof vi.fn>
       ).mockResolvedValue(true);
@@ -300,9 +299,8 @@ describe('AuthService', () => {
     it('throws UnauthorizedException when old password is wrong', async () => {
       const { db } = mockDb();
       db.select = selectWithLimit([{ passwordHash: 'hash' }]);
-      const passwordService = await import(
-        '../../common/password/password.service'
-      );
+      const passwordService =
+        await import('../../common/password/password.service');
       (
         passwordService.verifyPassword as ReturnType<typeof vi.fn>
       ).mockResolvedValue(false);

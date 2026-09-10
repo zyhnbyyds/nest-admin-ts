@@ -2,9 +2,7 @@
   "version": "6",
   "dialect": "mysql",
   "id": "923a72a6-f6fb-4313-82d1-cc5cedd17ba4",
-  "prevIds": [
-    "13b81957-f53c-488f-bec3-7c46f35fed59"
-  ],
+  "prevIds": ["13b81957-f53c-488f-bec3-7c46f35fed59"],
   "ddl": [
     {
       "name": "ai_action_intent",
@@ -3467,169 +3465,127 @@
       "table": "sys_user"
     },
     {
-      "columns": [
-        "id"
-      ],
+      "columns": ["id"],
       "name": "PRIMARY",
       "table": "ai_action_intent",
       "entityType": "pks"
     },
     {
-      "columns": [
-        "id"
-      ],
+      "columns": ["id"],
       "name": "PRIMARY",
       "table": "ai_approval",
       "entityType": "pks"
     },
     {
-      "columns": [
-        "id"
-      ],
+      "columns": ["id"],
       "name": "PRIMARY",
       "table": "ai_audit_log",
       "entityType": "pks"
     },
     {
-      "columns": [
-        "id"
-      ],
+      "columns": ["id"],
       "name": "PRIMARY",
       "table": "ai_message",
       "entityType": "pks"
     },
     {
-      "columns": [
-        "id"
-      ],
+      "columns": ["id"],
       "name": "PRIMARY",
       "table": "ai_session",
       "entityType": "pks"
     },
     {
-      "columns": [
-        "id"
-      ],
+      "columns": ["id"],
       "name": "PRIMARY",
       "table": "ai_task_step",
       "entityType": "pks"
     },
     {
-      "columns": [
-        "id"
-      ],
+      "columns": ["id"],
       "name": "PRIMARY",
       "table": "ai_task",
       "entityType": "pks"
     },
     {
-      "columns": [
-        "id"
-      ],
+      "columns": ["id"],
       "name": "PRIMARY",
       "table": "sys_config",
       "entityType": "pks"
     },
     {
-      "columns": [
-        "id"
-      ],
+      "columns": ["id"],
       "name": "PRIMARY",
       "table": "sys_dept",
       "entityType": "pks"
     },
     {
-      "columns": [
-        "id"
-      ],
+      "columns": ["id"],
       "name": "PRIMARY",
       "table": "sys_dict_type",
       "entityType": "pks"
     },
     {
-      "columns": [
-        "id"
-      ],
+      "columns": ["id"],
       "name": "PRIMARY",
       "table": "sys_dict_data",
       "entityType": "pks"
     },
     {
-      "columns": [
-        "id"
-      ],
+      "columns": ["id"],
       "name": "PRIMARY",
       "table": "sys_file",
       "entityType": "pks"
     },
     {
-      "columns": [
-        "id"
-      ],
+      "columns": ["id"],
       "name": "PRIMARY",
       "table": "sys_job_log",
       "entityType": "pks"
     },
     {
-      "columns": [
-        "id"
-      ],
+      "columns": ["id"],
       "name": "PRIMARY",
       "table": "sys_job",
       "entityType": "pks"
     },
     {
-      "columns": [
-        "id"
-      ],
+      "columns": ["id"],
       "name": "PRIMARY",
       "table": "sys_login_log",
       "entityType": "pks"
     },
     {
-      "columns": [
-        "id"
-      ],
+      "columns": ["id"],
       "name": "PRIMARY",
       "table": "sys_menu",
       "entityType": "pks"
     },
     {
-      "columns": [
-        "id"
-      ],
+      "columns": ["id"],
       "name": "PRIMARY",
       "table": "sys_operation_log",
       "entityType": "pks"
     },
     {
-      "columns": [
-        "id"
-      ],
+      "columns": ["id"],
       "name": "PRIMARY",
       "table": "sys_post",
       "entityType": "pks"
     },
     {
-      "columns": [
-        "id"
-      ],
+      "columns": ["id"],
       "name": "PRIMARY",
       "table": "sys_refresh_token",
       "entityType": "pks"
     },
     {
-      "columns": [
-        "id"
-      ],
+      "columns": ["id"],
       "name": "PRIMARY",
       "table": "sys_role",
       "entityType": "pks"
     },
     {
-      "columns": [
-        "id"
-      ],
+      "columns": ["id"],
       "name": "PRIMARY",
       "table": "sys_user",
       "entityType": "pks"
@@ -4267,13 +4223,9 @@
       "table": "sys_user"
     },
     {
-      "columns": [
-        "session_id"
-      ],
+      "columns": ["session_id"],
       "tableTo": "ai_session",
-      "columnsTo": [
-        "id"
-      ],
+      "columnsTo": ["id"],
       "onUpdate": "NO ACTION",
       "onDelete": "SET NULL",
       "nameExplicit": true,
@@ -4282,13 +4234,9 @@
       "table": "ai_action_intent"
     },
     {
-      "columns": [
-        "user_id"
-      ],
+      "columns": ["user_id"],
       "tableTo": "sys_user",
-      "columnsTo": [
-        "id"
-      ],
+      "columnsTo": ["id"],
       "onUpdate": "NO ACTION",
       "onDelete": "CASCADE",
       "nameExplicit": true,
@@ -4297,13 +4245,9 @@
       "table": "ai_action_intent"
     },
     {
-      "columns": [
-        "action_intent_id"
-      ],
+      "columns": ["action_intent_id"],
       "tableTo": "ai_action_intent",
-      "columnsTo": [
-        "id"
-      ],
+      "columnsTo": ["id"],
       "onUpdate": "NO ACTION",
       "onDelete": "CASCADE",
       "nameExplicit": true,
@@ -4312,13 +4256,9 @@
       "table": "ai_approval"
     },
     {
-      "columns": [
-        "approver_id"
-      ],
+      "columns": ["approver_id"],
       "tableTo": "sys_user",
-      "columnsTo": [
-        "id"
-      ],
+      "columnsTo": ["id"],
       "onUpdate": "NO ACTION",
       "onDelete": "CASCADE",
       "nameExplicit": true,
@@ -4327,13 +4267,9 @@
       "table": "ai_approval"
     },
     {
-      "columns": [
-        "session_id"
-      ],
+      "columns": ["session_id"],
       "tableTo": "ai_session",
-      "columnsTo": [
-        "id"
-      ],
+      "columnsTo": ["id"],
       "onUpdate": "NO ACTION",
       "onDelete": "CASCADE",
       "nameExplicit": true,
@@ -4342,13 +4278,9 @@
       "table": "ai_message"
     },
     {
-      "columns": [
-        "user_id"
-      ],
+      "columns": ["user_id"],
       "tableTo": "sys_user",
-      "columnsTo": [
-        "id"
-      ],
+      "columnsTo": ["id"],
       "onUpdate": "NO ACTION",
       "onDelete": "CASCADE",
       "nameExplicit": true,
@@ -4357,13 +4289,9 @@
       "table": "ai_session"
     },
     {
-      "columns": [
-        "task_id"
-      ],
+      "columns": ["task_id"],
       "tableTo": "ai_task",
-      "columnsTo": [
-        "id"
-      ],
+      "columnsTo": ["id"],
       "onUpdate": "NO ACTION",
       "onDelete": "CASCADE",
       "nameExplicit": true,
@@ -4372,13 +4300,9 @@
       "table": "ai_task_step"
     },
     {
-      "columns": [
-        "session_id"
-      ],
+      "columns": ["session_id"],
       "tableTo": "ai_session",
-      "columnsTo": [
-        "id"
-      ],
+      "columnsTo": ["id"],
       "onUpdate": "NO ACTION",
       "onDelete": "SET NULL",
       "nameExplicit": true,
@@ -4387,13 +4311,9 @@
       "table": "ai_task"
     },
     {
-      "columns": [
-        "user_id"
-      ],
+      "columns": ["user_id"],
       "tableTo": "sys_user",
-      "columnsTo": [
-        "id"
-      ],
+      "columnsTo": ["id"],
       "onUpdate": "NO ACTION",
       "onDelete": "CASCADE",
       "nameExplicit": true,
@@ -4402,13 +4322,9 @@
       "table": "ai_task"
     },
     {
-      "columns": [
-        "created_by"
-      ],
+      "columns": ["created_by"],
       "tableTo": "sys_user",
-      "columnsTo": [
-        "id"
-      ],
+      "columnsTo": ["id"],
       "onUpdate": "NO ACTION",
       "onDelete": "SET NULL",
       "nameExplicit": true,
@@ -4417,13 +4333,9 @@
       "table": "sys_file"
     },
     {
-      "columns": [
-        "job_id"
-      ],
+      "columns": ["job_id"],
       "tableTo": "sys_job",
-      "columnsTo": [
-        "id"
-      ],
+      "columnsTo": ["id"],
       "onUpdate": "NO ACTION",
       "onDelete": "CASCADE",
       "nameExplicit": true,
@@ -4432,13 +4344,9 @@
       "table": "sys_job_log"
     },
     {
-      "columns": [
-        "user_id"
-      ],
+      "columns": ["user_id"],
       "tableTo": "sys_user",
-      "columnsTo": [
-        "id"
-      ],
+      "columnsTo": ["id"],
       "onUpdate": "NO ACTION",
       "onDelete": "SET NULL",
       "nameExplicit": true,
@@ -4447,13 +4355,9 @@
       "table": "sys_login_log"
     },
     {
-      "columns": [
-        "user_id"
-      ],
+      "columns": ["user_id"],
       "tableTo": "sys_user",
-      "columnsTo": [
-        "id"
-      ],
+      "columnsTo": ["id"],
       "onUpdate": "NO ACTION",
       "onDelete": "SET NULL",
       "nameExplicit": true,
@@ -4462,13 +4366,9 @@
       "table": "sys_operation_log"
     },
     {
-      "columns": [
-        "user_id"
-      ],
+      "columns": ["user_id"],
       "tableTo": "sys_user",
-      "columnsTo": [
-        "id"
-      ],
+      "columnsTo": ["id"],
       "onUpdate": "NO ACTION",
       "onDelete": "CASCADE",
       "nameExplicit": true,
@@ -4477,13 +4377,9 @@
       "table": "sys_refresh_token"
     },
     {
-      "columns": [
-        "role_id"
-      ],
+      "columns": ["role_id"],
       "tableTo": "sys_role",
-      "columnsTo": [
-        "id"
-      ],
+      "columnsTo": ["id"],
       "onUpdate": "NO ACTION",
       "onDelete": "CASCADE",
       "nameExplicit": true,
@@ -4492,13 +4388,9 @@
       "table": "sys_role_dept"
     },
     {
-      "columns": [
-        "dept_id"
-      ],
+      "columns": ["dept_id"],
       "tableTo": "sys_dept",
-      "columnsTo": [
-        "id"
-      ],
+      "columnsTo": ["id"],
       "onUpdate": "NO ACTION",
       "onDelete": "CASCADE",
       "nameExplicit": true,
@@ -4507,13 +4399,9 @@
       "table": "sys_role_dept"
     },
     {
-      "columns": [
-        "role_id"
-      ],
+      "columns": ["role_id"],
       "tableTo": "sys_role",
-      "columnsTo": [
-        "id"
-      ],
+      "columnsTo": ["id"],
       "onUpdate": "NO ACTION",
       "onDelete": "CASCADE",
       "nameExplicit": true,
@@ -4522,13 +4410,9 @@
       "table": "sys_role_menu"
     },
     {
-      "columns": [
-        "menu_id"
-      ],
+      "columns": ["menu_id"],
       "tableTo": "sys_menu",
-      "columnsTo": [
-        "id"
-      ],
+      "columnsTo": ["id"],
       "onUpdate": "NO ACTION",
       "onDelete": "CASCADE",
       "nameExplicit": true,
@@ -4537,13 +4421,9 @@
       "table": "sys_role_menu"
     },
     {
-      "columns": [
-        "user_id"
-      ],
+      "columns": ["user_id"],
       "tableTo": "sys_user",
-      "columnsTo": [
-        "id"
-      ],
+      "columnsTo": ["id"],
       "onUpdate": "NO ACTION",
       "onDelete": "CASCADE",
       "nameExplicit": true,
@@ -4552,13 +4432,9 @@
       "table": "sys_user_post"
     },
     {
-      "columns": [
-        "post_id"
-      ],
+      "columns": ["post_id"],
       "tableTo": "sys_post",
-      "columnsTo": [
-        "id"
-      ],
+      "columnsTo": ["id"],
       "onUpdate": "NO ACTION",
       "onDelete": "CASCADE",
       "nameExplicit": true,
@@ -4567,13 +4443,9 @@
       "table": "sys_user_post"
     },
     {
-      "columns": [
-        "user_id"
-      ],
+      "columns": ["user_id"],
       "tableTo": "sys_user",
-      "columnsTo": [
-        "id"
-      ],
+      "columnsTo": ["id"],
       "onUpdate": "NO ACTION",
       "onDelete": "CASCADE",
       "nameExplicit": true,
@@ -4582,13 +4454,9 @@
       "table": "sys_user_role"
     },
     {
-      "columns": [
-        "role_id"
-      ],
+      "columns": ["role_id"],
       "tableTo": "sys_role",
-      "columnsTo": [
-        "id"
-      ],
+      "columnsTo": ["id"],
       "onUpdate": "NO ACTION",
       "onDelete": "CASCADE",
       "nameExplicit": true,
@@ -4597,13 +4465,9 @@
       "table": "sys_user_role"
     },
     {
-      "columns": [
-        "dept_id"
-      ],
+      "columns": ["dept_id"],
       "tableTo": "sys_dept",
-      "columnsTo": [
-        "id"
-      ],
+      "columnsTo": ["id"],
       "onUpdate": "NO ACTION",
       "onDelete": "SET NULL",
       "nameExplicit": true,

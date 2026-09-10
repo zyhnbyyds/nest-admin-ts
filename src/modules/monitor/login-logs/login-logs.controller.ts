@@ -36,7 +36,9 @@ export class LoginLogsController {
     @Query('pageSize') rawPageSize?: string,
     @Query('username') username?: string,
     @Query('status') status?: string,
-    @Req() request?: { user?: { id: number; roles: string[]; permissions: string[] } },
+    @Req() request?: {
+      user?: { id: number; roles: string[]; permissions: string[] };
+    },
   ) {
     const page = Math.max(Number(rawPage) || 1, 1);
     const pageSize = Math.min(Math.max(Number(rawPageSize) || 20, 1), 100);

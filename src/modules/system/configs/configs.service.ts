@@ -83,20 +83,17 @@ export class ConfigsService {
       .update(configs)
       .set({ ...patch, updatedBy: actorId })
       .where(and(eq(configs.id, id), isNull(configs.deletedAt)));
-    if (!result[0].affectedRows)
-      throw new NotFoundException('参数配置不存在');
+    if (!result[0].affectedRows) throw new NotFoundException('参数配置不存在');
   }
 
   async remove(id: number, actorId: number): Promise<void> {
     const config = await this.findOne(id);
-    if (config.builtin)
-      throw new BadRequestException('内置参数不能删除');
+    if (config.builtin) throw new BadRequestException('内置参数不能删除');
     const result = await this.database.db
       .update(configs)
       .set({ deletedAt: new Date(), updatedBy: actorId })
       .where(and(eq(configs.id, id), isNull(configs.deletedAt)));
-    if (!result[0].affectedRows)
-      throw new NotFoundException('参数配置不存在');
+    if (!result[0].affectedRows) throw new NotFoundException('参数配置不存在');
   }
 
   private async assertKeyUnique(

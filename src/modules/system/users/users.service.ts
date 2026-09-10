@@ -6,7 +6,12 @@ import {
 import { and, desc, eq, inArray, isNull, sql } from 'drizzle-orm';
 import { hashPassword } from '../../../common/password/password.service';
 import { DatabaseService } from '../../../database/database.service';
-import { departments, roles, userRoles, users } from '../../../database/schema/index';
+import {
+  departments,
+  roles,
+  userRoles,
+  users,
+} from '../../../database/schema/index';
 import {
   resolveDataScope,
   type RequestActor,
@@ -41,8 +46,12 @@ export type UserListOptions = {
 export class UsersService {
   constructor(private readonly database: DatabaseService) {}
   async list(page: number, pageSize: number, options: UserListOptions = {}) {
-    const conditions: (ReturnType<typeof isNull> | ReturnType<typeof eq> | ReturnType<typeof inArray> | ReturnType<typeof sql>)[] =
-      [isNull(users.deletedAt)];
+    const conditions: (
+      | ReturnType<typeof isNull>
+      | ReturnType<typeof eq>
+      | ReturnType<typeof inArray>
+      | ReturnType<typeof sql>
+    )[] = [isNull(users.deletedAt)];
     if (options.status === 'active' || options.status === 'disabled') {
       conditions.push(eq(users.status, options.status));
     }

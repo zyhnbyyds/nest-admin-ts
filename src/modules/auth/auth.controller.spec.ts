@@ -183,10 +183,9 @@ describe('AuthController', () => {
       const authService = mockAuthService();
       const controller = new AuthController(authService as AuthService);
       await expect(
-        controller.updateProfile(
-          { avatar: 'javascript:alert(1)' } as never,
-          { user: { id: 7 } },
-        ),
+        controller.updateProfile({ avatar: 'javascript:alert(1)' } as never, {
+          user: { id: 7 },
+        }),
       ).rejects.toThrow();
       expect(authService.updateProfile).not.toHaveBeenCalled();
     });

@@ -20,7 +20,7 @@
 | 调度              | `@nestjs/schedule` + `cron`                                       |
 | API 文档          | `@nestjs/swagger`（开启时路径：`/api/v1/docs`）                   |
 | 日志              | `pino`（Fastify 内置）                                            |
-| 测试              | `bun test`（Bun 内置运行器）· 断言/mock 沿用 vitest API                              |
+| 测试              | `bun test`（Bun 内置运行器）· 断言/mock 沿用 vitest API           |
 | Lint / 格式化     | `oxlint`、`oxfmt`（不用 ESLint / Prettier）                       |
 | 语言              | TypeScript 5.9，`moduleResolution: NodeNext`，ESM `.js` 后缀导入  |
 

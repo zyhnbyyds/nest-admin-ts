@@ -71,8 +71,7 @@ export class LoginLogsService {
     const result = await this.database.db
       .delete(loginLogs)
       .where(eq(loginLogs.id, id));
-    if (!result[0].affectedRows)
-      throw new NotFoundException('登录日志不存在');
+    if (!result[0].affectedRows) throw new NotFoundException('登录日志不存在');
   }
 
   async clear(): Promise<void> {

@@ -113,9 +113,9 @@ describe('UsersService', () => {
         .mockReturnValueOnce({
           from: vi.fn().mockReturnValue({
             innerJoin: vi.fn().mockReturnValue({
-              where: vi.fn().mockResolvedValue([
-                { userId: 2, id: 2, name: 'editor' },
-              ]),
+              where: vi
+                .fn()
+                .mockResolvedValue([{ userId: 2, id: 2, name: 'editor' }]),
             }),
           }),
         });

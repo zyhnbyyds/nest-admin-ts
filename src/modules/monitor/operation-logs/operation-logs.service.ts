@@ -72,9 +72,7 @@ export class OperationLogsService {
       .select(logColumns)
       .from(operationLogs)
       .leftJoin(users, eq(operationLogs.userId, users.id))
-      .where(
-        conditions.length ? and(...(conditions as never[])) : undefined,
-      )
+      .where(conditions.length ? and(...(conditions as never[])) : undefined)
       .orderBy(desc(operationLogs.id))
       .limit(pageSize)
       .offset((page - 1) * pageSize);
@@ -96,8 +94,7 @@ export class OperationLogsService {
     const result = await this.database.db
       .delete(operationLogs)
       .where(eq(operationLogs.id, id));
-    if (!result[0].affectedRows)
-      throw new NotFoundException('操作日志不存在');
+    if (!result[0].affectedRows) throw new NotFoundException('操作日志不存在');
   }
 
   async clear(): Promise<void> {
