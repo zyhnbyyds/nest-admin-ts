@@ -1,0 +1,2 @@
+# 统一使用 LF 换行，避免 Windows 上的 CRLF 转换干扰 oxfmt 等格式化检查
+* text=auto eol=lf
